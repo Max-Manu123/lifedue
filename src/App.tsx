@@ -231,7 +231,7 @@ function Landing({ onStart, language, setLanguage }: { onStart: () => void; lang
       <section className="hero">
         <div className="hero-copy">
           <div className="pill"><Sparkles size={15} /> Built for client work</div>
-          <h1>Keep every client deadline and <span>payment follow-up</span> under control.</h1>
+          <h1>{currentLanguage==='pt' ? 'Mantenha todos os prazos de clientes e ' : 'Keep every client deadline and '}<span>{currentLanguage==='pt' ? 'cobranças de pagamentos' : 'payment follow-up'}</span>{currentLanguage==='pt' ? ' sob controle.' : ' under control.'}</h1>
           <p>{tr('heroText')}</p>
           <button className="hero-cta" onClick={onStart}>Try it free <ArrowRight size={18} /></button>
           <div className="microcopy"><Check size={14} /> {tr('noCard')}</div>
@@ -289,8 +289,8 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
     <div className="content-stack">
       <section className="welcome-row">
         <div>
-          <p className="section-kicker">MONDAY, SEPTEMBER 21</p>
-          <h2>Good morning. Here's what needs you.</h2>
+          <p className="section-kicker">{currentLanguage==='pt' ? 'SEGUNDA, 21 DE SETEMBRO' : 'MONDAY, SEPTEMBER 21'}</p>
+          <h2>{currentLanguage==='pt' ? 'Bom dia. Veja o que precisa de você.' : "Good morning. Here's what needs you."}</h2>
         </div>
         <div className="stat-card"><strong>{pendingAmount.toLocaleString(currentLanguage==='pt'?'pt-PT':'en-US', { style: 'currency', currency: 'USD' })}</strong><span>pending</span></div>
       </section>
