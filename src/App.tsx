@@ -18,7 +18,7 @@ import {
 import type { Client, Payment, Priority, Task } from './types'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
-import { fetchClients, fetchTasks, createTasks, updateTaskStatus } from './lib/tasks'
+import { fetchClients, fetchPayments, fetchTasks, createTasks, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
@@ -90,6 +90,8 @@ function App() {
   const [tasksError, setTasksError] = useState('')
   const [clientsLoading, setClientsLoading] = useState(false)
   const [clientsError, setClientsError] = useState('')
+  const [paymentsLoading, setPaymentsLoading] = useState(false)
+  const [paymentsError, setPaymentsError] = useState('')
 
   useEffect(() => {
     if (!supabase) return
@@ -120,6 +122,27 @@ function App() {
       })
       .finally(() => {
         if (!cancelled) setClientsLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [user])
+
+  useEffect(() => {
+    if (!user || !supabase) return
+    let cancelled = false
+    setPaymentsLoading(true)
+    setPaymentsError('')
+
+    fetchPayments(user)
+      .then(remotePayments => {
+        if (!cancelled) setPayments(remotePayments)
+      })
+      .catch(error => {
+        console.error('LifeDue payment load failed:', error)
+        if (!cancelled) setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível carregar seus pagamentos.' : 'Could not load your payments.')
+      })
+      .finally(() => {
+        if (!cancelled) setPaymentsLoading(false)
       })
 
     return () => { cancelled = true }
@@ -267,8 +290,19 @@ function App() {
     }
   }
 
-  const markPaid = (id: string) => {
+  const markPaid = async (id: string) => {
+    const currentPayment = payments.find(payment => payment.id === id)
+    if (!currentPayment || currentPayment.status === 'paid') return
     setPayments(current => current.map(payment => payment.id === id ? { ...payment, status: 'paid' } : payment))
+    if (user && supabase) {
+      try {
+        await updatePaymentStatus(user, id, 'paid')
+      } catch (error) {
+        console.error('LifeDue payment update failed:', error)
+        setPayments(current => current.map(payment => payment.id === id ? currentPayment : payment))
+        setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível atualizar o pagamento.' : 'Could not update the payment.')
+      }
+    }
   }
 
   return (
@@ -308,8 +342,10 @@ function App() {
             <div key={view} className={"route-view route-" + view}>
             {tasksError && <div className="error-banner" role="alert">{tasksError}</div>}
             {clientsError && <div className="error-banner" role="alert">{clientsError}</div>}
+            {paymentsError && <div className="error-banner" role="alert">{paymentsError}</div>}
             {tasksLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar tarefas…' : 'Loading tasks…'}</div>}
             {clientsLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar clientes…' : 'Loading clients…'}</div>}
+            {paymentsLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar pagamentos…' : 'Loading payments…'}</div>}
             {view === 'quick-add' && (
               <TodayView
                 tasks={tasks}
