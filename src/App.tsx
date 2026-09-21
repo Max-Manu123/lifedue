@@ -18,6 +18,10 @@ import {
 import type { Client, Payment, Priority, Task } from './types'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
+type Language='en'|'pt'
+const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',addAllToday:'Add all to Today',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',addAllToday:'Adicionar tudo para hoje',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.'}}
+let currentLanguage:Language='en'
+const tr=(key:keyof typeof trMap.en)=>trMap[currentLanguage][key]
 
 const today = new Date()
 today.setHours(0, 0, 0, 0)
@@ -64,6 +68,9 @@ function load<T>(key: string, fallback: T): T {
 }
 
 function App() {
+  const [language,setLanguage]=useState<Language>(()=>(localStorage.getItem('lifedue-language') as Language)||'en')
+  currentLanguage=language
+  useEffect(()=>localStorage.setItem('lifedue-language',language),[language])
   const [view, setView] = useState<View>('home')
   const [tasks, setTasks] = useState<Task[]>(() => load('lifedue-tasks', seedTasks))
   const [clients, setClients] = useState<Client[]>(() => load('lifedue-clients', seedClients))
@@ -144,7 +151,7 @@ function App() {
   return (
     <div className="app-shell">
       {view === 'home' ? (
-        <Landing onStart={() => navigate('quick-add')} />
+        <Landing onStart={() => navigate('quick-add')} language={language} setLanguage={setLanguage} />
       ) : (
         <div className="workspace">
           <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
@@ -153,23 +160,23 @@ function App() {
               <span>LifeDue</span>
             </div>
             <nav>
-              <NavItem icon={<LayoutDashboard size={18} />} label="Today" active={view === 'quick-add' || view === 'home'} onClick={() => navigate('quick-add')} />
-              <NavItem icon={<ListTodo size={18} />} label="Tasks" active={view === 'tasks'} onClick={() => navigate('tasks')} />
-              <NavItem icon={<Users size={18} />} label="Clients" active={view === 'clients'} onClick={() => navigate('clients')} />
-              <NavItem icon={<CreditCard size={18} />} label="Payments" active={view === 'payments'} onClick={() => navigate('payments')} />
-              <NavItem icon={<Sparkles size={18} />} label="AI Planner" active={view === 'planner'} onClick={() => navigate('planner')} />
+              <NavItem icon={<LayoutDashboard size={18} />} label={tr('today')} active={view === 'quick-add' || view === 'home'} onClick={() => navigate('quick-add')} />
+              <NavItem icon={<ListTodo size={18} />} label={tr('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
+              <NavItem icon={<Users size={18} />} label={tr('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
+              <NavItem icon={<CreditCard size={18} />} label={tr('payments')} active={view === 'payments'} onClick={() => navigate('payments')} />
+              <NavItem icon={<Sparkles size={18} />} label={tr('planner')} active={view === 'planner'} onClick={() => navigate('planner')} />
             </nav>
             <div className="sidebar-bottom">
               <button className="sidebar-add" onClick={() => setShowAdd(true)}><Plus size={17} /> Add task</button>
-              <div className="free-badge">Free plan</div>
+              <div className="free-badge">{tr('freePlan')}</div>
             </div>
           </aside>
 
           <main className="main-content">
             <header className="topbar">
-              <button className="icon-button mobile-only" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu"><Menu size={21} /></button>
+              <button className="icon-button mobile-only" onClick={() => setMenuOpen(!menuOpen)} aria-label={tr("menu")}><Menu size={21} /></button>
               <div>
-                <div className="eyebrow">CLIENT WORKSPACE</div>
+                <div className="eyebrow">{tr('workspace')}</div>
                 <h1>{view === 'quick-add' ? 'Your plan' : view === 'tasks' ? 'Tasks' : view === 'clients' ? 'Clients' : view === 'payments' ? 'Payments' : 'AI Planner'}</h1>
               </div>
               <button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> Add task</button>
@@ -201,9 +208,9 @@ function App() {
           </main>
 
           <div className="mobile-nav">
-            <MobileNav icon={<LayoutDashboard size={19} />} label="Today" active={view === 'quick-add'} onClick={() => navigate('quick-add')} />
-            <MobileNav icon={<ListTodo size={19} />} label="Tasks" active={view === 'tasks'} onClick={() => navigate('tasks')} />
-            <MobileNav icon={<Users size={19} />} label="Clients" active={view === 'clients'} onClick={() => navigate('clients')} />
+            <MobileNav icon={<LayoutDashboard size={19} />} label={tr('today')} active={view === 'quick-add'} onClick={() => navigate('quick-add')} />
+            <MobileNav icon={<ListTodo size={19} />} label={tr('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
+            <MobileNav icon={<Users size={19} />} label={tr('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
             <MobileNav icon={<CreditCard size={19} />} label="Money" active={view === 'payments'} onClick={() => navigate('payments')} />
           </div>
         </div>
@@ -214,35 +221,35 @@ function App() {
   )
 }
 
-function Landing({ onStart }: { onStart: () => void }) {
+function Landing({ onStart, language, setLanguage }: { onStart: () => void; language: Language; setLanguage: (language: Language) => void }) {
   return (
     <div className="landing">
       <header className="landing-nav">
-        <div className="brand"><span className="brand-mark">L</span><span>LifeDue</span></div>
+        <div className="brand"><span className="brand-mark">L</span><span>LifeDue</span></div><div className="language-switcher"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div>
         <button className="ghost-button" onClick={onStart}>Open app <ArrowRight size={16} /></button>
       </header>
       <section className="hero">
         <div className="hero-copy">
           <div className="pill"><Sparkles size={15} /> Built for client work</div>
           <h1>Keep every client deadline and <span>payment follow-up</span> under control.</h1>
-          <p>Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.</p>
+          <p>{tr('heroText')}</p>
           <button className="hero-cta" onClick={onStart}>Try it free <ArrowRight size={18} /></button>
-          <div className="microcopy"><Check size={14} /> No credit card required</div>
+          <div className="microcopy"><Check size={14} /> {tr('noCard')}</div>
         </div>
         <div className="hero-preview">
           <div className="preview-top"><span>LifeDue</span><span className="status-dot">●</span></div>
-          <div className="preview-title">TODAY</div>
+          <div className="preview-title">{tr('today').toUpperCase()}</div>
           <PreviewTask title="Finish homepage" client="John" urgent />
           <PreviewTask title="Send invoice" client="Maria" />
-          <div className="preview-title muted">UP NEXT</div>
+          <div className="preview-title muted">{tr('upNext').toUpperCase()}</div>
           <PreviewTask title="Follow up payment" client="Pedro" />
-          <div className="preview-footer">3 tasks · $200 pending</div>
+          <div className="preview-footer">3 {tr("tasks").toLowerCase()} · $200 {tr("pending")}</div>
         </div>
       </section>
       <section className="feature-row">
-        <Feature icon={<Sparkles />} title="Quick Add" text="Describe several client tasks at once." />
-        <Feature icon={<Clock3 />} title="Today first" text="See overdue and due-now work immediately." />
-        <Feature icon={<CircleDollarSign />} title="Payments" text="Keep pending client money visible." />
+        <Feature icon={<Sparkles />} title={tr("quickAdd")} text={tr("quickAddText")} />
+        <Feature icon={<Clock3 />} title={tr("todayFirst")} text={tr("todayText")} />
+        <Feature icon={<CircleDollarSign />} title={tr("payments")} text={tr("paymentsText")} />
       </section>
     </div>
   )
@@ -285,18 +292,18 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
           <p className="section-kicker">MONDAY, SEPTEMBER 21</p>
           <h2>Good morning. Here's what needs you.</h2>
         </div>
-        <div className="stat-card"><strong>{pendingAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</strong><span>pending</span></div>
+        <div className="stat-card"><strong>{pendingAmount.toLocaleString(currentLanguage==='pt'?'pt-PT':'en-US', { style: 'currency', currency: 'USD' })}</strong><span>pending</span></div>
       </section>
 
       <section className="quick-card">
         <div className="quick-icon"><Sparkles size={19} /></div>
         <div className="quick-main">
-          <div className="quick-label">AI QUICK ADD</div>
-          <h3>What do you need to get done?</h3>
+          <div className="quick-label">{tr('aiQuick')}</div>
+          <h3>{tr('quickQuestion')}</h3>
           <textarea value={text} onChange={e => setText(e.target.value)} placeholder="e.g. Deliver John's website Friday, collect $200 from Maria tomorrow, and send Pedro the proposal Monday." />
           <div className="quick-actions">
             <button className="primary-button" onClick={onCreatePlan}>Create plan <ArrowRight size={17} /></button>
-            <span>Plain language · no setup</span>
+            <span>{tr('plain')}</span>
           </div>
         </div>
       </section>
@@ -305,7 +312,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
         <section className="ai-result-card">
           <div className="ai-result-head">
             <div>
-              <div className="quick-label">YOUR PLAN</div>
+              <div className="quick-label">{tr('yourPlan')}</div>
               <h3>LifeDue found {plan.length} items.</h3>
             </div>
             <Sparkles size={18} />
@@ -322,14 +329,14 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
         </section>
       )}
 
-      <div className="section-heading"><h2>Today</h2><button className="text-button" onClick={onCreatePlan}>Quick Add</button></div>
+      <div className="section-heading"><h2>{tr('today')}</h2><button className="text-button" onClick={onCreatePlan}>Quick Add</button></div>
 
       {overdue.length > 0 && <TaskSection title="OVERDUE" tone="danger" tasks={overdue} onToggle={onToggle} />}
       {todayTasks.length > 0 ? <TaskSection title="TODAY" tasks={todayTasks} onToggle={onToggle} /> : (
-        <div className="empty-card"><CheckCircle2 size={23} /><div><strong>Nothing due today</strong><p>Enjoy the breathing room or add a task.</p></div></div>
+        <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('nothing')}</strong><p>{tr('breathing')}</p></div></div>
       )}
 
-      <div className="section-heading up-next"><h2>Up next</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> Organize my plan</button></div>
+      <div className="section-heading up-next"><h2>{tr('upNext')}</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> Organize my plan</button></div>
       {nextTasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} />)}
       <div className="summary-line">{tasks.filter(t => t.status === 'open').length} open tasks · {pendingAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} pending</div>
     </div>
@@ -343,7 +350,7 @@ function TaskSection({ title, tone, tasks, onToggle }: { title: string; tone?: '
 function TaskRow({ task, onToggle }: { task: Task; onToggle: (id: string) => void }) {
   return (
     <div className="task-row">
-      <button className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label="Complete task">
+      <button className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={tr("complete")}>
         {task.status === 'completed' && <Check size={14} />}
       </button>
       <div className="task-info"><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
@@ -356,7 +363,7 @@ function TasksView({ tasks, onToggle, onAdd }: { tasks: Task[]; onToggle: (id: s
   const [filter, setFilter] = useState<'all' | 'open' | 'completed'>('open')
   const filtered = tasks.filter(t => filter === 'all' || t.status === filter)
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">WORK QUEUE</p><h2>Everything you need to deliver.</h2></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> Add task</button></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('workQueue')}</p><h2>{tr('everything')}</h2></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> Add task</button></div>
     <div className="filter-tabs">{(['open', 'completed', 'all'] as const).map(item => <button key={item} className={filter === item ? 'filter-tab active' : 'filter-tab'} onClick={() => setFilter(item)}>{item === 'open' ? 'Open' : item === 'completed' ? 'Completed' : 'All'} <span>{tasks.filter(t => item === 'all' || t.status === item).length}</span></button>)}</div>
     <div className="card-list">{filtered.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} />)}</div>
   </div>
@@ -364,7 +371,7 @@ function TasksView({ tasks, onToggle, onAdd }: { tasks: Task[]; onToggle: (id: s
 
 function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: Task[]; payments: Payment[] }) {
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">CLIENTS</p><h2>Keep the people behind the work visible.</h2></div></div>
+    <div className="page-intro"><div><p className="section-kicker">CLIENTS</p><h2>{tr('clientsIntro')}</h2></div></div>
     <div className="client-grid">{clients.map(client => {
       const clientTasks = tasks.filter(t => t.client.toLowerCase() === client.name.toLowerCase())
       const clientPayments = payments.filter(p => p.client.toLowerCase() === client.name.toLowerCase() && p.status === 'pending')
@@ -378,21 +385,21 @@ function PaymentsView({ payments, onMarkPaid }: { payments: Payment[]; onMarkPai
   const pending = payments.filter(p => p.status === 'pending')
   const paid = payments.filter(p => p.status === 'paid')
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">MONEY DUE</p><h2>Don't let finished work stay unpaid.</h2></div><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>pending</span></div></div>
-    {pending.length === 0 && <div className="empty-card"><CheckCircle2 size={23} /><div><strong>All payments are clear</strong><p>No pending client payments.</p></div></div>}
+    <div className="page-intro"><div><p className="section-kicker">{tr('moneyDue')}</p><h2>Don't let finished work stay unpaid.</h2></div><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>pending</span></div></div>
+    {pending.length === 0 && <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('clear')}</strong><p>{tr('noPending')}</p></div></div>}
     <div className="payment-list">{pending.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div>
-    {paid.length > 0 && <><div className="section-heading"><h2>Paid</h2></div><div className="payment-list">{paid.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div></>}
+    {paid.length > 0 && <><div className="section-heading"><h2>{tr('paid')}</h2></div><div className="payment-list">{paid.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div></>}
   </div>
 }
 
 function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id: string) => void }) {
   const isOverdue = payment.status === 'pending' && payment.dueDate < iso(today)
-  return <div className="payment-row"><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{payment.client} — {payment.currency} {payment.amount}</strong><span>{payment.status === 'paid' ? 'Paid' : isOverdue ? 'Overdue · due ' + formatDate(payment.dueDate) : 'Due ' + formatDate(payment.dueDate)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>Mark paid</button> : <span className="paid-label"><Check size={15} /> Paid</span>}</div>
+  return <div className="payment-row"><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{payment.client} — {payment.currency} {payment.amount}</strong><span>{payment.status === 'paid' ? 'Paid' : isOverdue ? 'Overdue · due ' + formatDate(payment.dueDate) : 'Due ' + formatDate(payment.dueDate)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}{tr('markPaid')}</button> : <span className="paid-label"><Check size={15} /> Paid</span>}</div>
 }
 
 function PlannerView({ plan, onGenerate, onAddPlan }: { plan: Task[]; onGenerate: () => void; onAddPlan: () => void }) {
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">AI PLANNER</p><h2>Turn your backlog into a calmer day.</h2><p className="page-description">LifeDue groups open work into a simple plan instead of making you manage a giant list.</p></div></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('aiPlanner')}</p><h2>{tr('calmer')}</h2><p className="page-description">LifeDue groups open work into a simple plan instead of making you manage a giant list.</p></div></div>
     <div className="planner-card"><div className="planner-hero"><div className="planner-bot"><Bot size={26} /></div><div><strong>You have {Math.max(5, plan.length + 4)} open items competing for attention.</strong><p>Generate a suggested order for your next few days.</p></div></div>{plan.length ? <div className="plan-list">{plan.map(task => <div className="plan-item" key={task.id}><span>{formatDate(task.dueDate)}</span><strong>{task.title}</strong><small>{task.client}</small></div>)}</div> : <div className="planner-empty"><Sparkles size={22} /><p>Your plan will appear here.</p></div>}<div className="planner-actions"><button className="secondary-button" onClick={onGenerate}><Sparkles size={17} /> Generate plan</button>{plan.length > 0 && <button className="primary-button" onClick={onAddPlan}>Add all to Today <ArrowRight size={17} /></button>}</div></div>
   </div>
 }
@@ -403,7 +410,7 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
   const [dueDate, setDueDate] = useState(addDays(0))
   const [priority, setPriority] = useState<Priority>('medium')
   const submit = () => { if (title.trim() && client.trim()) onAdd({ title: title.trim(), client: client.trim(), dueDate, priority }) }
-  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-head"><div><p className="section-kicker">NEW TASK</p><h2>Add a task</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div><label>Task<input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Finish homepage" autoFocus /></label><label>Client<input value={client} onChange={e => setClient(e.target.value)} placeholder="e.g. John" /></label><div className="form-grid"><label>Due date<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label><label>Priority<select value={priority} onChange={e => setPriority(e.target.value as Priority)}><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label></div><div className="modal-actions"><button className="secondary-button" onClick={onClose}>Cancel</button><button className="primary-button" onClick={submit}>Add task</button></div></div></div>
+  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-head"><div><p className="section-kicker">{tr('newTask')}</p><h2>Add a task</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div><label>{tr('task')}<input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Finish homepage" autoFocus /></label><label>{tr('client')}<input value={client} onChange={e => setClient(e.target.value)} placeholder="e.g. John" /></label><div className="form-grid"><label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label><label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label></div><div className="modal-actions"><button className="secondary-button" onClick={onClose}>{tr('cancel')}</button><button className="primary-button" onClick={submit}>{tr('addTask')}</button></div></div></div>
 }
 
 function PriorityBadge({ priority }: { priority: Priority }) {
@@ -412,8 +419,8 @@ function PriorityBadge({ priority }: { priority: Priority }) {
 
 function formatDate(value: string) {
   const date = new Date(value + 'T00:00:00')
-  if (value === iso(today)) return 'Today'
-  if (value === addDays(1)) return 'Tomorrow'
+  if (value === iso(today)) return tr('today')
+  if (value === addDays(1)) return tr('tomorrow')
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
