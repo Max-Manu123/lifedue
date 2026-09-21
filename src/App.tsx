@@ -18,7 +18,7 @@ import {
 import type { Client, Payment, Priority, Task } from './types'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
-import { fetchTasks, createTasks, updateTaskStatus } from './lib/tasks'
+import { fetchClients, fetchTasks, createTasks, updateTaskStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
@@ -88,6 +88,8 @@ function App() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
   const [tasksLoading, setTasksLoading] = useState(false)
   const [tasksError, setTasksError] = useState('')
+  const [clientsLoading, setClientsLoading] = useState(false)
+  const [clientsError, setClientsError] = useState('')
 
   useEffect(() => {
     if (!supabase) return
@@ -101,6 +103,27 @@ function App() {
     })
     return () => listener.subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!user || !supabase) return
+    let cancelled = false
+    setClientsLoading(true)
+    setClientsError('')
+
+    fetchClients(user)
+      .then(remoteClients => {
+        if (!cancelled) setClients(remoteClients)
+      })
+      .catch(error => {
+        console.error('LifeDue client load failed:', error)
+        if (!cancelled) setClientsError(currentLanguage === 'pt' ? 'Não foi possível carregar seus clientes.' : 'Could not load your clients.')
+      })
+      .finally(() => {
+        if (!cancelled) setClientsLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [user])
 
   useEffect(() => {
     if (!user || !supabase) return
@@ -284,7 +307,9 @@ function App() {
 
             <div key={view} className={"route-view route-" + view}>
             {tasksError && <div className="error-banner" role="alert">{tasksError}</div>}
+            {clientsError && <div className="error-banner" role="alert">{clientsError}</div>}
             {tasksLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar tarefas…' : 'Loading tasks…'}</div>}
+            {clientsLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar clientes…' : 'Loading clients…'}</div>}
             {view === 'quick-add' && (
               <TodayView
                 tasks={tasks}
