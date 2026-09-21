@@ -18,6 +18,7 @@ import {
 import type { Client, Payment, Priority, Task } from './types'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
+import { fetchTasks, createTasks, updateTaskStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
@@ -85,6 +86,8 @@ function App() {
   const [user, setUser] = useState<User | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
+  const [tasksLoading, setTasksLoading] = useState(false)
+  const [tasksError, setTasksError] = useState('')
 
   useEffect(() => {
     if (!supabase) return
@@ -99,7 +102,30 @@ function App() {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  useEffect(() => localStorage.setItem('lifedue-tasks', JSON.stringify(tasks)), [tasks])
+  useEffect(() => {
+    if (!user || !supabase) return
+    let cancelled = false
+    setTasksLoading(true)
+    setTasksError('')
+
+    fetchTasks(user)
+      .then(remoteTasks => {
+        if (!cancelled) setTasks(remoteTasks)
+      })
+      .catch(error => {
+        console.error('LifeDue task load failed:', error)
+        if (!cancelled) setTasksError(currentLanguage === 'pt' ? 'Não foi possível carregar suas tarefas.' : 'Could not load your tasks.')
+      })
+      .finally(() => {
+        if (!cancelled) setTasksLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [user])
+
+  useEffect(() => {
+    if (!user) localStorage.setItem('lifedue-tasks', JSON.stringify(tasks))
+  }, [tasks, user])
   useEffect(() => localStorage.setItem('lifedue-clients', JSON.stringify(clients)), [clients])
   useEffect(() => localStorage.setItem('lifedue-payments', JSON.stringify(payments)), [payments])
 
@@ -137,11 +163,21 @@ function App() {
     setView('home')
   }
 
-  const toggleTask = (id: string) => {
-    setTasks(current => current.map(task => task.id === id
-      ? { ...task, status: task.status === 'open' ? 'completed' : 'open' }
-      : task
-    ))
+  const toggleTask = async (id: string) => {
+    const currentTask = tasks.find(task => task.id === id)
+    if (!currentTask) return
+    const nextStatus = currentTask.status === 'open' ? 'completed' : 'open'
+    setTasks(current => current.map(task => task.id === id ? { ...task, status: nextStatus } : task))
+
+    if (user && supabase) {
+      try {
+        await updateTaskStatus(user, id, nextStatus)
+      } catch (error) {
+        console.error('LifeDue task update failed:', error)
+        setTasks(current => current.map(task => task.id === id ? currentTask : task))
+        setTasksError(currentLanguage === 'pt' ? 'Não foi possível atualizar a tarefa.' : 'Could not update the task.')
+      }
+    }
   }
 
   const createPlan = () => {
@@ -164,26 +200,48 @@ function App() {
     setView('quick-add')
   }
 
-  const addPlan = () => {
+  const addPlan = async () => {
     if (!plan.length) return
-    const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
-    const newClients = plan
-      .filter(task => !clientNames.has(task.client.toLowerCase()))
-      .map(task => ({ id: crypto.randomUUID(), name: task.client }))
-    if (newClients.length) setClients(current => [...current, ...newClients])
-    setTasks(current => [...current, ...plan])
-    setPlan([])
-    setQuickText('')
-    setView('quick-add')
+    setTasksError('')
+    try {
+      if (user && supabase) {
+        const created = await createTasks(user, plan)
+        setTasks(current => [...created, ...current])
+      } else {
+        const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
+        const newClients = plan
+          .filter(task => !clientNames.has(task.client.toLowerCase()))
+          .map(task => ({ id: crypto.randomUUID(), name: task.client }))
+        if (newClients.length) setClients(current => [...current, ...newClients])
+        setTasks(current => [...current, ...plan])
+      }
+      setPlan([])
+      setQuickText('')
+      setView('quick-add')
+    } catch (error) {
+      console.error('LifeDue plan save failed:', error)
+      setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar o plano.' : 'Could not save the plan.')
+    }
   }
 
-  const addTask = (task: Omit<Task, 'id' | 'status'>) => {
-    const next = { ...task, id: crypto.randomUUID(), status: 'open' as const }
-    setTasks(current => [next, ...current])
-    if (!clients.some(c => c.name.toLowerCase() === task.client.toLowerCase())) {
-      setClients(current => [...current, { id: crypto.randomUUID(), name: task.client }])
+  const addTask = async (task: Omit<Task, 'id' | 'status'>) => {
+    setTasksError('')
+    try {
+      if (user && supabase) {
+        const created = await createTasks(user, [{ ...task, status: 'open' }])
+        setTasks(current => [...created, ...current])
+      } else {
+        const next = { ...task, id: crypto.randomUUID(), status: 'open' as const }
+        setTasks(current => [next, ...current])
+        if (!clients.some(c => c.name.toLowerCase() === task.client.toLowerCase())) {
+          setClients(current => [...current, { id: crypto.randomUUID(), name: task.client }])
+        }
+      }
+      setShowAdd(false)
+    } catch (error) {
+      console.error('LifeDue task creation failed:', error)
+      setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar a tarefa.' : 'Could not save the task.')
     }
-    setShowAdd(false)
   }
 
   const markPaid = (id: string) => {
@@ -225,6 +283,8 @@ function App() {
             </header>
 
             <div key={view} className={"route-view route-" + view}>
+            {tasksError && <div className="error-banner" role="alert">{tasksError}</div>}
+            {tasksLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar tarefas…' : 'Loading tasks…'}</div>}
             {view === 'quick-add' && (
               <TodayView
                 tasks={tasks}
