@@ -119,3 +119,11 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Explicit PostgREST privileges for authenticated users.
+grant usage on schema public to authenticated;
+
+grant select, insert, update, delete on table public.profiles to authenticated;
+grant select, insert, update, delete on table public.clients to authenticated;
+grant select, insert, update, delete on table public.tasks to authenticated;
+grant select, insert, update, delete on table public.payments to authenticated;
