@@ -1,6 +1,6 @@
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import type { Task } from '../types'
+import type { Client, Task } from '../types'
 
 type RemoteTask = {
   id: string
@@ -15,6 +15,17 @@ type RemoteTask = {
 function requireSupabaseUser(user: User | null) {
   if (!supabase || !user) throw new Error('Authentication is required for cloud tasks.')
   return user
+}
+
+export async function fetchClients(user: User): Promise<Client[]> {
+  requireSupabaseUser(user)
+  const { data, error } = await supabase
+    .from('clients')
+    .select('id, name')
+    .eq('user_id', user.id)
+    .order('name', { ascending: true })
+  if (error) throw error
+  return (data ?? []) as Client[]
 }
 
 export async function fetchTasks(user: User): Promise<Task[]> {
