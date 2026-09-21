@@ -124,9 +124,20 @@ export function AuthModal({
           </>
         )}
 
+        {mode !== 'reset' && (
+          <>
+            <button className="google-button google-primary" onClick={google} disabled={loading}>
+              <span className="google-logo" aria-hidden="true">G</span>
+              {loading ? <Loader2 size={17} className="spin" /> : null}
+              {pt ? 'Continuar com Google' : 'Continue with Google'}
+            </button>
+            <div className="auth-divider"><span>{pt ? 'ou use email e senha' : 'or use email and password'}</span></div>
+          </>
+        )}
+
         <form onSubmit={submit} className="auth-form">
           <label>
-            {pt ? 'Email' : 'Email'}
+            Email
             <input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" required />
           </label>
           {mode !== 'reset' && (
@@ -143,21 +154,6 @@ export function AuthModal({
             {submitLabel}
           </button>
         </form>
-          <button className="primary-button auth-submit" disabled={loading}>
-            {loading ? <Loader2 size={17} className="spin" /> : null}
-            {submitLabel}
-          </button>
-        </form>
-
-        {mode !== 'reset' && (
-          <>
-            <div className="auth-divider"><span>{pt ? 'ou' : 'or'}</span></div>
-            <button className="google-button" onClick={google} disabled={loading}>
-              <span className="google-mark">G</span>{pt ? 'Continuar com Google' : 'Continue with Google'}
-            </button>
-          </>
-        )}
-
         <div className="auth-links">
           {mode === 'login' && <button onClick={() => { setMode('reset'); setError(''); setSuccess('') }}>{pt ? 'Esqueci minha senha' : 'Forgot password?'}</button>}
           {mode === 'reset' && <button onClick={() => { setMode('login'); setError(''); setSuccess('') }}><ArrowLeft size={14} /> {pt ? 'Voltar para entrar' : 'Back to sign in'}</button>}
