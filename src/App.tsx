@@ -179,7 +179,7 @@ function App() {
                 <div className="eyebrow">{tr('workspace')}</div>
                 <h1>{view === 'quick-add' ? tr('today') : view === 'tasks' ? tr('tasks') : view === 'clients' ? tr('clients') : view === 'payments' ? tr('payments') : tr('planner')}</h1>
               </div>
-              <div className="topbar-actions"><button className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></button><button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button></div>
+              <div className="topbar-actions"><div className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div><button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button></div>
             </header>
 
             <div key={view} className={"route-view route-" + view}>
