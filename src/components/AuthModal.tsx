@@ -74,6 +74,7 @@ export function AuthModal({
 
   const google = async () => {
     setError('')
+    setSuccess('')
     if (!supabase) {
       setError(pt ? 'O Supabase ainda não está configurado.' : 'Supabase is not configured yet.')
       return
@@ -81,7 +82,12 @@ export function AuthModal({
     setLoading(true)
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: {
+        redirectTo: window.location.origin,
+        queryParams: {
+          prompt: 'select_account',
+        },
+      },
     })
     if (authError) {
       setError(authError.message)
@@ -107,6 +113,17 @@ export function AuthModal({
         {success && <div className="auth-success">{success}</div>}
         {error && <div className="auth-error">{error}</div>}
 
+        {mode !== 'reset' && (
+          <>
+            <button className="google-button google-primary" onClick={google} disabled={loading}>
+              <span className="google-logo" aria-hidden="true">G</span>
+              {loading ? <Loader2 size={17} className="spin" /> : null}
+              {pt ? 'Continuar com Google' : 'Continue with Google'}
+            </button>
+            <div className="auth-divider"><span>{pt ? 'ou use email e senha' : 'or use email and password'}</span></div>
+          </>
+        )}
+
         <form onSubmit={submit} className="auth-form">
           <label>
             {pt ? 'Email' : 'Email'}
@@ -121,6 +138,11 @@ export function AuthModal({
               </span>
             </label>
           )}
+          <button className="primary-button auth-submit" disabled={loading}>
+            {loading ? <Loader2 size={17} className="spin" /> : null}
+            {submitLabel}
+          </button>
+        </form>
           <button className="primary-button auth-submit" disabled={loading}>
             {loading ? <Loader2 size={17} className="spin" /> : null}
             {submitLabel}
