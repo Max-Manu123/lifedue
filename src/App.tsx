@@ -93,6 +93,7 @@ function App() {
   const [clientsError, setClientsError] = useState('')
   const [paymentsLoading, setPaymentsLoading] = useState(false)
   const [paymentsError, setPaymentsError] = useState('')
+  const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!supabase) return
@@ -211,20 +212,32 @@ function App() {
   }
 
   const toggleTask = async (id: string) => {
+    if (updatingTaskId) return
     const currentTask = tasks.find(task => task.id === id)
     if (!currentTask) return
     const nextStatus = currentTask.status === 'open' ? 'completed' : 'open'
+    setUpdatingTaskId(id)
+    setTasksError('')
     setTasks(current => current.map(task => task.id === id ? { ...task, status: nextStatus } : task))
 
     if (user && supabase) {
       try {
         await updateTaskStatus(user, id, nextStatus)
+        const refreshed = await fetchTasks(user)
+        setTasks(refreshed)
       } catch (error) {
         console.error('LifeDue task update failed:', error)
         setTasks(current => current.map(task => task.id === id ? currentTask : task))
-        setTasksError(currentLanguage === 'pt' ? 'Não foi possível atualizar a tarefa.' : 'Could not update the task.')
+        setTasksError(currentLanguage === 'pt'
+          ? 'Não foi possível guardar esta tarefa. Tente novamente.'
+          : 'Could not save this task. Please try again.')
+      } finally {
+        setUpdatingTaskId(null)
       }
+      return
     }
+
+    setUpdatingTaskId(null)
   }
 
   const createPlan = () => {
@@ -553,10 +566,10 @@ function TaskSection({ title, tone, tasks, onToggle }: { title: string; tone?: '
   return <section className="task-section"><div className={tone === 'danger' ? 'task-section-title danger' : 'task-section-title'}>{tone === 'danger' && '● '}{title}</div>{tasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} />)}</section>
 }
 
-function TaskRow({ task, onToggle }: { task: Task; onToggle: (id: string) => void }) {
+function TaskRow({ task, onToggle, disabled }: { task: Task; onToggle: (id: string) => void; disabled?: boolean }) {
   return (
     <div className="task-row">
-      <button className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={tr("complete")}>
+      <button type="button" disabled={disabled} className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={task.status === 'completed' ? 'Reopen task' : tr('complete')} aria-busy={disabled}>
         {task.status === 'completed' && <Check size={14} />}
       </button>
       <div className="task-info"><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
