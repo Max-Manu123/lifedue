@@ -16,6 +16,9 @@ import {
   X,
 } from 'lucide-react'
 import type { Client, Payment, Priority, Task } from './types'
+import type { User } from '@supabase/supabase-js'
+import { supabase } from './lib/supabase'
+import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
 type Language='en'|'pt'
@@ -79,6 +82,16 @@ function App() {
   const [plan, setPlan] = useState<Task[]>([])
   const [showAdd, setShowAdd] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [authOpen, setAuthOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
+
+  useEffect(() => {
+    if (!supabase) return
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
+    return () => listener.subscription.unsubscribe()
+  }, [])
 
   useEffect(() => localStorage.setItem('lifedue-tasks', JSON.stringify(tasks)), [tasks])
   useEffect(() => localStorage.setItem('lifedue-clients', JSON.stringify(clients)), [clients])
@@ -151,7 +164,7 @@ function App() {
   return (
     <div className="app-shell">
       {view === 'home' ? (
-        <Landing onStart={() => navigate('quick-add')} language={language} setLanguage={setLanguage} />
+        <Landing onStart={() => navigate('quick-add')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} language={language} setLanguage={setLanguage} />
       ) : (
         <div className="workspace">
           <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
@@ -179,7 +192,7 @@ function App() {
                 <div className="eyebrow">{tr('workspace')}</div>
                 <h1>{view === 'quick-add' ? tr('today') : view === 'tasks' ? tr('tasks') : view === 'clients' ? tr('clients') : view === 'payments' ? tr('payments') : tr('planner')}</h1>
               </div>
-              <div className="topbar-actions"><div className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div><button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button></div>
+              <div className="topbar-actions">{user ? <button className="account-button" onClick={async () => { await supabase?.auth.signOut(); setUser(null) }}>{user.email}</button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{currentLanguage==='pt' ? 'Entrar' : 'Sign in'}</button>}<div className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div><button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button></div>
             </header>
 
             <div key={view} className={"route-view route-" + view}>
@@ -219,16 +232,17 @@ function App() {
       )}
 
       {showAdd && <AddTaskModal onClose={() => setShowAdd(false)} onAdd={addTask} />}
+      {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
     </div>
   )
 }
 
-function Landing({ onStart, language, setLanguage }: { onStart: () => void; language: Language; setLanguage: (language: Language) => void }) {
+function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => void; onAuth: () => void; language: Language; setLanguage: (language: Language) => void }) {
   return (
     <div className="landing">
       <header className="landing-nav">
         <div className="brand"><span className="brand-mark">L</span><span>LifeDue</span></div><div className="language-switcher"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div>
-        <button className="ghost-button" onClick={onStart}>Open app <ArrowRight size={16} /></button>
+        <div className="landing-actions"><button className="ghost-button" onClick={onAuth}>{language==='pt' ? 'Entrar' : 'Sign in'}</button><button className="ghost-button" onClick={onStart}>Open app <ArrowRight size={16} /></button></div>
       </header>
       <section className="hero">
         <div className="hero-copy">
