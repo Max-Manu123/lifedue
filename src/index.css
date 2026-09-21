@@ -335,4 +335,4 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .auth-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; border-radius: 9px; padding: 9px 10px; font-size: 11px; line-height: 1.45; margin-bottom: 13px; }
 .spin { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@media (max-width: 700px) { .landing-actions { display: none; } .account-button { max-width: 120px; } .auth-modal { padding: 21px; } .auth-links { flex-direction: column; align-items: center; } }
+@media (max-width: 700px) { .landing-actions .ghost-button:last-child { display: none; } .account-button { max-width: 120px; } .auth-modal { padding: 21px; } .auth-links { flex-direction: column; align-items: center; } }
