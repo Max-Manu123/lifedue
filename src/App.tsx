@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ArrowRight,
   Bot,
-  CalendarDays,
   Check,
   CheckCircle2,
-  ChevronRight,
   CircleDollarSign,
   Clock3,
   CreditCard,
@@ -184,7 +182,9 @@ function App() {
                 todayTasks={todayTasks}
                 pendingAmount={pendingAmount}
                 onToggle={toggleTask}
-                onQuickAdd={() => navigate('quick-add')}
+                plan={plan}
+                onCreatePlan={createPlan}
+                onAddPlan={addPlan}
                 onPlanner={() => navigate('planner')}
               />
             )}
@@ -264,13 +264,15 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, onQuickAdd, onPlanner }: {
+function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, onCreatePlan, onAddPlan, onPlanner }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
   pendingAmount: number
   onToggle: (id: string) => void
-  onQuickAdd: () => void
+  plan: Task[]
+  onCreatePlan: () => void
+  onAddPlan: () => void
   onPlanner: () => void
 }) {
   const [text, setText] = useState('')
@@ -293,13 +295,34 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, onQuic
           <h3>What do you need to get done?</h3>
           <textarea value={text} onChange={e => setText(e.target.value)} placeholder="e.g. Deliver John's website Friday, collect $200 from Maria tomorrow, and send Pedro the proposal Monday." />
           <div className="quick-actions">
-            <button className="primary-button" onClick={onQuickAdd}>Create plan <ArrowRight size={17} /></button>
+            <button className="primary-button" onClick={onCreatePlan}>Create plan <ArrowRight size={17} /></button>
             <span>Plain language · no setup</span>
           </div>
         </div>
       </section>
 
-      <div className="section-heading"><h2>Today</h2><button className="text-button" onClick={onQuickAdd}>Quick Add</button></div>
+      {plan.length > 0 && (
+        <section className="ai-result-card">
+          <div className="ai-result-head">
+            <div>
+              <div className="quick-label">YOUR PLAN</div>
+              <h3>LifeDue found {plan.length} items.</h3>
+            </div>
+            <Sparkles size={18} />
+          </div>
+          <div className="ai-plan-list">
+            {plan.map(task => (
+              <div className="ai-plan-item" key={task.id}>
+                <div className="ai-plan-icon">{task.title.toLowerCase().includes('payment') ? '💰' : task.title.toLowerCase().includes('proposal') ? '📄' : '💻'}</div>
+                <div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
+              </div>
+            ))}
+          </div>
+          <button className="primary-button" onClick={onAddPlan}>Add all <ArrowRight size={17} /></button>
+        </section>
+      )}
+
+      <div className="section-heading"><h2>Today</h2><button className="text-button" onClick={onCreatePlan}>Quick Add</button></div>
 
       {overdue.length > 0 && <TaskSection title="OVERDUE" tone="danger" tasks={overdue} onToggle={onToggle} />}
       {todayTasks.length > 0 ? <TaskSection title="TODAY" tasks={todayTasks} onToggle={onToggle} /> : (
