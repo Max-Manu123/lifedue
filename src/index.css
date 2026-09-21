@@ -228,3 +228,5 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .language-switcher button.active { background: #fff; color: #4338ca; box-shadow: 0 1px 3px rgba(15,23,42,.08); }
 .topbar-actions { display: flex; align-items: center; gap: 9px; }
 @media (max-width: 700px) { .topbar-actions .language-switcher { display: none; } }
+
+.language-switcher{display:inline-flex;gap:3px;padding:3px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:9px}.language-switcher button{border:0;background:transparent;color:#64748b;border-radius:6px;padding:5px 8px;font-size:10px;font-weight:800;cursor:pointer}.language-switcher button.active{background:#fff;color:#4338ca;box-shadow:0 1px 3px rgba(15,23,42,.08)}.landing-nav .language-switcher{margin-left:auto;margin-right:8px}.topbar .language-switcher{margin-left:auto}@media(max-width:700px){.topbar .language-switcher{display:none}}
