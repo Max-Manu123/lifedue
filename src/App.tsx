@@ -114,6 +114,29 @@ function App() {
     setMenuOpen(false)
   }
 
+  const handleSignOut = async () => {
+    if (!supabase) {
+      setUser(null)
+      setAuthOpen(false)
+      setMenuOpen(false)
+      setPlan([])
+      setView('home')
+      return
+    }
+
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('LifeDue sign-out failed:', error)
+      return
+    }
+
+    setUser(null)
+    setAuthOpen(false)
+    setMenuOpen(false)
+    setPlan([])
+    setView('home')
+  }
+
   const toggleTask = (id: string) => {
     setTasks(current => current.map(task => task.id === id
       ? { ...task, status: task.status === 'open' ? 'completed' : 'open' }
@@ -198,7 +221,7 @@ function App() {
                 <div className="eyebrow">{tr('workspace')}</div>
                 <h1>{view === 'quick-add' ? tr('today') : view === 'tasks' ? tr('tasks') : view === 'clients' ? tr('clients') : view === 'payments' ? tr('payments') : tr('planner')}</h1>
               </div>
-              <div className="topbar-actions">{user ? <button className="account-button" title={user.email ?? ''} onClick={async () => { await supabase?.auth.signOut(); setUser(null) }}>{currentLanguage==='pt' ? 'Sair' : 'Sign out'}</button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{currentLanguage==='pt' ? 'Entrar' : 'Sign in'}</button>}<div className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div><button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button></div>
+              <div className="topbar-actions">{user ? <button className="account-button" title={user.email ?? ''} onClick={handleSignOut}>{currentLanguage==='pt' ? 'Sair' : 'Sign out'}</button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{currentLanguage==='pt' ? 'Entrar' : 'Sign in'}</button>}<div className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div><button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button></div>
             </header>
 
             <div key={view} className={"route-view route-" + view}>
