@@ -89,7 +89,13 @@ function App() {
   useEffect(() => {
     if (!supabase) return
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null))
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        setAuthOpen(false)
+        setView('quick-add')
+      }
+    })
     return () => listener.subscription.unsubscribe()
   }, [])
 
