@@ -172,10 +172,16 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
 
 export async function updateTaskStatus(user: User, id: string, status: Task['status']) {
   requireSupabaseUser(user)
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('tasks')
     .update({ status })
     .eq('id', id)
     .eq('user_id', user.id)
+    .select('id, status')
+    .single()
   if (error) throw error
+  if (!data || data.status !== status) {
+    throw new Error('Task status was not persisted.')
+  }
+  return data as { id: string; status: Task['status'] }
 }
