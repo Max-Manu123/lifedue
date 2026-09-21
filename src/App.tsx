@@ -18,7 +18,7 @@ import {
 import type { Client, Payment, Priority, Task } from './types'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
-import { fetchClients, fetchPayments, fetchTasks, createTasks, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
+import { fetchClients, fetchPayments, fetchTasks, createTasks, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
@@ -82,6 +82,7 @@ function App() {
   const [quickText, setQuickText] = useState('')
   const [plan, setPlan] = useState<Task[]>([])
   const [showAdd, setShowAdd] = useState(false)
+  const [showAddPayment, setShowAddPayment] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
@@ -304,6 +305,21 @@ function App() {
       }
     }
   }
+  const addPayment = async (payment: Omit<Payment, 'id' | 'status'>) => {
+    if (user && supabase) {
+      try {
+        const created = await createPayment(user, payment)
+        setPayments(current => [created, ...current])
+        setShowAddPayment(false)
+      } catch (error) {
+        console.error('LifeDue payment creation failed:', error)
+        setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível adicionar o pagamento.' : 'Could not add the payment.')
+      }
+    } else {
+      setPayments(current => [{ ...payment, id: crypto.randomUUID(), status: 'pending' }, ...current])
+      setShowAddPayment(false)
+    }
+  }
 
   return (
     <div className="app-shell">
@@ -361,7 +377,7 @@ function App() {
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} />}
             {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} />}
-            {view === 'payments' && <PaymentsView payments={payments} onMarkPaid={markPaid} />}
+            {view === 'payments' && <PaymentsView payments={payments} onMarkPaid={markPaid} onAdd={() => setShowAddPayment(true)} />}
             {view === 'planner' && (
               <PlannerView
                 plan={plan}
@@ -382,6 +398,7 @@ function App() {
       )}
 
       {showAdd && <AddTaskModal onClose={() => setShowAdd(false)} onAdd={addTask} />}
+      {showAddPayment && <AddPaymentModal onClose={() => setShowAddPayment(false)} onAdd={addPayment} />}
       {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
     </div>
   )
@@ -547,11 +564,11 @@ function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: T
   </div>
 }
 
-function PaymentsView({ payments, onMarkPaid }: { payments: Payment[]; onMarkPaid: (id: string) => void }) {
+function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; onMarkPaid: (id: string) => void; onAdd: () => void }) {
   const pending = payments.filter(p => p.status === 'pending')
   const paid = payments.filter(p => p.status === 'paid')
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{tr('moneyDue')}</p><h2>{tr('paymentsHeadline')}</h2><p className="page-description">{tr('paymentsDescription')}</p></div><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>pending</span></div></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('moneyDue')}</p><h2>{tr('paymentsHeadline')}</h2><p className="page-description">{tr('paymentsDescription')}</p></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> Add payment</button><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>pending</span></div></div>
     {pending.length === 0 && <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('clear')}</strong><p>{tr('noPending')}</p></div></div>}
     <div className="payment-list">{pending.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div>
     {paid.length > 0 && <><div className="section-heading"><h2>{tr('paid')}</h2></div><div className="payment-list">{paid.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div></>}
@@ -568,6 +585,23 @@ function PlannerView({ plan, onGenerate, onAddPlan }: { plan: Task[]; onGenerate
     <div className="page-intro"><div><p className="section-kicker">{tr('aiPlanner')}</p><h2>{tr('calmer')}</h2><p className="page-description">{tr('plannerDesc')}</p></div></div>
     <div className="planner-card"><div className="planner-hero"><div className="planner-bot"><Bot size={26} /></div><div><strong>{tr('openItems')}</strong><p>{tr('generateOrder')}</p></div></div>{plan.length ? <div className="plan-list">{plan.map(task => <div className="plan-item" key={task.id}><span>{formatDate(task.dueDate)}</span><strong>{task.title}</strong><small>{task.client}</small></div>)}</div> : <div className="planner-empty"><Sparkles size={22} /><p>{tr('planEmpty')}</p></div>}<div className="planner-actions"><button className="secondary-button" onClick={onGenerate}><Sparkles size={17} /> {tr('generatePlan')}</button>{plan.length > 0 && <button className="primary-button" onClick={onAddPlan}>{tr('addAllToday')} <ArrowRight size={17} /></button>}</div></div>
   </div>
+}
+
+function AddPaymentModal({ onClose, onAdd }: { onClose: () => void; onAdd: (payment: Omit<Payment, 'id' | 'status'>) => void }) {
+  const [client, setClient] = useState('')
+  const [amount, setAmount] = useState('')
+  const [dueDate, setDueDate] = useState(addDays(0))
+  const submit = () => {
+    const value = Number(amount)
+    if (client.trim() && value > 0) onAdd({ client: client.trim(), amount: value, currency: 'USD', dueDate })
+  }
+  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}>
+    <div className="modal-head"><div><p className="section-kicker">New payment</p><h2>Add a payment</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div>
+    <label>Client<input value={client} onChange={e => setClient(e.target.value)} placeholder="e.g. Maria" autoFocus /></label>
+    <label>Amount<input type="number" min="0" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} placeholder="e.g. 200" /></label>
+    <label>Due date<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label>
+    <div className="modal-actions"><button className="secondary-button" onClick={onClose}>Cancel</button><button className="primary-button" onClick={submit}>Add payment</button></div>
+  </div></div>
 }
 
 function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: Omit<Task, 'id' | 'status'>) => void }) {
