@@ -127,7 +127,6 @@ function load<T>(key: string, fallback: T): T {
 
 function App() {
   const [language, setLanguage] = useState<Language>(() => (localStorage.getItem(languageKey) as Language) || 'en')
-  const t = (key: keyof typeof translations.en) => translations[language][key]
   currentLanguage = language
   const [view, setView] = useState<View>('home')
   const [tasks, setTasks] = useState<Task[]>(() => load('lifedue-tasks', seedTasks))
@@ -219,15 +218,15 @@ function App() {
               <span>LifeDue</span>
             </div>
             <nav>
-              <NavItem icon={<LayoutDashboard size={18} />} label={t('today')} active={view === 'quick-add' || view === 'home'} onClick={() => navigate('quick-add')} />
-              <NavItem icon={<ListTodo size={18} />} label={t('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
-              <NavItem icon={<Users size={18} />} label={t('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
-              <NavItem icon={<CreditCard size={18} />} label={t('payments')} active={view === 'payments'} onClick={() => navigate('payments')} />
-              <NavItem icon={<Sparkles size={18} />} label={t('planner')} active={view === 'planner'} onClick={() => navigate('planner')} />
+              <NavItem icon={<LayoutDashboard size={18} />} label={tr('today')} active={view === 'quick-add' || view === 'home'} onClick={() => navigate('quick-add')} />
+              <NavItem icon={<ListTodo size={18} />} label={tr('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
+              <NavItem icon={<Users size={18} />} label={tr('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
+              <NavItem icon={<CreditCard size={18} />} label={tr('payments')} active={view === 'payments'} onClick={() => navigate('payments')} />
+              <NavItem icon={<Sparkles size={18} />} label={tr('planner')} active={view === 'planner'} onClick={() => navigate('planner')} />
             </nav>
             <div className="sidebar-bottom">
               <button className="sidebar-add" onClick={() => setShowAdd(true)}><Plus size={17} /> Add task</button>
-              <div className="free-badge">{t('freePlan')}</div>
+              <div className="free-badge">{tr('freePlan')}</div>
             </div>
           </aside>
 
@@ -235,8 +234,8 @@ function App() {
             <header className="topbar">
               <button className="icon-button mobile-only" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu"><Menu size={21} /></button>
               <div>
-                <div className="eyebrow">{t('clientWorkspace')}</div>
-                <h1>{view === 'quick-add' ? 'Your plan' : view === 'tasks' ? 'Tasks' : view === 'clients' ? 'Clients' : view === 'payments' ? 'Payments' : 'AI Planner'}</h1>
+                <div className="eyebrow">{tr('clientWorkspace')}</div>
+                <h1>{view === 'quick-add' ? tr('yourPlan') : view === 'tasks' ? tr('tasks') : view === 'clients' ? tr('clients') : view === 'payments' ? tr('payments') : tr('planner')}</h1>
               </div>
               <button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> Add task</button>
             </header>
@@ -267,10 +266,10 @@ function App() {
           </main>
 
           <div className="mobile-nav">
-            <MobileNav icon={<LayoutDashboard size={19} />} label={t('today')} active={view === 'quick-add'} onClick={() => navigate('quick-add')} />
-            <MobileNav icon={<ListTodo size={19} />} label={t('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
-            <MobileNav icon={<Users size={19} />} label={t('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
-            <MobileNav icon={<CreditCard size={19} />} label={t('money')} active={view === 'payments'} onClick={() => navigate('payments')} />
+            <MobileNav icon={<LayoutDashboard size={19} />} label={tr('today')} active={view === 'quick-add'} onClick={() => navigate('quick-add')} />
+            <MobileNav icon={<ListTodo size={19} />} label={tr('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
+            <MobileNav icon={<Users size={19} />} label={tr('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
+            <MobileNav icon={<CreditCard size={19} />} label={tr('money')} active={view === 'payments'} onClick={() => navigate('payments')} />
           </div>
         </div>
       )}
@@ -286,22 +285,22 @@ function Landing({ onStart, language, setLanguage }: { onStart: () => void; lang
       <header className="landing-nav">
         <div className="brand"><span className="brand-mark">L</span><span>LifeDue</span></div>
         <div className="language-switcher"><button className={language === 'en' ? 'active' : ''} onClick={() => setLanguage('en')}>EN</button><button className={language === 'pt' ? 'active' : ''} onClick={() => setLanguage('pt')}>PT</button></div>
-        <button className="ghost-button" onClick={onStart}>{t('landingOpen')} <ArrowRight size={16} /></button>
+        <button className="ghost-button" onClick={onStart}>{tr('landingOpen')} <ArrowRight size={16} /></button>
       </header>
       <section className="hero">
         <div className="hero-copy">
           <div className="pill"><Sparkles size={15} /> Built for client work</div>
-          <h1>{t('heroTitle')}<span>{t('heroAccent')}</span>{t('heroTitleEnd')}</h1>
-          <p>{t('heroText')}</p>
-          <button className="hero-cta" onClick={onStart}>{t('tryFree')} <ArrowRight size={18} /></button>
+          <h1>{tr('heroTitle')}<span>{tr('heroAccent')}</span>{tr('heroTitleEnd')}</h1>
+          <p>{tr('heroText')}</p>
+          <button className="hero-cta" onClick={onStart}>{tr('tryFree')} <ArrowRight size={18} /></button>
           <div className="microcopy"><Check size={14} /> No credit card required</div>
         </div>
         <div className="hero-preview">
           <div className="preview-top"><span>LifeDue</span><span className="status-dot">●</span></div>
-          <div className="preview-title">{t('today').toUpperCase()}</div>
+          <div className="preview-title">{tr('today').toUpperCase()}</div>
           <PreviewTask title="Finish homepage" client="John" urgent />
           <PreviewTask title="Send invoice" client="Maria" />
-          <div className="preview-title muted">{t('upNext').toUpperCase()}</div>
+          <div className="preview-title muted">{tr('upNext').toUpperCase()}</div>
           <PreviewTask title="Follow up payment" client="Pedro" />
           <div className="preview-footer">3 {tr('tasks').toLowerCase()} · $200 {tr('pending')}</div>
         </div>
@@ -349,21 +348,21 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
     <div className="content-stack">
       <section className="welcome-row">
         <div>
-          <p className="section-kicker">{t('monday')}</p>
-          <h2>{t('morning')}</h2>
+          <p className="section-kicker">{tr('monday')}</p>
+          <h2>{tr('morning')}</h2>
         </div>
-        <div className="stat-card"><strong>{pendingAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</strong><span>{t('pending')}</span></div>
+        <div className="stat-card"><strong>{pendingAmount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</strong><span>{tr('pending')}</span></div>
       </section>
 
       <section className="quick-card">
         <div className="quick-icon"><Sparkles size={19} /></div>
         <div className="quick-main">
-          <div className="quick-label">{t('aiQuickAdd')}</div>
-          <h3>{t('quickQuestion')}</h3>
-          <textarea value={text} onChange={e => setText(e.target.value)} placeholder={t('quickPlaceholder')} />
+          <div className="quick-label">{tr('aiQuickAdd')}</div>
+          <h3>{tr('quickQuestion')}</h3>
+          <textarea value={text} onChange={e => setText(e.target.value)} placeholder={tr('quickPlaceholder')} />
           <div className="quick-actions">
-            <button className="primary-button" onClick={onCreatePlan}>Create plan <ArrowRight size={17} /></button>
-            <span>{t('plainLanguage')}</span>
+            <button className="primary-button" onClick={onCreatePlan}>{tr('createPlan')} <ArrowRight size={17} /></button>
+            <span>{tr('plainLanguage')}</span>
           </div>
         </div>
       </section>
@@ -372,7 +371,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
         <section className="ai-result-card">
           <div className="ai-result-head">
             <div>
-              <div className="quick-label">{t('yourPlanLabel')}</div>
+              <div className="quick-label">{tr('yourPlanLabel')}</div>
               <h3>{tr('foundItems').replace('{n}', String(plan.length))}</h3>
             </div>
             <Sparkles size={18} />
@@ -385,18 +384,18 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
               </div>
             ))}
           </div>
-          <button className="primary-button" onClick={onAddPlan}>Add all <ArrowRight size={17} /></button>
+          <button className="primary-button" onClick={onAddPlan}>{tr('addAll')} <ArrowRight size={17} /></button>
         </section>
       )}
 
-      <div className="section-heading"><h2>Today</h2><button className="text-button" onClick={onCreatePlan}>{t('quickAdd')}</button></div>
+      <div className="section-heading"><h2>{tr('today')}</h2><button className="text-button" onClick={onCreatePlan}>{tr('quickAdd')}</button></div>
 
       {overdue.length > 0 && <TaskSection title="OVERDUE" tone="danger" tasks={overdue} onToggle={onToggle} />}
       {todayTasks.length > 0 ? <TaskSection title="TODAY" tasks={todayTasks} onToggle={onToggle} /> : (
-        <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{t('nothingToday')}</strong><p>{t('breathing')}</p></div></div>
+        <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('nothingToday')}</strong><p>{tr('breathing')}</p></div></div>
       )}
 
-      <div className="section-heading up-next"><h2>{t('upNext')}</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> Organize my plan</button></div>
+      <div className="section-heading up-next"><h2>{tr('upNext')}</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> Organize my plan</button></div>
       {nextTasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} />)}
       <div className="summary-line">{tasks.filter(t => t.status === 'open').length} {tr('openTasksSummary')} · {pendingAmount.toLocaleString(currentLanguage === 'pt' ? 'pt-PT' : 'en-US', { style: 'currency', currency: 'USD' })} {tr('pending')}</div>
     </div>
@@ -410,7 +409,7 @@ function TaskSection({ title, tone, tasks, onToggle }: { title: string; tone?: '
 function TaskRow({ task, onToggle }: { task: Task; onToggle: (id: string) => void }) {
   return (
     <div className="task-row">
-      <button className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={t('completeTask')}>
+      <button className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={tr('completeTask')}>
         {task.status === 'completed' && <Check size={14} />}
       </button>
       <div className="task-info"><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
@@ -423,15 +422,15 @@ function TasksView({ tasks, onToggle, onAdd }: { tasks: Task[]; onToggle: (id: s
   const [filter, setFilter] = useState<'all' | 'open' | 'completed'>('open')
   const filtered = tasks.filter(t => filter === 'all' || t.status === filter)
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{t('workQueue')}</p><h2>{t('everything')}</h2></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> Add task</button></div>
-    <div className="filter-tabs">{(['open', 'completed', 'all'] as const).map(item => <button key={item} className={filter === item ? 'filter-tab active' : 'filter-tab'} onClick={() => setFilter(item)}>{item === 'open' ? 'Open' : item === 'completed' ? 'Completed' : 'All'} <span>{tasks.filter(t => item === 'all' || t.status === item).length}</span></button>)}</div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('workQueue')}</p><h2>{tr('everything')}</h2></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> Add task</button></div>
+    <div className="filter-tabs">{(['open', 'completed', 'all'] as const).map(item => <button key={item} className={filter === item ? 'filter-tab active' : 'filter-tab'} onClick={() => setFilter(item)}>{item === 'open' ? tr('open') : item === 'completed' ? tr('completed') : tr('all')} <span>{tasks.filter(t => item === 'all' || t.status === item).length}</span></button>)}</div>
     <div className="card-list">{filtered.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} />)}</div>
   </div>
 }
 
 function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: Task[]; payments: Payment[] }) {
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{t('clientsKicker')}</p><h2>{t('keepPeople')}</h2></div></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('clientsKicker')}</p><h2>{tr('keepPeople')}</h2></div></div>
     <div className="client-grid">{clients.map(client => {
       const clientTasks = tasks.filter(t => t.client.toLowerCase() === client.name.toLowerCase())
       const clientPayments = payments.filter(p => p.client.toLowerCase() === client.name.toLowerCase() && p.status === 'pending')
@@ -445,22 +444,22 @@ function PaymentsView({ payments, onMarkPaid }: { payments: Payment[]; onMarkPai
   const pending = payments.filter(p => p.status === 'pending')
   const paid = payments.filter(p => p.status === 'paid')
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{t('moneyDue')}</p><h2>{t('unpaid')}</h2></div><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>{t('pending')}</span></div></div>
-    {pending.length === 0 && <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{t('allClear')}</strong><p>{t('noPending')}</p></div></div>}
+    <div className="page-intro"><div><p className="section-kicker">{tr('moneyDue')}</p><h2>{tr('unpaid')}</h2></div><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>{tr('pending')}</span></div></div>
+    {pending.length === 0 && <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('allClear')}</strong><p>{tr('noPending')}</p></div></div>}
     <div className="payment-list">{pending.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div>
-    {paid.length > 0 && <><div className="section-heading"><h2>{t('paid')}</h2></div><div className="payment-list">{paid.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div></>}
+    {paid.length > 0 && <><div className="section-heading"><h2>{tr('paid')}</h2></div><div className="payment-list">{paid.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div></>}
   </div>
 }
 
 function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id: string) => void }) {
   const isOverdue = payment.status === 'pending' && payment.dueDate < iso(today)
-  return <div className="payment-row"><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{payment.client} — {payment.currency} {payment.amount}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? (currentLanguage === 'pt' ? 'Atrasado · vence ' : 'Overdue · due ') + formatDate(payment.dueDate) : (currentLanguage === 'pt' ? 'Vence ' : 'Due ') + formatDate(payment.dueDate)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>Mark paid</button> : <span className="paid-label"><Check size={15} /> Paid</span>}</div>
+  return <div className="payment-row"><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{payment.client} — {payment.currency} {payment.amount}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? (currentLanguage === 'pt' ? 'Atrasado · vence ' : 'Overdue · due ') + formatDate(payment.dueDate) : (currentLanguage === 'pt' ? 'Vence ' : 'Due ') + formatDate(payment.dueDate)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}{currentLanguage === 'pt' ? 'Marcar como pago' : 'Mark paid'}</button> : <span className="paid-label"><Check size={15} /> {tr('paid')}</span>}</div>
 }
 
 function PlannerView({ plan, onGenerate, onAddPlan }: { plan: Task[]; onGenerate: () => void; onAddPlan: () => void }) {
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{t('aiKicker')}</p><h2>{t('calmer')}</h2><p className="page-description">LifeDue groups open work into a simple plan instead of making you manage a giant list.</p></div></div>
-    <div className="planner-card"><div className="planner-hero"><div className="planner-bot"><Bot size={26} /></div><div><strong>You have {Math.max(5, plan.length + 4)} open items competing for attention.</strong><p>Generate a suggested order for your next few days.</p></div></div>{plan.length ? <div className="plan-list">{plan.map(task => <div className="plan-item" key={task.id}><span>{formatDate(task.dueDate)}</span><strong>{task.title}</strong><small>{task.client}</small></div>)}</div> : <div className="planner-empty"><Sparkles size={22} /><p>{t('planAppear')}</p></div>}<div className="planner-actions"><button className="secondary-button" onClick={onGenerate}><Sparkles size={17} /> Generate plan</button>{plan.length > 0 && <button className="primary-button" onClick={onAddPlan}>Add all to Today <ArrowRight size={17} /></button>}</div></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('aiKicker')}</p><h2>{tr('calmer')}</h2><p className="page-description">{tr('plannerDesc')}</p></div></div>
+    <div className="planner-card"><div className="planner-hero"><div className="planner-bot"><Bot size={26} /></div><div><strong>{Math.max(5, plan.length + 4)} {tr('openItems')}</strong><p>{tr('generateOrder')}</p></div></div>{plan.length ? <div className="plan-list">{plan.map(task => <div className="plan-item" key={task.id}><span>{formatDate(task.dueDate)}</span><strong>{task.title}</strong><small>{task.client}</small></div>)}</div> : <div className="planner-empty"><Sparkles size={22} /><p>{tr('planAppear')}</p></div>}<div className="planner-actions"><button className="secondary-button" onClick={onGenerate}><Sparkles size={17} /> {tr('generatePlan')}</button>{plan.length > 0 && <button className="primary-button" onClick={onAddPlan}>{tr('addAllToday')} <ArrowRight size={17} /></button>}</div></div>
   </div>
 }
 
@@ -470,11 +469,11 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
   const [dueDate, setDueDate] = useState(addDays(0))
   const [priority, setPriority] = useState<Priority>('medium')
   const submit = () => { if (title.trim() && client.trim()) onAdd({ title: title.trim(), client: client.trim(), dueDate, priority }) }
-  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-head"><div><p className="section-kicker">{t('newTask')}</p><h2>{t('addTask')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div><label>{t('task')}<input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('finishHomepage')} autoFocus /></label><label>{t('client')}<input value={client} onChange={e => setClient(e.target.value)} placeholder={t('john')} /></label><div className="form-grid"><label>{t('dueDate')}<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label><label>{t('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)}><option value="low">{t('low')}</option><option value="medium">{t('medium')}</option><option value="high">{t('high')}</option></select></label></div><div className="modal-actions"><button className="secondary-button" onClick={onClose}>{t('cancel')}</button><button className="primary-button" onClick={submit}>{t('addTask')}</button></div></div></div>
+  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-head"><div><p className="section-kicker">{tr('newTask')}</p><h2>{tr('addTask')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div><label>{tr('task')}<input value={title} onChange={e => setTitle(e.target.value)} placeholder={tr('finishHomepage')} autoFocus /></label><label>{tr('client')}<input value={client} onChange={e => setClient(e.target.value)} placeholder={tr('john')} /></label><div className="form-grid"><label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label><label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label></div><div className="modal-actions"><button className="secondary-button" onClick={onClose}>{tr('cancel')}</button><button className="primary-button" onClick={submit}>{tr('addTask')}</button></div></div></div>
 }
 
 function PriorityBadge({ priority }: { priority: Priority }) {
-  return <span className={'priority ' + priority}>{priority === "low" ? t("low") : priority === "medium" ? t("medium") : t("high")}</span>
+  return <span className={'priority ' + priority}>{priority === "low" ? tr("low") : priority === "medium" ? tr("medium") : tr("high")}</span>
 }
 
 function formatDate(value: string) {
@@ -494,22 +493,22 @@ function PaymentsView({ payments, onMarkPaid }: { payments: Payment[]; onMarkPai
   const pending = payments.filter(p => p.status === 'pending')
   const paid = payments.filter(p => p.status === 'paid')
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{t('moneyDue')}</p><h2>{t('unpaid')}</h2></div><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>{t('pending')}</span></div></div>
-    {pending.length === 0 && <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{t('allClear')}</strong><p>{t('noPending')}</p></div></div>}
+    <div className="page-intro"><div><p className="section-kicker">{tr('moneyDue')}</p><h2>{tr('unpaid')}</h2></div><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>{tr('pending')}</span></div></div>
+    {pending.length === 0 && <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('allClear')}</strong><p>{tr('noPending')}</p></div></div>}
     <div className="payment-list">{pending.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div>
-    {paid.length > 0 && <><div className="section-heading"><h2>{t('paid')}</h2></div><div className="payment-list">{paid.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div></>}
+    {paid.length > 0 && <><div className="section-heading"><h2>{tr('paid')}</h2></div><div className="payment-list">{paid.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div></>}
   </div>
 }
 
 function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id: string) => void }) {
   const isOverdue = payment.status === 'pending' && payment.dueDate < iso(today)
-  return <div className="payment-row"><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{payment.client} — {payment.currency} {payment.amount}</strong><span>{payment.status === 'paid' ? 'Paid' : isOverdue ? 'Overdue · due ' + formatDate(payment.dueDate) : 'Due ' + formatDate(payment.dueDate)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>Mark paid</button> : <span className="paid-label"><Check size={15} /> Paid</span>}</div>
+  return <div className="payment-row"><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{payment.client} — {payment.currency} {payment.amount}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? (currentLanguage === 'pt' ? 'Atrasado · vence ' : 'Overdue · due ') + formatDate(payment.dueDate) : (currentLanguage === 'pt' ? 'Vence ' : 'Due ') + formatDate(payment.dueDate)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>Mark paid</button> : <span className="paid-label"><Check size={15} /> Paid</span>}</div>
 }
 
 function PlannerView({ plan, onGenerate, onAddPlan }: { plan: Task[]; onGenerate: () => void; onAddPlan: () => void }) {
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{t('aiKicker')}</p><h2>{t('calmer')}</h2><p className="page-description">LifeDue groups open work into a simple plan instead of making you manage a giant list.</p></div></div>
-    <div className="planner-card"><div className="planner-hero"><div className="planner-bot"><Bot size={26} /></div><div><strong>You have {Math.max(5, plan.length + 4)} open items competing for attention.</strong><p>Generate a suggested order for your next few days.</p></div></div>{plan.length ? <div className="plan-list">{plan.map(task => <div className="plan-item" key={task.id}><span>{formatDate(task.dueDate)}</span><strong>{task.title}</strong><small>{task.client}</small></div>)}</div> : <div className="planner-empty"><Sparkles size={22} /><p>{t('planAppear')}</p></div>}<div className="planner-actions"><button className="secondary-button" onClick={onGenerate}><Sparkles size={17} /> Generate plan</button>{plan.length > 0 && <button className="primary-button" onClick={onAddPlan}>Add all to Today <ArrowRight size={17} /></button>}</div></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('aiKicker')}</p><h2>{tr('calmer')}</h2><p className="page-description">LifeDue groups open work into a simple plan instead of making you manage a giant list.</p></div></div>
+    <div className="planner-card"><div className="planner-hero"><div className="planner-bot"><Bot size={26} /></div><div><strong>You have {Math.max(5, plan.length + 4)} open items competing for attention.</strong><p>Generate a suggested order for your next few days.</p></div></div>{plan.length ? <div className="plan-list">{plan.map(task => <div className="plan-item" key={task.id}><span>{formatDate(task.dueDate)}</span><strong>{task.title}</strong><small>{task.client}</small></div>)}</div> : <div className="planner-empty"><Sparkles size={22} /><p>{tr('planAppear')}</p></div>}<div className="planner-actions"><button className="secondary-button" onClick={onGenerate}><Sparkles size={17} /> Generate plan</button>{plan.length > 0 && <button className="primary-button" onClick={onAddPlan}>Add all to Today <ArrowRight size={17} /></button>}</div></div>
   </div>
 }
 
@@ -519,11 +518,11 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
   const [dueDate, setDueDate] = useState(addDays(0))
   const [priority, setPriority] = useState<Priority>('medium')
   const submit = () => { if (title.trim() && client.trim()) onAdd({ title: title.trim(), client: client.trim(), dueDate, priority }) }
-  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-head"><div><p className="section-kicker">{t('newTask')}</p><h2>{t('addTask')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div><label>{t('task')}<input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('finishHomepage')} autoFocus /></label><label>{t('client')}<input value={client} onChange={e => setClient(e.target.value)} placeholder={t('john')} /></label><div className="form-grid"><label>{t('dueDate')}<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label><label>{t('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)}><option value="low">{t('low')}</option><option value="medium">{t('medium')}</option><option value="high">{t('high')}</option></select></label></div><div className="modal-actions"><button className="secondary-button" onClick={onClose}>{t('cancel')}</button><button className="primary-button" onClick={submit}>{t('addTask')}</button></div></div></div>
+  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-head"><div><p className="section-kicker">{tr('newTask')}</p><h2>{tr('addTask')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div><label>{tr('task')}<input value={title} onChange={e => setTitle(e.target.value)} placeholder={tr('finishHomepage')} autoFocus /></label><label>{tr('client')}<input value={client} onChange={e => setClient(e.target.value)} placeholder={tr('john')} /></label><div className="form-grid"><label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label><label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label></div><div className="modal-actions"><button className="secondary-button" onClick={onClose}>{tr('cancel')}</button><button className="primary-button" onClick={submit}>{tr('addTask')}</button></div></div></div>
 }
 
 function PriorityBadge({ priority }: { priority: Priority }) {
-  return <span className={'priority ' + priority}>{priority === "low" ? t("low") : priority === "medium" ? t("medium") : t("high")}</span>
+  return <span className={'priority ' + priority}>{priority === "low" ? tr("low") : priority === "medium" ? tr("medium") : tr("high")}</span>
 }
 
 function formatDate(value: string) {
