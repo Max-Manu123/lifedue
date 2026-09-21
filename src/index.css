@@ -82,6 +82,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .quick-main textarea::placeholder { color: #94a3b8; }
 .quick-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
 .quick-actions span { color: #94a3b8; font-size: 11px; }
+.ai-result-card { margin-top: 16px; background: #fff; border: 1px solid #c7d2fe; border-radius: 16px; padding: 18px; box-shadow: 0 8px 30px rgba(79,70,229,.06); }
+.ai-result-head { display: flex; justify-content: space-between; align-items: flex-start; color: #4f46e5; }
+.ai-result-head h3 { color: #0f172a; margin: 4px 0 0; font-size: 16px; }
+.ai-plan-list { margin: 13px 0; border-top: 1px solid #f1f5f9; }
+.ai-plan-item { display: flex; align-items: center; gap: 11px; padding: 11px 0; border-bottom: 1px solid #f1f5f9; }
+.ai-plan-icon { width: 34px; height: 34px; border-radius: 9px; background: #f8fafc; display: grid; place-items: center; }
+.ai-plan-item strong, .ai-plan-item span { display: block; }
+.ai-plan-item strong { font-size: 13px; }
+.ai-plan-item span { color: #64748b; font-size: 11px; margin-top: 3px; }
+
 .section-heading { display: flex; align-items: center; justify-content: space-between; margin: 31px 0 12px; }
 .section-heading h2 { font-size: 16px; margin: 0; letter-spacing: -.02em; }
 .section-heading .text-button { color: #4f46e5; font-size: 12px; }
