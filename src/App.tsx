@@ -411,7 +411,7 @@ function App() {
                 onPlanner={() => navigate('planner')}
               />
             )}
-            {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} />}
+            {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
             {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} />}
             {view === 'payments' && <PaymentsView payments={payments} onMarkPaid={markPaid} onAdd={() => setShowAddPayment(true)} />}
             {view === 'planner' && (
@@ -556,7 +556,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
       )}
 
       <div className="section-heading up-next"><h2>{tr('upNext')}</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> Organize my plan</button></div>
-      {nextTasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} />)}
+      {nextTasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} disabled={busyTaskId === task.id} />)}
       <div className="summary-line">{tasks.filter(t => t.status === 'open').length} {tr('open').toLowerCase()} · {pendingAmount.toLocaleString(currentLanguage==='pt'?'pt-PT':'en-US', { style: 'currency', currency: 'USD' })} {tr('pending')}</div>
     </div>
   )
@@ -578,7 +578,7 @@ function TaskRow({ task, onToggle, disabled }: { task: Task; onToggle: (id: stri
   )
 }
 
-function TasksView({ tasks, onToggle, onAdd }: { tasks: Task[]; onToggle: (id: string) => void; onAdd: () => void }) {
+function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onToggle: (id: string) => void; onAdd: () => void; busyTaskId: string | null }) {
   const [filter, setFilter] = useState<'all' | 'open' | 'completed'>('open')
   const filtered = tasks.filter(t => filter === 'all' || t.status === filter)
   return <div className="content-stack">
