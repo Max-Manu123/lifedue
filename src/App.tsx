@@ -125,7 +125,7 @@ function App() {
     setTasks(current => [...current, ...plan])
     setPlan([])
     setQuickText('')
-    setView('home')
+    setView('quick-add')
   }
 
   const addTask = (task: Omit<Task, 'id' | 'status'>) => {
