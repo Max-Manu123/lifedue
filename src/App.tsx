@@ -251,9 +251,22 @@ function App() {
     if (!plan.length) return
     setTasksError('')
     try {
+      const paymentMatch = quickText.match(/\$\s*(\d+(?:\.\d{1,2})?)/i)
+      const paymentTask = plan.find(task => /payment|pagamento|collect|receber/i.test(task.title + ' ' + task.client))
+      const paymentAmount = paymentMatch ? Number(paymentMatch[1]) : 0
+
       if (user && supabase) {
         const created = await createTasks(user, plan)
         setTasks(current => [...created, ...current])
+        if (paymentTask && paymentAmount > 0) {
+          const createdPayment = await createPayment(user, {
+            client: paymentTask.client,
+            amount: paymentAmount,
+            currency: 'USD',
+            dueDate: paymentTask.dueDate,
+          })
+          setPayments(current => [createdPayment, ...current])
+        }
       } else {
         const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
         const newClients = plan
@@ -261,6 +274,16 @@ function App() {
           .map(task => ({ id: crypto.randomUUID(), name: task.client }))
         if (newClients.length) setClients(current => [...current, ...newClients])
         setTasks(current => [...current, ...plan])
+        if (paymentTask && paymentAmount > 0) {
+          setPayments(current => [{
+            id: crypto.randomUUID(),
+            client: paymentTask.client,
+            amount: paymentAmount,
+            currency: 'USD',
+            dueDate: paymentTask.dueDate,
+            status: 'pending',
+          }, ...current])
+        }
       }
       setPlan([])
       setQuickText('')
