@@ -306,7 +306,6 @@ function App() {
       setAuthOpen(true)
       return
     }
-    const normalized = input.toLowerCase()
     setAiLoading(true)
     setTasksError('')
     try {
@@ -327,7 +326,7 @@ function App() {
             return value
           }
           const normalizedItems = items.map(item => ({ ...item, client: exactClient(item.client), title: currentLanguage === 'pt' ? localizeAiTitle(item.title, item.kind) : item.title }))
-          setPlan(normalizedItems.map(item => ({ id: crypto.randomUUID(), title: item.kind === 'payment' ? 'Follow up payment' : item.title, client: item.client, dueDate: item.dueDate, priority: item.priority, status: 'open' })))
+          setPlan(normalizedItems.map(item => ({ id: crypto.randomUUID(), title: item.kind === 'payment' ? (currentLanguage === 'pt' ? 'Cobrar pagamento' : 'Follow up payment') : item.title, client: item.client, dueDate: item.dueDate, priority: item.priority, status: 'open' })))
           setPlanPayments(normalizedItems.filter(item => item.kind === 'payment'))
           setView('quick-add')
           return
