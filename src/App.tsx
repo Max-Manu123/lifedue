@@ -97,6 +97,30 @@ function load<T>(key: string, fallback: T): T {
   }
 }
 
+function localizeAiTitle(title: string, kind: QuickAddItem['kind']) {
+  if (currentLanguage !== 'pt') return title
+  const normalized = title.trim().toLowerCase()
+  if (kind === 'payment' || /follow up payment|payment follow-up|collect payment|receive payment/.test(normalized)) return 'Cobrar pagamento'
+  if (/send proposal|proposal/.test(normalized)) return 'Enviar proposta'
+  if (/deliver website|deliver site|website/.test(normalized)) return 'Entregar site'
+  if (/send invoice|invoice/.test(normalized)) return 'Enviar fatura'
+  return title
+}
+
+function formatMoney(amount: number, currency: string, locale = currentLanguage === 'pt' ? 'pt-PT' : 'en-US') {
+  const supported = ['USD', 'EUR', 'BRL', 'AOA', 'GBP'].includes(currency)
+  if (supported) return amount.toLocaleString(locale, { style: 'currency', currency })
+  return String(amount.toLocaleString(locale)) + ' ' + currency
+}
+
+function pendingMoneyLabel(payments: Payment[]) {
+  const pending = payments.filter(payment => payment.status === 'pending')
+  if (!pending.length) return formatMoney(0, 'USD')
+  const currencies = [...new Set(pending.map(payment => payment.currency))]
+  if (currencies.length === 1) return formatMoney(pending.reduce((sum, payment) => sum + payment.amount, 0), currencies[0])
+  return currencies.map(currency => formatMoney(pending.filter(payment => payment.currency === currency).reduce((sum, payment) => sum + payment.amount, 0), currency)).join(' · ')
+}
+
 function App() {
   const [language,setLanguage]=useState<Language>(()=>(localStorage.getItem('lifedue-language') as Language)||'en')
   currentLanguage=language
@@ -279,7 +303,7 @@ function App() {
         if (error) throw error
         const items = (data?.items ?? []) as QuickAddItem[]
         if (items.length > 0) {
-          const clientNames = Array.from(quickText.matchAll(/(?:do|da|de|from|for|para o|para a)\\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\\p{L}'-]*)/gu)).map(match => match[1])
+          const clientNames = Array.from(quickText.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
           const normalizedName = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
           const exactClient = (value: string) => {
             const match = clientNames.find(name => normalizedName(name) === normalizedName(value))
@@ -290,7 +314,7 @@ function App() {
             }
             return value
           }
-          const normalizedItems = items.map(item => ({ ...item, client: exactClient(item.client) }))
+          const normalizedItems = items.map(item => ({ ...item, client: exactClient(item.client), title: currentLanguage === 'pt' ? localizeAiTitle(item.title, item.kind) : item.title }))
           setPlan(normalizedItems.map(item => ({ id: crypto.randomUUID(), title: item.kind === 'payment' ? 'Follow up payment' : item.title, client: item.client, dueDate: item.dueDate, priority: item.priority, status: 'open' })))
           setPlanPayments(normalizedItems.filter(item => item.kind === 'payment'))
           setView('quick-add')
@@ -470,6 +494,7 @@ function App() {
                 overdue={overdue}
                 todayTasks={todayTasks}
                 pendingAmount={pendingAmount}
+                pendingPayments={payments}
                 onToggle={toggleTask}
                 plan={plan}
                 onCreatePlan={createPlan}
@@ -563,6 +588,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
   overdue: Task[]
   todayTasks: Task[]
   pendingAmount: number
+  pendingPayments: Payment[]
   onToggle: (id: string) => void
   plan: Task[]
   onCreatePlan: () => void
@@ -581,7 +607,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
           <p className="section-kicker">{new Intl.DateTimeFormat(currentLanguage==='pt'?'pt-PT':'en-US', { weekday: 'long', day: 'numeric', month: 'long' }).format(today).toUpperCase()}</p>
           <h2>{currentLanguage==='pt' ? 'Bom dia. Veja o que precisa de você.' : "Good morning. Here's what needs you."}</h2>
         </div>
-        <div className="stat-card"><strong>{pendingAmount.toLocaleString(currentLanguage==='pt'?'pt-PT':'en-US', { style: 'currency', currency: 'USD' })}</strong><span>{tr('pending')}</span></div>
+        <div className="stat-card"><strong>{pendingMoneyLabel(pendingPayments)}</strong><span>{tr('pending')}</span></div>
       </section>
 
       <section className="quick-card">
@@ -627,7 +653,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
 
       <div className="section-heading up-next"><h2>{tr('upNext')}</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> Organize my plan</button></div>
       {nextTasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} disabled={busyTaskId === task.id} />)}
-      <div className="summary-line">{tasks.filter(t => t.status === 'open').length} {tr('open').toLowerCase()} · {pendingAmount.toLocaleString(currentLanguage==='pt'?'pt-PT':'en-US', { style: 'currency', currency: 'USD' })} {tr('pending')}</div>
+      <div className="summary-line">{tasks.filter(t => t.status === 'open').length} {tr('open').toLowerCase()} · {pendingMoneyLabel(pendingPayments)} {tr('pending')}</div>
     </div>
   )
 }
@@ -727,7 +753,7 @@ function formatDate(value: string) {
   const date = new Date(value + 'T00:00:00')
   if (value === iso(today)) return tr('today')
   if (value === addDays(1)) return tr('tomorrow')
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString(currentLanguage === 'pt' ? 'pt-PT' : 'en-US', { month: 'short', day: 'numeric' })
 }
 
 export default App
