@@ -241,22 +241,54 @@ function App() {
   }
 
   const createPlan = () => {
-    const normalized = quickText.toLowerCase()
-    if (!normalized.trim()) {
+    const normalized = quickText.trim().toLowerCase()
+    if (!normalized) {
       setPlan(examplePlan)
-    } else {
-      const generated: Task[] = []
-      if (normalized.includes('maria') || normalized.includes('payment') || normalized.includes('pagamento')) {
-        generated.push({ ...examplePlan[0], id: crypto.randomUUID() })
-      }
-      if (normalized.includes('pedro') || normalized.includes('proposal') || normalized.includes('proposta')) {
-        generated.push({ ...examplePlan[1], id: crypto.randomUUID() })
-      }
-      if (normalized.includes('john') || normalized.includes('website') || normalized.includes('site')) {
-        generated.push({ ...examplePlan[2], id: crypto.randomUUID() })
-      }
-      setPlan(generated.length ? generated : examplePlan)
+      setView('quick-add')
+      return
     }
+
+    const generated: Task[] = []
+    const hasPayment = /\b(cobrar|receber|pagamento|pagar|payment|collect|invoice|fatura|paid|pay)\b/i.test(quickText)
+
+    const addIfMissing = (task: Task) => {
+      if (!generated.some(item => item.client.toLowerCase() === task.client.toLowerCase() && item.title === task.title)) {
+        generated.push({ ...task, id: crypto.randomUUID() })
+      }
+    }
+
+    if (/\bmaria\b/i.test(quickText)) {
+      addIfMissing({ ...examplePlan[0], title: hasPayment ? 'Follow up payment' : 'Follow up with client', id: crypto.randomUUID() })
+    }
+    if (/\bpedro\b/i.test(quickText)) {
+      addIfMissing({ ...examplePlan[1], title: /proposal|proposta/i.test(quickText) ? 'Send proposal' : 'Follow up with client', id: crypto.randomUUID() })
+    }
+    if (/\b(john|joão|joao)\b/i.test(quickText)) {
+      addIfMissing({ ...examplePlan[2], title: /website|site/i.test(quickText) ? 'Deliver website' : 'Complete client work', id: crypto.randomUUID() })
+    }
+
+    if (!generated.length) {
+      const chunks = quickText.split(/\s*(?:,|;|\band\b|\be\b)\s*/i).map(part => part.trim()).filter(Boolean)
+      chunks.slice(0, 6).forEach((chunk, index) => {
+        const clientMatch = chunk.match(/\b(?:for|from|do|da|de)\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'-]*)/i)
+        const client = clientMatch?.[1] ?? 'Client'
+        const title = chunk.replace(/\b(?:for|from|do|da|de)\s+[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'-]*/i, '').trim()
+        const dueDate = /tomorrow|amanhã/i.test(chunk) ? addDays(1)
+          : /friday|sexta/i.test(chunk) ? addDays((5 - today.getDay() + 7) % 7 || 7)
+          : /monday|segunda/i.test(chunk) ? addDays((1 - today.getDay() + 7) % 7 || 7)
+          : addDays(0)
+        generated.push({
+          id: crypto.randomUUID(),
+          title: title || 'Client task ' + (index + 1),
+          client,
+          dueDate,
+          priority: hasPayment ? 'high' : 'medium',
+          status: 'open',
+        })
+      })
+    }
+
+    setPlan(generated.length ? generated : examplePlan)
     setView('quick-add')
   }
 
