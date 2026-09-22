@@ -293,17 +293,29 @@ function App() {
   }
 
   const createPlan = async () => {
-    const normalized = quickText.trim().toLowerCase()
-    if (!normalized) { setPlan(examplePlan); setPlanPayments([]); setView('quick-add'); return }
+    const input = quickText.trim()
+    if (!input) {
+      setPlan([])
+      setPlanPayments([])
+      setTasksError(currentLanguage === 'pt' ? 'Escreva pelo menos uma tarefa ou pagamento para criar um plano.' : 'Describe at least one task or payment to create a plan.')
+      return
+    }
+    if (!user) {
+      setTasksError(currentLanguage === 'pt' ? 'Entre na sua conta para usar a IA. O texto fica guardado nesta tela.' : 'Sign in to use AI. Your text will stay in this screen.')
+      setAuthMode('login')
+      setAuthOpen(true)
+      return
+    }
+    const normalized = input.toLowerCase()
     setAiLoading(true)
     setTasksError('')
     try {
       if (supabase && user) {
-        const { data, error } = await supabase.functions.invoke('quick-add', { body: { text: quickText.trim(), today: iso(today), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, language } })
+        const { data, error } = await supabase.functions.invoke('quick-add', { body: { text: input, today: iso(today), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, language } })
         if (error) throw error
         const items = (data?.items ?? []) as QuickAddItem[]
         if (items.length > 0) {
-          const clientNames = Array.from(quickText.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
+          const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
           const normalizedName = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
           const exactClient = (value: string) => {
             const match = clientNames.find(name => normalizedName(name) === normalizedName(value))
@@ -321,15 +333,6 @@ function App() {
           return
         }
       }
-      const generated: Task[] = []
-      const hasPayment = /\b(cobrar|receber|pagamento|pagar|payment|collect|invoice|fatura|paid|pay)\b/i.test(quickText)
-      const addIfMissing = (task: Task) => { if (!generated.some(item => item.client.toLowerCase() === task.client.toLowerCase() && item.title === task.title)) generated.push({ ...task, id: crypto.randomUUID() }) }
-      if (/\bmaria\b/i.test(quickText)) addIfMissing({ ...examplePlan[0], title: hasPayment ? 'Follow up payment' : 'Follow up with client', id: crypto.randomUUID() })
-      if (/\bpedro\b/i.test(quickText)) addIfMissing({ ...examplePlan[1], title: /proposal|proposta/i.test(quickText) ? 'Send proposal' : 'Follow up with client', id: crypto.randomUUID() })
-      if (/\b(john|joão|joao)\b/i.test(quickText)) addIfMissing({ ...examplePlan[2], title: /website|site/i.test(quickText) ? 'Deliver website' : 'Complete client work', id: crypto.randomUUID() })
-      setPlan(generated.length ? generated : examplePlan)
-      setPlanPayments([])
-      setView('quick-add')
     } catch (error) {
       console.error('LifeDue AI Quick Add failed:', error)
       setTasksError(currentLanguage === 'pt' ? 'A IA não está disponível agora. Tente novamente.' : 'AI Quick Add is unavailable right now. Please try again.')
@@ -495,6 +498,8 @@ function App() {
                 todayTasks={todayTasks}
                 pendingAmount={pendingAmount}
                 pendingPayments={payments}
+                quickText={quickText}
+                onQuickTextChange={setQuickText}
                 onToggle={toggleTask}
                 plan={plan}
                 onCreatePlan={createPlan}
@@ -583,12 +588,14 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId, aiLoading }: {
+function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments, quickText, onQuickTextChange, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId, aiLoading }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
   pendingAmount: number
   pendingPayments: Payment[]
+  quickText: string
+  onQuickTextChange: (value: string) => void
   onToggle: (id: string) => void
   plan: Task[]
   onCreatePlan: () => void
@@ -597,7 +604,6 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
   busyTaskId: string | null
   aiLoading: boolean
 }) {
-  const [text, setText] = useState('')
   const nextTasks = tasks.filter(t => t.status === 'open' && t.dueDate > iso(today)).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 3)
 
   return (
@@ -615,7 +621,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
         <div className="quick-main">
           <div className="quick-label">{tr('aiQuick')}</div>
           <h3>{tr('quickQuestion')}</h3>
-          <textarea value={text} onChange={e => setText(e.target.value)} placeholder="e.g. Deliver John's website Friday, collect $200 from Maria tomorrow, and send Pedro the proposal Monday." />
+          <textarea value={quickText} onChange={e => onQuickTextChange(e.target.value)} placeholder="e.g. Deliver John's website Friday, collect $200 from Maria tomorrow, and send Pedro the proposal Monday." />
           <div className="quick-actions">
             <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : 'Create plan'} {!aiLoading && <ArrowRight size={17} />}</button>
             <span>{tr('plain')}</span>
