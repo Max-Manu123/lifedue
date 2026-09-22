@@ -15,6 +15,15 @@ import {
   Sparkles,
   Users,
   X,
+  MessageSquareText,
+  Settings,
+  UserCircle2,
+  Globe2,
+  Sun,
+  Moon,
+  Monitor,
+  LogOut,
+  CheckCircle,
 } from 'lucide-react'
 import type { Client, Payment, Priority, QuickAddItem, Task } from './types'
 import type { User, FunctionsHttpError } from '@supabase/supabase-js'
@@ -22,9 +31,9 @@ import { supabase } from './lib/supabase'
 import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createClient, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 
-type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
+type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner' | 'feedback' | 'settings'
 type Language='en'|'pt'
-const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',saveToLifeDue:'Save to LifeDue',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',openPlanner:'Open AI Planner',addPlanToLifeDue:'Add to LifeDue',currencySummary:'By currency',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',addClient:'Add client',addClientTitle:'Add a client',clientName:'Client name',clientNamePlaceholder:'e.g. Maria',noClientName:'Enter a client name.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',savePlan:'Save plan',plannerReady:'Plan ready',plannerOpen:'open tasks',plannerOverdue:'overdue',plannerToday:'due today',plannerUpcoming:'upcoming',plannerEmptyTitle:'No open work to plan',plannerEmptyDesc:'Add a task first and LifeDue will organize it into a practical order.',plannerFallback:'Showing a local order. Sign in to use AI prioritization.',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.',todayFocus:'Here is what needs your attention.',focusTitle:'Today\'s focus',openWork:'Open work',dueToday:'Due today',urgent:'Urgent',toCollect:'To collect',allClearToday:'You\'re clear for today',allClearDesc:'No overdue work or payments need attention right now.',paymentAttention:'Payment follow-ups',paymentAttentionDesc:'Money that still needs to move.',noPaymentAttention:'No payment follow-ups due.',upcomingWork:'Coming up next',upcomingDesc:'The next work after today.',noUpcoming:'Nothing else is scheduled yet.',viewAllTasks:'View all tasks',viewPayments:'View payments',addTaskToday:'Add a task',addPaymentToday:'Add payment',markPaidToday:'Mark paid',tasksHeadline:'Everything you need to deliver.',tasksDescription:'Keep work visible, prioritize what matters, and close tasks as you finish them.',taskSearch:'Search tasks or clients',taskSummary:'taskSummary',taskProgress:'complete',noTasks:'No tasks here',noTasksDesc:'Add a task or change the filter to see more work.',clearSearch:'Clear search',dueSoon:'Due soon',overdueTasks:'Overdue',todayTasks:'Today',upcomingTasks:'Upcoming',completedTasks:'Completed',priorityFilter:'Priority',allPriorities:'All priorities',clientsHeadline:'A clear view of your client work.',clientsDescription:'See who you work with, how much work is open, and what is still pending.',paymentsHeadline:'Keep every payment moving.',paymentsDescription:'Track money due by client, spot overdue payments, and mark payments as settled.',paymentOverview:'Payment overview',paymentPendingCount:'Pending',paymentOverdueCount:'Overdue',paymentPaidCount:'Paid',paymentPendingAmount:'Outstanding',paymentSearch:'Search by client',paymentFilter:'Filter',paymentAll:'All payments',paymentPending:'Pending',paymentOverdue:'Overdue',paymentPaid:'Paid',paymentDue:'Due',paymentOverdueLabel:'Overdue',paymentNoResults:'No payments match this filter.',paymentNoResultsDesc:'Try another filter or add a payment.',paymentHistory:'Payment history',paymentTotal:'Total',currency:'Currency',usd:'USD',eur:'EUR',aoa:'AOA',newPayment:'New payment',addPaymentTitle:'Add a payment',amount:'Amount',addPayment:'Add payment',addTaskTitle:'Add a task'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',saveToLifeDue:'Guardar no LifeDue',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',openPlanner:'Abrir Planejador IA',addPlanToLifeDue:'Adicionar ao LifeDue',currencySummary:'Resumo por moeda',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',addClient:'Adicionar cliente',addClientTitle:'Adicionar cliente',clientName:'Nome do cliente',clientNamePlaceholder:'ex.: Maria',noClientName:'Digite o nome de um cliente.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',savePlan:'Guardar plano',plannerReady:'Plano pronto',plannerOpen:'tarefas abertas',plannerOverdue:'atrasadas',plannerToday:'vencem hoje',plannerUpcoming:'a seguir',plannerEmptyTitle:'Nenhum trabalho aberto para organizar',plannerEmptyDesc:'Adicione uma tarefa primeiro e o LifeDue vai organizá-la numa ordem prática.',plannerFallback:'A mostrar uma ordem local. Entre na conta para usar a priorização por IA.',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.',todayFocus:'Veja o que precisa da sua atenção.',focusTitle:'Foco de hoje',openWork:'Trabalho aberto',dueToday:'Vence hoje',urgent:'Urgente',toCollect:'A receber',allClearToday:'Tudo tranquilo por hoje',allClearDesc:'Nenhum trabalho atrasado ou pagamento precisa de atenção agora.',paymentAttention:'Cobranças a acompanhar',paymentAttentionDesc:'Dinheiro que ainda precisa entrar.',noPaymentAttention:'Nenhuma cobrança pendente para acompanhar.',upcomingWork:'A seguir',upcomingDesc:'O próximo trabalho depois de hoje.',noUpcoming:'Ainda não há nada agendado.',viewAllTasks:'Ver todas as tarefas',viewPayments:'Ver pagamentos',addTaskToday:'Adicionar tarefa',addPaymentToday:'Adicionar pagamento',markPaidToday:'Marcar como pago',tasksHeadline:'Tudo o que você precisa entregar.',tasksDescription:'Mantenha o trabalho visível, priorize o que importa e conclua tarefas à medida que avança.',taskSearch:'Pesquisar tarefas ou clientes',taskSummary:'taskSummary',taskProgress:'concluída',noTasks:'Nenhuma tarefa aqui',noTasksDesc:'Adicione uma tarefa ou altere o filtro para ver mais trabalho.',clearSearch:'Limpar pesquisa',dueSoon:'Próximas',overdueTasks:'Atrasadas',todayTasks:'Hoje',upcomingTasks:'A seguir',completedTasks:'Concluídas',priorityFilter:'Prioridade',allPriorities:'Todas as prioridades',clientsHeadline:'Uma visão clara do seu trabalho com clientes.',clientsDescription:'Veja com quem trabalha, quanto trabalho está aberto e o que ainda está pendente.',paymentsHeadline:'Mantenha cada pagamento em andamento.',paymentsDescription:'Acompanhe o dinheiro a receber por cliente, veja atrasados e marque pagamentos como concluídos.',paymentOverview:'Resumo dos pagamentos',paymentPendingCount:'Pendentes',paymentOverdueCount:'Atrasados',paymentPaidCount:'Pagos',paymentPendingAmount:'A receber',paymentSearch:'Pesquisar por cliente',paymentFilter:'Filtro',paymentAll:'Todos',paymentPending:'Pendentes',paymentOverdue:'Atrasados',paymentPaid:'Pagos',paymentDue:'Vence',paymentOverdueLabel:'Atrasado',paymentNoResults:'Nenhum pagamento corresponde a este filtro.',paymentNoResultsDesc:'Tente outro filtro ou adicione um pagamento.',paymentHistory:'Histórico de pagamentos',paymentTotal:'Total',currency:'Moeda',usd:'USD',eur:'EUR',aoa:'AOA',newPayment:'Novo pagamento',addPaymentTitle:'Adicionar pagamento',amount:'Valor',addPayment:'Adicionar pagamento',addTaskTitle:'Adicionar tarefa'}}
+const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',saveToLifeDue:'Save to LifeDue',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',openPlanner:'Open AI Planner',addPlanToLifeDue:'Add to LifeDue',currencySummary:'By currency',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',addClient:'Add client',addClientTitle:'Add a client',clientName:'Client name',clientNamePlaceholder:'e.g. Maria',noClientName:'Enter a client name.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',savePlan:'Save plan',plannerReady:'Plan ready',plannerOpen:'open tasks',plannerOverdue:'overdue',plannerToday:'due today',plannerUpcoming:'upcoming',plannerEmptyTitle:'No open work to plan',plannerEmptyDesc:'Add a task first and LifeDue will organize it into a practical order.',plannerFallback:'Showing a local order. Sign in to use AI prioritization.',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.',todayFocus:'Here is what needs your attention.',focusTitle:'Today\'s focus',openWork:'Open work',dueToday:'Due today',urgent:'Urgent',toCollect:'To collect',allClearToday:'You\'re clear for today',allClearDesc:'No overdue work or payments need attention right now.',paymentAttention:'Payment follow-ups',paymentAttentionDesc:'Money that still needs to move.',noPaymentAttention:'No payment follow-ups due.',upcomingWork:'Coming up next',upcomingDesc:'The next work after today.',noUpcoming:'Nothing else is scheduled yet.',viewAllTasks:'View all tasks',viewPayments:'View payments',addTaskToday:'Add a task',addPaymentToday:'Add payment',markPaidToday:'Mark paid',tasksHeadline:'Everything you need to deliver.',tasksDescription:'Keep work visible, prioritize what matters, and close tasks as you finish them.',taskSearch:'Search tasks or clients',taskSummary:'taskSummary',taskProgress:'complete',noTasks:'No tasks here',noTasksDesc:'Add a task or change the filter to see more work.',clearSearch:'Clear search',dueSoon:'Due soon',overdueTasks:'Overdue',todayTasks:'Today',upcomingTasks:'Upcoming',completedTasks:'Completed',priorityFilter:'Priority',allPriorities:'All priorities',clientsHeadline:'A clear view of your client work.',clientsDescription:'See who you work with, how much work is open, and what is still pending.',paymentsHeadline:'Keep every payment moving.',paymentsDescription:'Track money due by client, spot overdue payments, and mark payments as settled.',paymentOverview:'Payment overview',paymentPendingCount:'Pending',paymentOverdueCount:'Overdue',paymentPaidCount:'Paid',paymentPendingAmount:'Outstanding',paymentSearch:'Search by client',paymentFilter:'Filter',paymentAll:'All payments',paymentPending:'Pending',paymentOverdue:'Overdue',paymentPaid:'Paid',paymentDue:'Due',paymentOverdueLabel:'Overdue',paymentNoResults:'No payments match this filter.',paymentNoResultsDesc:'Try another filter or add a payment.',paymentHistory:'Payment history',paymentTotal:'Total',currency:'Currency',usd:'USD',eur:'EUR',aoa:'AOA',newPayment:'New payment',addPaymentTitle:'Add a payment',amount:'Amount',addPayment:'Add payment',addTaskTitle:'Add a task',settings:'Settings',feedback:'Feedback',account:'Account',preferences:'Preferences',appearance:'Appearance',theme:'Theme',themeSystem:'System',themeLight:'Light',themeDark:'Dark',language:'Language',languageDesc:'Choose how LifeDue is displayed.',themeDesc:'Choose the appearance that feels right for you.',accountDesc:'Your LifeDue account and plan.',email:'Email',plan:'Plan',freePlanDesc:'Free plan · no payment required',security:'Security',password:'Password',changePassword:'Change password',installApp:'Install LifeDue',installAppDesc:'Use LifeDue like an app on your phone or desktop.',openOnboarding:'Review onboarding',signOut:'Sign out',settingsDesc:'Keep your account and preferences under control.',feedbackTitle:'Help us improve LifeDue',feedbackDesc:'Tell us what is working, what is confusing, or what you want next.',feedbackType:'What is this about?',feedbackTypeBug:'Bug or problem',feedbackTypeIdea:'Feature idea',feedbackTypeGeneral:'General feedback',feedbackTypeOther:'Other',feedbackMessage:'Your feedback',feedbackPlaceholder:'Tell us what happened or what you would like to see…',feedbackRating:'How is LifeDue feeling so far?',feedbackRatingGreat:'Great',feedbackRatingOkay:'Could be better',feedbackRatingPoor:'I am struggling',sendFeedback:'Send feedback',feedbackSent:'Thanks — your feedback was saved.',feedbackHint:'Your feedback helps us decide what to improve next.',backToWork:'Back to work'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',saveToLifeDue:'Guardar no LifeDue',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',openPlanner:'Abrir Planejador IA',addPlanToLifeDue:'Adicionar ao LifeDue',currencySummary:'Resumo por moeda',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',addClient:'Adicionar cliente',addClientTitle:'Adicionar cliente',clientName:'Nome do cliente',clientNamePlaceholder:'ex.: Maria',noClientName:'Digite o nome de um cliente.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',savePlan:'Guardar plano',plannerReady:'Plano pronto',plannerOpen:'tarefas abertas',plannerOverdue:'atrasadas',plannerToday:'vencem hoje',plannerUpcoming:'a seguir',plannerEmptyTitle:'Nenhum trabalho aberto para organizar',plannerEmptyDesc:'Adicione uma tarefa primeiro e o LifeDue vai organizá-la numa ordem prática.',plannerFallback:'A mostrar uma ordem local. Entre na conta para usar a priorização por IA.',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.',todayFocus:'Veja o que precisa da sua atenção.',focusTitle:'Foco de hoje',openWork:'Trabalho aberto',dueToday:'Vence hoje',urgent:'Urgente',toCollect:'A receber',allClearToday:'Tudo tranquilo por hoje',allClearDesc:'Nenhum trabalho atrasado ou pagamento precisa de atenção agora.',paymentAttention:'Cobranças a acompanhar',paymentAttentionDesc:'Dinheiro que ainda precisa entrar.',noPaymentAttention:'Nenhuma cobrança pendente para acompanhar.',upcomingWork:'A seguir',upcomingDesc:'O próximo trabalho depois de hoje.',noUpcoming:'Ainda não há nada agendado.',viewAllTasks:'Ver todas as tarefas',viewPayments:'Ver pagamentos',addTaskToday:'Adicionar tarefa',addPaymentToday:'Adicionar pagamento',markPaidToday:'Marcar como pago',tasksHeadline:'Tudo o que você precisa entregar.',tasksDescription:'Mantenha o trabalho visível, priorize o que importa e conclua tarefas à medida que avança.',taskSearch:'Pesquisar tarefas ou clientes',taskSummary:'taskSummary',taskProgress:'concluída',noTasks:'Nenhuma tarefa aqui',noTasksDesc:'Adicione uma tarefa ou altere o filtro para ver mais trabalho.',clearSearch:'Limpar pesquisa',dueSoon:'Próximas',overdueTasks:'Atrasadas',todayTasks:'Hoje',upcomingTasks:'A seguir',completedTasks:'Concluídas',priorityFilter:'Prioridade',allPriorities:'Todas as prioridades',clientsHeadline:'Uma visão clara do seu trabalho com clientes.',clientsDescription:'Veja com quem trabalha, quanto trabalho está aberto e o que ainda está pendente.',paymentsHeadline:'Mantenha cada pagamento em andamento.',paymentsDescription:'Acompanhe o dinheiro a receber por cliente, veja atrasados e marque pagamentos como concluídos.',paymentOverview:'Resumo dos pagamentos',paymentPendingCount:'Pendentes',paymentOverdueCount:'Atrasados',paymentPaidCount:'Pagos',paymentPendingAmount:'A receber',paymentSearch:'Pesquisar por cliente',paymentFilter:'Filtro',paymentAll:'Todos',paymentPending:'Pendentes',paymentOverdue:'Atrasados',paymentPaid:'Pagos',paymentDue:'Vence',paymentOverdueLabel:'Atrasado',paymentNoResults:'Nenhum pagamento corresponde a este filtro.',paymentNoResultsDesc:'Tente outro filtro ou adicione um pagamento.',paymentHistory:'Histórico de pagamentos',paymentTotal:'Total',currency:'Moeda',usd:'USD',eur:'EUR',aoa:'AOA',newPayment:'Novo pagamento',addPaymentTitle:'Adicionar pagamento',amount:'Valor',addPayment:'Adicionar pagamento',addTaskTitle:'Adicionar tarefa',settings:'Definições',feedback:'Feedback',account:'Conta',preferences:'Preferências',appearance:'Aparência',theme:'Tema',themeSystem:'Sistema',themeLight:'Claro',themeDark:'Escuro',language:'Idioma',languageDesc:'Escolha como o LifeDue é apresentado.',themeDesc:'Escolha a aparência ideal para si.',accountDesc:'A sua conta e o seu plano LifeDue.',email:'Email',plan:'Plano',freePlanDesc:'Plano grátis · sem pagamento necessário',security:'Segurança',password:'Palavra-passe',changePassword:'Alterar palavra-passe',installApp:'Baixar LifeDue',installAppDesc:'Use o LifeDue como uma aplicação no telemóvel ou computador.',openOnboarding:'Ver onboarding novamente',signOut:'Sair',settingsDesc:'Mantenha a sua conta e preferências sob controlo.',feedbackTitle:'Ajude-nos a melhorar o LifeDue',feedbackDesc:'Diga-nos o que funciona, o que está confuso ou o que gostaria de ver a seguir.',feedbackType:'Sobre o quê?',feedbackTypeBug:'Bug ou problema',feedbackTypeIdea:'Sugestão de funcionalidade',feedbackTypeGeneral:'Feedback geral',feedbackTypeOther:'Outro',feedbackMessage:'O seu feedback',feedbackPlaceholder:'Conte-nos o que aconteceu ou o que gostaria de ver…',feedbackRating:'Como está a ser usar o LifeDue?',feedbackRatingGreat:'Muito bom',feedbackRatingOkay:'Pode melhorar',feedbackRatingPoor:'Estou com dificuldades',sendFeedback:'Enviar feedback',feedbackSent:'Obrigado — o seu feedback foi guardado.',feedbackHint:'O seu feedback ajuda-nos a decidir o que melhorar a seguir.',backToWork:'Voltar ao trabalho'}}
 let currentLanguage:Language='en'
 const tr=(key:keyof typeof trMap.en)=>trMap[currentLanguage][key]
 
@@ -106,6 +115,15 @@ function App() {
   const [language,setLanguage]=useState<Language>(()=>(localStorage.getItem('lifedue-language') as Language)||'en')
   currentLanguage=language
   useEffect(()=>localStorage.setItem('lifedue-language',language),[language])
+  const [theme, setTheme] = useState<'system' | 'light' | 'dark'>(() => (localStorage.getItem('lifedue-theme') as 'system' | 'light' | 'dark') || 'system')
+  const [feedbackType, setFeedbackType] = useState<'bug' | 'idea' | 'general' | 'other'>('general')
+  const [feedbackRating, setFeedbackRating] = useState<'great' | 'okay' | 'poor' | ''>('')
+  const [feedbackMessage, setFeedbackMessage] = useState('')
+  const [feedbackSent, setFeedbackSent] = useState(false)
+  useEffect(() => {
+    localStorage.setItem('lifedue-theme', theme)
+    document.documentElement.dataset.theme = theme
+  }, [theme])
   const [view, setView] = useState<View>('home')
   const [tasks, setTasks] = useState<Task[]>(() => uniqueTasks(load('lifedue-tasks', [])))
   const [clients, setClients] = useState<Client[]>(() => load('lifedue-clients', []))
@@ -489,8 +507,24 @@ function App() {
     }
   }
 
+  const submitFeedback = () => {
+    const entry = {
+      type: feedbackType,
+      rating: feedbackRating,
+      message: feedbackMessage.trim(),
+      createdAt: new Date().toISOString(),
+      email: user?.email ?? null,
+    }
+    const existing = load<typeof entry[]>('lifedue-feedback', [])
+    localStorage.setItem('lifedue-feedback', JSON.stringify([entry, ...existing].slice(0, 50)))
+    setFeedbackSent(true)
+    setFeedbackMessage('')
+  }
+
+  const resolvedTheme = theme === 'system' ? 'system' : theme
+
   return (
-    <div className="app-shell">
+    <div className={theme === 'dark' ? 'app-shell theme-dark' : 'app-shell'} data-theme={resolvedTheme}>
       {view === 'home' ? (
         <Landing onStart={() => navigate('quick-add')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} language={language} setLanguage={setLanguage} />
       ) : (
@@ -509,6 +543,10 @@ function App() {
             </nav>
             <div className="sidebar-bottom">
               <button className="sidebar-add" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button>
+              <div className="sidebar-secondary-nav">
+                <button className={view === 'feedback' ? 'sidebar-secondary active' : 'sidebar-secondary'} onClick={() => navigate('feedback')}><MessageSquareText size={16} /> {tr('feedback')}</button>
+                <button className={view === 'settings' ? 'sidebar-secondary active' : 'sidebar-secondary'} onClick={() => navigate('settings')}><Settings size={16} /> {tr('settings')}</button>
+              </div>
               <div className="free-badge">{tr('freePlan')}</div>
             </div>
           </aside>
@@ -518,9 +556,9 @@ function App() {
               <button className="icon-button mobile-only" onClick={() => setMenuOpen(!menuOpen)} aria-label={tr("menu")}><Menu size={21} /></button>
               <div>
                 <div className="eyebrow">{tr('workspace')}</div>
-                <h1>{view === 'quick-add' ? tr('today') : view === 'tasks' ? tr('tasks') : view === 'clients' ? tr('clients') : view === 'payments' ? tr('payments') : tr('planner')}</h1>
+                <h1>{view === 'quick-add' ? tr('today') : view === 'tasks' ? tr('tasks') : view === 'clients' ? tr('clients') : view === 'payments' ? tr('payments') : view === 'planner' ? tr('planner') : view === 'feedback' ? tr('feedback') : tr('settings')}</h1>
               </div>
-              <div className="topbar-actions">{user ? <button className="account-button" title={user.email ?? ''} onClick={handleSignOut}>{currentLanguage==='pt' ? 'Sair' : 'Sign out'}</button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{currentLanguage==='pt' ? 'Entrar' : 'Sign in'}</button>}<InstallPwaButton language={language} /><div className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div></div>
+              <div className="topbar-actions">{user ? <button className="account-button" title={user.email ?? ''} onClick={() => navigate('settings')}><UserCircle2 size={17} /> <span className="account-button-label">{user.email?.split('@')[0] || (currentLanguage==='pt' ? 'Conta' : 'Account')}</span></button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{currentLanguage==='pt' ? 'Entrar' : 'Sign in'}</button>}<InstallPwaButton language={language} /><div className="language-switcher desktop-language" aria-label={tr('language')}><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div></div>
             </header>
 
             <div key={view} className={"route-view route-" + view}>
@@ -557,6 +595,26 @@ function App() {
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
             {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} onAdd={() => setShowAddClient(true)} />}
             {view === 'payments' && <PaymentsView payments={payments} onMarkPaid={markPaid} onAdd={() => setShowAddPayment(true)} />}
+            {view === 'feedback' && <FeedbackView
+              type={feedbackType}
+              rating={feedbackRating}
+              message={feedbackMessage}
+              sent={feedbackSent}
+              onType={value => { setFeedbackType(value); setFeedbackSent(false) }}
+              onRating={value => { setFeedbackRating(value); setFeedbackSent(false) }}
+              onMessage={value => { setFeedbackMessage(value); setFeedbackSent(false) }}
+              onSubmit={submitFeedback}
+              onBack={() => navigate('quick-add')}
+            />}
+            {view === 'settings' && <SettingsView
+              user={user}
+              language={language}
+              setLanguage={setLanguage}
+              theme={theme}
+              setTheme={setTheme}
+              onSignOut={handleSignOut}
+              onFeedback={() => navigate('feedback')}
+            />}
             {view === 'planner' && (
               <PlannerView
                 plan={plan}
@@ -640,6 +698,110 @@ function App() {
       {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
     </div>
   )
+}
+
+
+function FeedbackView({ type, rating, message, sent, onType, onRating, onMessage, onSubmit, onBack }: {
+  type: 'bug' | 'idea' | 'general' | 'other'
+  rating: 'great' | 'okay' | 'poor' | ''
+  message: string
+  sent: boolean
+  onType: (value: 'bug' | 'idea' | 'general' | 'other') => void
+  onRating: (value: 'great' | 'okay' | 'poor') => void
+  onMessage: (value: string) => void
+  onSubmit: () => void
+  onBack: () => void
+}) {
+  const typeOptions = [
+    { value: 'bug' as const, label: tr('feedbackTypeBug') },
+    { value: 'idea' as const, label: tr('feedbackTypeIdea') },
+    { value: 'general' as const, label: tr('feedbackTypeGeneral') },
+    { value: 'other' as const, label: tr('feedbackTypeOther') },
+  ]
+  return <div className="content-stack feedback-page">
+    <div className="page-intro">
+      <div><p className="section-kicker">{tr('feedback')}</p><h2>{tr('feedbackTitle')}</h2><p className="page-description">{tr('feedbackDesc')}</p></div>
+      <button className="secondary-button" onClick={onBack}><ArrowRight size={15} className="back-arrow" /> {tr('backToWork')}</button>
+    </div>
+    <section className="feedback-card">
+      <div className="feedback-card-header"><div className="feedback-icon"><MessageSquareText size={20} /></div><div><strong>{tr('feedbackHint')}</strong><p>{tr('feedbackDesc')}</p></div></div>
+      <div className="feedback-field">
+        <label>{tr('feedbackType')}</label>
+        <div className="feedback-options">
+          {typeOptions.map(option => <button key={option.value} type="button" className={type === option.value ? 'feedback-option active' : 'feedback-option'} onClick={() => onType(option.value)}>{option.label}</button>)}
+        </div>
+      </div>
+      <div className="feedback-field">
+        <label>{tr('feedbackRating')}</label>
+        <div className="feedback-rating">
+          {([
+            ['great', '😊', tr('feedbackRatingGreat')],
+            ['okay', '😐', tr('feedbackRatingOkay')],
+            ['poor', '😕', tr('feedbackRatingPoor')],
+          ] as const).map(([value, emoji, label]) => <button key={value} type="button" className={rating === value ? 'feedback-rating-option active' : 'feedback-rating-option'} onClick={() => onRating(value)}><span>{emoji}</span><small>{label}</small></button>)}
+        </div>
+      </div>
+      <div className="feedback-field">
+        <label htmlFor="lifedue-feedback-message">{tr('feedbackMessage')}</label>
+        <textarea id="lifedue-feedback-message" value={message} onChange={event => onMessage(event.target.value)} placeholder={tr('feedbackPlaceholder')} maxLength={1200} />
+        <div className="feedback-counter">{message.length}/1200</div>
+      </div>
+      <div className="feedback-submit-row">
+        <span>{sent ? <><CheckCircle size={15} /> {tr('feedbackSent')}</> : ''}</span>
+        <button className="primary-button" disabled={!message.trim()} onClick={onSubmit}><MessageSquareText size={16} /> {tr('sendFeedback')}</button>
+      </div>
+    </section>
+  </div>
+}
+
+function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut, onFeedback }: {
+  user: User | null
+  language: Language
+  setLanguage: (value: Language) => void
+  theme: 'system' | 'light' | 'dark'
+  setTheme: (value: 'system' | 'light' | 'dark') => void
+  onSignOut: () => void
+  onFeedback: () => void
+}) {
+  return <div className="content-stack settings-page">
+    <div className="page-intro">
+      <div><p className="section-kicker">{tr('account')}</p><h2>{tr('settings')}</h2><p className="page-description">{tr('settingsDesc')}</p></div>
+    </div>
+
+    <section className="settings-card account-card">
+      <div className="settings-section-head"><div className="settings-icon"><UserCircle2 size={19} /></div><div><h3>{tr('account')}</h3><p>{tr('accountDesc')}</p></div></div>
+      <div className="account-summary">
+        <div className="account-avatar">{(user?.email?.[0] || 'L').toUpperCase()}</div>
+        <div className="account-details"><strong>{user?.email || (currentLanguage === 'pt' ? 'Conta local' : 'Local account')}</strong><span>{tr('plan')} · {tr('freePlanDesc')}</span></div>
+        <span className="settings-plan-badge">{tr('freePlan')}</span>
+      </div>
+    </section>
+
+    <section className="settings-card">
+      <div className="settings-section-head"><div className="settings-icon"><Globe2 size={19} /></div><div><h3>{tr('preferences')}</h3><p>{tr('languageDesc')}</p></div></div>
+      <div className="settings-row"><div><strong>{tr('language')}</strong><span>{tr('languageDesc')}</span></div><div className="segmented-control"><button className={language === 'en' ? 'active' : ''} onClick={() => setLanguage('en')}>English</button><button className={language === 'pt' ? 'active' : ''} onClick={() => setLanguage('pt')}>Português</button></div></div>
+      <div className="settings-row"><div><strong>{tr('theme')}</strong><span>{tr('themeDesc')}</span></div><div className="theme-options">
+        <button className={theme === 'system' ? 'active' : ''} onClick={() => setTheme('system')}><Monitor size={15} />{tr('themeSystem')}</button>
+        <button className={theme === 'light' ? 'active' : ''} onClick={() => setTheme('light')}><Sun size={15} />{tr('themeLight')}</button>
+        <button className={theme === 'dark' ? 'active' : ''} onClick={() => setTheme('dark')}><Moon size={15} />{tr('themeDark')}</button>
+      </div></div>
+    </section>
+
+    <section className="settings-card">
+      <div className="settings-section-head"><div className="settings-icon"><Download size={19} /></div><div><h3>{tr('installApp')}</h3><p>{tr('installAppDesc')}</p></div></div>
+      <div className="settings-action-row"><div><strong>{tr('installApp')}</strong><span>{tr('installAppDesc')}</span></div><InstallPwaButton language={language} /></div>
+    </section>
+
+    <section className="settings-card">
+      <div className="settings-section-head"><div className="settings-icon"><MessageSquareText size={19} /></div><div><h3>{tr('feedback')}</h3><p>{tr('feedbackDesc')}</p></div></div>
+      <div className="settings-action-row"><div><strong>{tr('feedback')}</strong><span>{tr('feedbackHint')}</span></div><button className="secondary-button" onClick={onFeedback}>{tr('feedback')}</button></div>
+    </section>
+
+    <section className="settings-card settings-danger">
+      <div className="settings-section-head"><div className="settings-icon danger-icon"><LogOut size={19} /></div><div><h3>{tr('security')}</h3><p>{tr('security')}</p></div></div>
+      <div className="settings-action-row"><div><strong>{tr('signOut')}</strong><span>{tr('security')}</span></div><button className="danger-button" onClick={onSignOut}><LogOut size={15} /> {tr('signOut')}</button></div>
+    </section>
+  </div>
 }
 
 interface BeforeInstallPromptEvent extends Event {
