@@ -41,6 +41,7 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
     .eq('user_id', user.id)
     .order('due_date', { ascending: true })
   if (error) throw error
+  const seen = new Set<string>()
   return ((data ?? []) as Array<{
     id: string
     amount: number
@@ -55,7 +56,12 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
     currency: payment.currency,
     dueDate: payment.due_date,
     status: payment.status,
-  }))
+  })).filter(payment => {
+    const key = `${payment.client.trim().toLowerCase()}|${payment.amount}|${payment.currency}|${payment.dueDate}|${payment.status}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 export async function createPayment(user: User, payment: Omit<Payment, 'id' | 'status'>): Promise<Payment> {
@@ -111,6 +117,7 @@ export async function fetchTasks(user: User): Promise<Task[]> {
     .order('due_date', { ascending: true })
     .order('created_at', { ascending: true })
   if (error) throw error
+  const seen = new Set<string>()
   return ((data ?? []) as RemoteTask[]).map(task => ({
     id: task.id,
     title: task.title,
@@ -118,7 +125,12 @@ export async function fetchTasks(user: User): Promise<Task[]> {
     dueDate: task.due_date,
     priority: task.priority,
     status: task.status,
-  }))
+  })).filter(task => {
+    const key = `${task.title.trim().toLowerCase()}|${task.client.trim().toLowerCase()}|${task.dueDate}|${task.status}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 async function getOrCreateClient(user: User, name: string): Promise<string> {
