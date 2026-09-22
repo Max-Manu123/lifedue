@@ -1084,7 +1084,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
   const query = search.trim().toLowerCase()
   const filtered = payments.filter(payment => {
     const isOverdue = payment.status === 'pending' && payment.dueDate < todayKey
-    const matchesFilter = filter === 'all' || filter === 'paid' ? payment.status === filter : filter === 'overdue' ? isOverdue : payment.status === 'pending'
+    const matchesFilter = filter === 'all' ? true : filter === 'paid' ? payment.status === 'paid' : filter === 'overdue' ? isOverdue : payment.status === 'pending'
     const matchesSearch = !query || payment.client.toLowerCase().includes(query)
     return matchesFilter && matchesSearch
   }).sort((a, b) => {
