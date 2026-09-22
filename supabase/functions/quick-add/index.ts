@@ -63,7 +63,7 @@ const systemInstruction = [
   '15. Ignore greetings, explanations, opinions, and non-actionable text.',
   '',
   'OUTPUT QUALITY:',
-  '- Return only the structured JSON required by the schema.',
+  '- Return only valid JSON matching this exact shape: {"items":[{"kind":"task"|"payment","title":"string","client":"string","dueDate":"YYYY-MM-DD","priority":"low"|"medium"|"high","amount":number|null,"currency":"USD"|"EUR"|"BRL"|"AOA"|"GBP"|"Other"|null}]}',
   '- Every returned date must be a real calendar date in YYYY-MM-DD.',
   '- Every payment amount must be finite and greater than or equal to zero.',
   '- Do not return duplicate items.',
@@ -137,7 +137,6 @@ async function callGemini(apiKey: string, prompt: string) {
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: {
             responseMimeType: 'application/json',
-            responseSchema: schema,
             temperature: 0.1,
           },
         }),
