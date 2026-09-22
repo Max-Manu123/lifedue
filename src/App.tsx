@@ -535,7 +535,7 @@ function App() {
                 overdue={overdue}
                 todayTasks={todayTasks}
                 pendingAmount={pendingAmount}
-                pendingPayments={payments}
+                pendingPayments={pendingPayments}
                 quickText={quickText}
                 onQuickTextChange={setQuickText}
                 onToggle={toggleTask}
