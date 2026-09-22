@@ -229,6 +229,30 @@ async function getOrCreateClient(user: User, name: string): Promise<string> {
   return created.id
 }
 
+export async function createClient(user: User, name: string): Promise<Client> {
+  requireSupabaseUser(user)
+  const normalized = name.trim()
+  if (!normalized) throw new Error('Client name is required.')
+
+  const { data: existing, error: lookupError } = await supabase!
+    .from('clients')
+    .select('id, name')
+    .eq('user_id', user.id)
+    .ilike('name', normalized)
+    .limit(1)
+    .maybeSingle()
+  if (lookupError) throw lookupError
+  if (existing) return existing as Client
+
+  const { data, error } = await supabase!
+    .from('clients')
+    .insert({ user_id: user.id, name: normalized })
+    .select('id, name')
+    .single()
+  if (error) throw error
+  return data as Client
+}
+
 export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promise<Task[]> {
   requireSupabaseUser(user)
   const rows = []
