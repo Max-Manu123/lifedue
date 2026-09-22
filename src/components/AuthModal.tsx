@@ -194,7 +194,7 @@ export function AuthModal({
               disabled={loading}
               aria-busy={loading}
             >
-              <span className="google-logo" aria-hidden="true">G</span>
+              <span className="google-mark" aria-hidden="true">G</span>
               {loading ? <Loader2 size={17} className="spin" /> : null}
               {pt ? 'Continuar com Google' : 'Continue with Google'}
             </button>

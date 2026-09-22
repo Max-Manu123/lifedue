@@ -17,8 +17,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .landing { min-height: 100vh; max-width: 1180px; margin: 0 auto; padding: 0 28px 55px; }
 .landing-nav { height: 78px; display: flex; align-items: center; justify-content: space-between; }
 .landing-nav-right { display: flex; align-items: center; gap: 10px; }
-.brand { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 800; letter-spacing: -.04em; cursor: pointer; }
-.brand-mark { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: #4f46e5; color: #fff; font-weight: 900; box-shadow: 0 6px 18px rgba(79,70,229,.22); }
+.brand { display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 800; letter-spacing: -.04em; cursor: pointer; }
+.brand-mark { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: #4f46e5; color: #fff; font-weight: 900; box-shadow: 0 6px 18px rgba(79,70,229,.22); flex-shrink: 0; }
 .ghost-button, .text-button { border: 0; background: transparent; color: #475569; display: inline-flex; align-items: center; gap: 7px; font-weight: 700; cursor: pointer; }
 .nav-cta { border: 0; background: #0f172a; color: #fff; border-radius: 9px; padding: 9px 13px; display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 800; cursor: pointer; }
 .nav-cta:hover { background: #1e293b; }
@@ -227,7 +227,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   .plan-item small { grid-column: 2; }
   .planner-actions { flex-direction: column; }
   .planner-actions button { width: 100%; }
-  .mobile-nav { position: fixed; display: grid; grid-template-columns: repeat(4,1fr); bottom: 0; left: 0; right: 0; z-index: 10; background: rgba(255,255,255,.96); border-top: 1px solid #e2e8f0; padding: 7px 5px max(7px, env(safe-area-inset-bottom)); }
+  .mobile-nav { position: fixed; display: grid; grid-template-columns: repeat(5,1fr); bottom: 0; left: 0; right: 0; z-index: 10; background: rgba(255,255,255,.96); border-top: 1px solid #e2e8f0; padding: 7px 5px max(7px, env(safe-area-inset-bottom)); }
   .mobile-nav-item { border: 0; background: transparent; color: #94a3b8; display: grid; place-items: center; gap: 3px; font-size: 9px; font-weight: 800; }
   .mobile-nav-item.active { color: #4f46e5; }
   .modal { padding: 18px; }
@@ -393,7 +393,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 }
 @media (max-width: 700px) {
   .landing-nav-right .install-pwa-button {
-    display: none;
+    display: inline-flex;
+    padding: 7px 9px;
+    font-size: 9px;
   }
   .install-pwa-hero {
     width: 100%;

@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const MAX_INPUT_LENGTH = 4000
 const MAX_ITEMS = 12
-const MODELS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'] as const
+const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'] as const
 
 const currencies = ['USD', 'EUR', 'BRL', 'AOA', 'GBP', 'Other'] as const
 type Currency = typeof currencies[number]

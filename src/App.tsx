@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import type { Client, Payment, Priority, QuickAddItem, Task } from './types'
-import type { User } from '@supabase/supabase-js'
+import type { User, FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
@@ -544,7 +544,8 @@ function App() {
                 onAddPlan={addPlan}
                 onPlanner={() => navigate('planner')}
                 busyTaskId={updatingTaskId}
-          aiLoading={aiLoading}
+                aiLoading={aiLoading}
+                user={user}
               />
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
@@ -611,6 +612,7 @@ function App() {
             <MobileNav icon={<ListTodo size={19} />} label={tr('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
             <MobileNav icon={<Users size={19} />} label={tr('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
             <MobileNav icon={<CreditCard size={19} />} label={tr('payments')} active={view === 'payments'} onClick={() => navigate('payments')} />
+            <MobileNav icon={<Sparkles size={19} />} label={tr('planner')} active={view === 'planner'} onClick={() => navigate('planner')} />
           </div>
         </div>
       )}
@@ -737,7 +739,7 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments, quickText, onQuickTextChange, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId, aiLoading }: {
+function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments, quickText, onQuickTextChange, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId, aiLoading, user }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
@@ -752,6 +754,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
   onPlanner: () => void
   busyTaskId: string | null
   aiLoading: boolean
+  user: User | null
 }) {
   const nextTasks = tasks.filter(t => t.status === 'open' && t.dueDate > iso(today)).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 3)
 
@@ -842,12 +845,16 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
 function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: Task[]; payments: Payment[] }) {
   return <div className="content-stack">
     <div className="page-intro"><div><p className="section-kicker">{tr('clients')}</p><h2>{tr('clientsHeadline')}</h2><p className="page-description">{tr('clientsDescription')}</p></div></div>
-    <div className="client-grid">{clients.map(client => {
-      const clientTasks = tasks.filter(t => t.client.toLowerCase() === client.name.toLowerCase())
-      const clientPayments = payments.filter(p => p.client.toLowerCase() === client.name.toLowerCase() && p.status === 'pending')
-      const amount = clientPayments.reduce((sum, p) => sum + p.amount, 0)
-      return <div className="client-card" key={client.id}><div className="avatar">{client.name.charAt(0).toUpperCase()}</div><div className="client-name">{client.name}</div><div className="client-meta">{clientTasks.length} {tr('tasks').toLowerCase()} · {amount ? formatMoney(amount, clientPayments[0]?.currency ?? 'USD') + ' ' + tr('pending') : formatMoney(0, clientPayments[0]?.currency ?? 'USD')}</div><div className="client-progress"><span style={{ width: Math.min(100, clientTasks.length * 18) + '%' }} /></div></div>
-    })}</div>
+    {clients.length === 0 ? (
+      <div className="empty-card"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente ainda' : 'No clients yet'}</strong><p>{currentLanguage === 'pt' ? 'Adicione seu primeiro cliente para começar a acompanhar o trabalho.' : 'Add your first client to start tracking work.'}</p></div></div>
+    ) : (
+      <div className="client-grid">{clients.map(client => {
+        const clientTasks = tasks.filter(t => t.client.toLowerCase() === client.name.toLowerCase())
+        const clientPayments = payments.filter(p => p.client.toLowerCase() === client.name.toLowerCase() && p.status === 'pending')
+        const amount = clientPayments.reduce((sum, p) => sum + p.amount, 0)
+        return <div className="client-card" key={client.id}><div className="avatar">{client.name.charAt(0).toUpperCase()}</div><div className="client-name">{client.name}</div><div className="client-meta">{clientTasks.length} {tr('tasks').toLowerCase()} · {amount ? formatMoney(amount, clientPayments[0]?.currency ?? 'USD') + ' ' + tr('pending') : formatMoney(0, clientPayments[0]?.currency ?? 'USD')}</div><div className="client-progress"><span style={{ width: Math.min(100, clientTasks.length * 18) + '%' }} /></div></div>
+      })}</div>
+    )}
   </div>
 }
 
