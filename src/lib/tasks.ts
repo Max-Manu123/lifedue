@@ -30,7 +30,13 @@ export async function fetchClients(user: User): Promise<Client[]> {
     .eq('user_id', user.id)
     .order('name', { ascending: true })
   if (error) throw error
-  return (data ?? []) as Client[]
+  const seen = new Set<string>()
+  return ((data ?? []) as Client[]).filter(client => {
+    const key = client.name.trim().toLocaleLowerCase()
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 export async function fetchPayments(user: User): Promise<Payment[]> {
@@ -111,13 +117,13 @@ export async function updatePaymentStatus(user: User, id: string, status: Paymen
 export async function removeLegacyDemoTasks(user: User) {
   requireSupabaseUser(user)
 
-  const { data: legacyTasks, error: fetchError } = await supabase!
+  const { data: legacyTasks, error: taskFetchError } = await supabase!
     .from('tasks')
     .select('id,title,due_date')
     .eq('user_id', user.id)
     .or('title.eq.Deliver website,title.eq.Send proposal')
 
-  if (fetchError) throw fetchError
+  if (taskFetchError) throw taskFetchError
 
   const demoTaskIds = ((legacyTasks ?? []) as Array<{ id: string; title: string; due_date: string }>)
     .filter(task =>
@@ -126,17 +132,56 @@ export async function removeLegacyDemoTasks(user: User) {
     )
     .map(task => task.id)
 
-  if (!demoTaskIds.length) return
+  if (demoTaskIds.length) {
+    const { error } = await supabase!
+      .from('tasks')
+      .delete()
+      .eq('user_id', user.id)
+      .in('id', demoTaskIds)
+    if (error) throw error
+  }
 
-  const { error: deleteError } = await supabase!
-    .from('tasks')
+  // Remove only the original seeded demo payments from the MVP.
+  // These exact records are not part of user-created test data.
+  const { data: legacyPayments, error: paymentFetchError } = await supabase!
+    .from('payments')
+    .select('id,amount,currency,due_date,clients(name)')
+    .eq('user_id', user.id)
+
+  if (paymentFetchError) throw paymentFetchError
+
+  const demoPaymentIds = ((legacyPayments ?? []) as Array<{
+    id: string
+    amount: number
+    currency: string
+    due_date: string
+    clients: { name: string } | { name: string }[] | null
+  }>).filter(payment => {
+    const name = Array.isArray(payment.clients) ? payment.clients[0]?.name : payment.clients?.name
+    return (
+      (name === 'Maria' && Number(payment.amount) === 200 && payment.currency === 'USD' && payment.due_date === '2026-09-21') ||
+      (name === 'John' && Number(payment.amount) === 500 && payment.currency === 'USD' && payment.due_date === '2026-09-22')
+    )
+  }).map(payment => payment.id)
+
+  if (demoPaymentIds.length) {
+    const { error } = await supabase!
+      .from('payments')
+      .delete()
+      .eq('user_id', user.id)
+      .in('id', demoPaymentIds)
+    if (error) throw error
+  }
+
+  // Remove the original empty demo clients. Foreign keys use ON DELETE SET NULL,
+  // so this is safe after the exact demo records above are removed.
+  const { error: clientDeleteError } = await supabase!
+    .from('clients')
     .delete()
     .eq('user_id', user.id)
-    .in('id', demoTaskIds)
-
-  if (deleteError) throw deleteError
+    .in('name', ['John', 'Pedro'])
+  if (clientDeleteError) throw clientDeleteError
 }
-
 export async function fetchTasks(user: User): Promise<Task[]> {
   requireSupabaseUser(user)
   const { data, error } = await supabase!
