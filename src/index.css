@@ -718,6 +718,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .client-heading span { color:#64748b; font-size:10px; margin-top:3px; }
 .client-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:16px; }
 .client-metrics > div { background:#f8fafc; border-radius:9px; padding:8px; }
+.client-metrics > div small { display:block; margin-top:2px; color:#94a3b8; font-size:8px; font-weight:700; }
 .client-metrics span { display:block; color:#94a3b8; font-size:8px; font-weight:900; text-transform:uppercase; letter-spacing:.06em; }
 .client-metrics strong { display:block; margin-top:3px; font-size:16px; }
 .danger-text { color:#dc2626 !important; }
