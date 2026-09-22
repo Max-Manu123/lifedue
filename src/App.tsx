@@ -248,7 +248,7 @@ function App() {
     setAiLoading(true)
     setTasksError('')
     try {
-      if (supabase) {
+      if (supabase && user) {
         const { data, error } = await supabase.functions.invoke('quick-add', { body: { text: quickText.trim(), today: iso(today), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone } })
         if (error) throw error
         const items = (data?.items ?? []) as QuickAddItem[]
