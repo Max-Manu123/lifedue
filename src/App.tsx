@@ -37,6 +37,32 @@ const addDays = (days: number) => {
   return iso(date)
 }
 
+const taskKey = (task: Pick<Task, 'title' | 'client' | 'dueDate'>) =>
+  `${task.title.trim().toLowerCase()}|${task.client.trim().toLowerCase()}|${task.dueDate}`
+
+const uniqueTasks = (items: Task[]) => {
+  const seen = new Set<string>()
+  return items.filter(task => {
+    const key = taskKey(task)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+const paymentKey = (payment: Pick<Payment, 'client' | 'amount' | 'dueDate'>) =>
+  `${payment.client.trim().toLowerCase()}|${payment.amount}|${payment.dueDate}`
+
+const uniquePayments = (items: Payment[]) => {
+  const seen = new Set<string>()
+  return items.filter(payment => {
+    const key = paymentKey(payment)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 const seedTasks: Task[] = [
   { id: '1', title: 'Finish homepage', client: 'John', dueDate: addDays(0), priority: 'high', status: 'open' },
   { id: '2', title: 'Send invoice', client: 'Maria', dueDate: addDays(0), priority: 'medium', status: 'open' },
@@ -76,9 +102,9 @@ function App() {
   currentLanguage=language
   useEffect(()=>localStorage.setItem('lifedue-language',language),[language])
   const [view, setView] = useState<View>('home')
-  const [tasks, setTasks] = useState<Task[]>(() => load('lifedue-tasks', seedTasks))
+  const [tasks, setTasks] = useState<Task[]>(() => uniqueTasks(load('lifedue-tasks', seedTasks)))
   const [clients, setClients] = useState<Client[]>(() => load('lifedue-clients', seedClients))
-  const [payments, setPayments] = useState<Payment[]>(() => load('lifedue-payments', seedPayments))
+  const [payments, setPayments] = useState<Payment[]>(() => uniquePayments(load('lifedue-payments', seedPayments)))
   const [quickText, setQuickText] = useState('')
   const [plan, setPlan] = useState<Task[]>([])
   const [planPayments, setPlanPayments] = useState<QuickAddItem[]>([])
@@ -253,8 +279,20 @@ function App() {
         if (error) throw error
         const items = (data?.items ?? []) as QuickAddItem[]
         if (items.length > 0) {
-          setPlan(items.map(item => ({ id: crypto.randomUUID(), title: item.kind === 'payment' ? 'Follow up payment' : item.title, client: item.client, dueDate: item.dueDate, priority: item.priority, status: 'open' })))
-          setPlanPayments(items.filter(item => item.kind === 'payment'))
+          const clientNames = Array.from(quickText.matchAll(/(?:do|da|de|from|for|para o|para a)\\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\\p{L}'-]*)/gu)).map(match => match[1])
+          const normalizedName = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+          const exactClient = (value: string) => {
+            const match = clientNames.find(name => normalizedName(name) === normalizedName(value))
+            if (match) return match
+            if (normalizedName(value) === 'john') {
+              const joao = clientNames.find(name => normalizedName(name) === 'joao')
+              if (joao) return joao
+            }
+            return value
+          }
+          const normalizedItems = items.map(item => ({ ...item, client: exactClient(item.client) }))
+          setPlan(normalizedItems.map(item => ({ id: crypto.randomUUID(), title: item.kind === 'payment' ? 'Follow up payment' : item.title, client: item.client, dueDate: item.dueDate, priority: item.priority, status: 'open' })))
+          setPlanPayments(normalizedItems.filter(item => item.kind === 'payment'))
           setView('quick-add')
           return
         }
@@ -285,11 +323,15 @@ function App() {
       const taskPlan = plan.filter(task => !planPayments.some(payment => payment.client.toLowerCase() === task.client.toLowerCase() && payment.dueDate === task.dueDate && task.title.toLowerCase().includes('payment')))
 
       if (user && supabase) {
-        const created = taskPlan.length ? await createTasks(user, taskPlan) : []
-        setTasks(current => [...created, ...current])
+        const existingTaskKeys = new Set(tasks.map(taskKey))
+        const newTaskPlan = taskPlan.filter(task => !existingTaskKeys.has(taskKey(task)))
+        const created = newTaskPlan.length ? await createTasks(user, newTaskPlan) : []
+        setTasks(current => uniqueTasks([...created, ...current]))
         if (planPayments.length > 0) {
-          const createdPayments = await Promise.all(planPayments.map(item => createPayment(user, { client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate })))
-          setPayments(current => [...createdPayments, ...current])
+          const existingPaymentKeys = new Set(payments.map(paymentKey))
+          const newPayments = planPayments.filter(item => !existingPaymentKeys.has(paymentKey({ client: item.client, amount: item.amount ?? 0, dueDate: item.dueDate })))
+          const createdPayments = await Promise.all(newPayments.map(item => createPayment(user, { client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate })))
+          setPayments(current => uniquePayments([...createdPayments, ...current]))
         } else if (paymentTask && paymentAmount > 0) {
           const createdPayment = await createPayment(user, {
             client: paymentTask.client,
@@ -305,9 +347,11 @@ function App() {
           .filter(task => !clientNames.has(task.client.toLowerCase()))
           .map(task => ({ id: crypto.randomUUID(), name: task.client }))
         if (newClients.length) setClients(current => [...current, ...newClients])
-        setTasks(current => [...current, ...taskPlan])
+        setTasks(current => uniqueTasks([...taskPlan, ...current]))
         if (planPayments.length > 0) {
-          setPayments(current => [...planPayments.map(item => ({ id: crypto.randomUUID(), client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate, status: 'pending' as const })), ...current])
+          const existingPaymentKeys = new Set(payments.map(paymentKey))
+          const newPayments = planPayments.filter(item => !existingPaymentKeys.has(paymentKey({ client: item.client, amount: item.amount ?? 0, dueDate: item.dueDate })))
+          setPayments(current => uniquePayments([...newPayments.map(item => ({ id: crypto.randomUUID(), client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate, status: 'pending' as const })), ...current]))
         } else if (paymentTask && paymentAmount > 0) {
           setPayments(current => [{
             id: crypto.randomUUID(),
