@@ -430,6 +430,7 @@ function App() {
                 onAddPlan={addPlan}
                 onPlanner={() => navigate('planner')}
                 busyTaskId={updatingTaskId}
+          aiLoading={aiLoading}
               />
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
@@ -511,7 +512,7 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId }: {
+function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId, aiLoading }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
@@ -522,6 +523,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
   onAddPlan: () => void
   onPlanner: () => void
   busyTaskId: string | null
+  aiLoading: boolean
 }) {
   const [text, setText] = useState('')
   const nextTasks = tasks.filter(t => t.status === 'open' && t.dueDate > iso(today)).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 3)
