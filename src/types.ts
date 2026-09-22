@@ -1,5 +1,16 @@
 export type TaskStatus = 'open' | 'completed'
 export type Priority = 'low' | 'medium' | 'high'
+export type PaymentCurrency = 'USD' | 'EUR' | 'BRL' | 'AOA' | 'GBP' | 'Other'
+
+export interface QuickAddItem {
+  kind: 'task' | 'payment'
+  title: string
+  client: string
+  dueDate: string
+  priority: Priority
+  amount?: number
+  currency?: PaymentCurrency
+}
 
 export interface Task {
   id: string
