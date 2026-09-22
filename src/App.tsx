@@ -122,7 +122,17 @@ function App() {
   const [feedbackSent, setFeedbackSent] = useState(false)
   useEffect(() => {
     localStorage.setItem('lifedue-theme', theme)
-    document.documentElement.dataset.theme = theme
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const applyTheme = () => {
+      const isDark = theme === 'dark' || (theme === 'system' && media.matches)
+      document.documentElement.dataset.theme = theme
+      document.documentElement.classList.toggle('theme-dark', isDark)
+    }
+    applyTheme()
+    if (theme === 'system') {
+      media.addEventListener?.('change', applyTheme)
+      return () => media.removeEventListener?.('change', applyTheme)
+    }
   }, [theme])
   const [view, setView] = useState<View>('home')
   const [tasks, setTasks] = useState<Task[]>(() => uniqueTasks(load('lifedue-tasks', [])))
@@ -524,7 +534,7 @@ function App() {
   const resolvedTheme = theme === 'system' ? 'system' : theme
 
   return (
-    <div className={theme === 'dark' ? 'app-shell theme-dark' : 'app-shell'} data-theme={resolvedTheme}>
+    <div className="app-shell" data-theme={resolvedTheme}>
       {view === 'home' ? (
         <Landing onStart={() => navigate('quick-add')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} language={language} setLanguage={setLanguage} />
       ) : (
