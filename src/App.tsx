@@ -583,7 +583,7 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId, aiLoading }: {
+function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId, aiLoading }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
