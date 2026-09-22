@@ -435,7 +435,7 @@ function App() {
               <span>LifeDue</span>
             </div>
             <nav>
-              <NavItem icon={<LayoutDashboard size={18} />} label={tr('today')} active={view === 'quick-add' || view === 'home'} onClick={() => navigate('quick-add')} />
+              <NavItem icon={<LayoutDashboard size={18} />} label={tr('today')} active={view === 'quick-add'} onClick={() => navigate('quick-add')} />
               <NavItem icon={<ListTodo size={18} />} label={tr('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
               <NavItem icon={<Users size={18} />} label={tr('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
               <NavItem icon={<CreditCard size={18} />} label={tr('payments')} active={view === 'payments'} onClick={() => navigate('payments')} />
