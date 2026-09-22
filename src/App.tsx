@@ -311,7 +311,18 @@ function App() {
     try {
       if (supabase && user) {
         const { data, error } = await supabase.functions.invoke('quick-add', { body: { text: input, today: iso(today), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, language } })
-        if (error) throw error
+        if (error) {
+          let detail = ''
+          try {
+            const response = (error as FunctionsHttpError & { context?: Response }).context
+            if (response) {
+              const body = await response.clone().json()
+              detail = typeof body?.detail === 'string' ? body.detail : typeof body?.message === 'string' ? body.message : ''
+            }
+          } catch {}
+          console.error('LifeDue AI Quick Add failed:', error, detail)
+          throw new Error(detail || error.message)
+        }
         const items = (data?.items ?? []) as QuickAddItem[]
         if (items.length > 0) {
           const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
