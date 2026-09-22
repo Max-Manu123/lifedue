@@ -29,7 +29,7 @@ const schema = {
           dueDate: { type: 'string', format: 'date', description: 'ISO date YYYY-MM-DD.' },
           priority: { type: 'string', enum: ['low', 'medium', 'high'] },
           amount: { type: ['number', 'null'] },
-          currency: { type: ['string', 'null'], enum: [...currencies, null] },
+          currency: { type: ['string', 'null'], enum: [...currencies] },
         },
         required: ['kind', 'title', 'client', 'dueDate', 'priority', 'amount', 'currency'],
         additionalProperties: false,
@@ -227,6 +227,10 @@ Deno.serve(async (req) => {
     return Response.json(result, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
     console.error('quick-add function failed:', error)
-    return Response.json({ message: 'Could not process Quick Add.' }, { status: 500, headers: corsHeaders })
+    const message = error instanceof Error ? error.message : 'Unknown Quick Add error.'
+    return Response.json(
+      { message: 'Could not process Quick Add.', detail: message.slice(0, 300) },
+      { status: 502, headers: corsHeaders },
+    )
   }
 })
