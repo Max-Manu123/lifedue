@@ -94,6 +94,65 @@ function cleanItems(value: unknown) {
   return { items: cleaned }
 }
 
+async function callGeminiPlan(apiKey: string, prompt: string, model: string, allowedIds: string[]) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 20000)
+
+  try {
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(apiKey),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{
+              text: [
+                'You are LifeDue AI Planner for freelancers and solopreneurs.',
+                'Reorder the supplied open tasks into a practical execution order for the next few days.',
+                'Never create, delete, rename, merge, or duplicate tasks.',
+                'Return only task IDs from the supplied list, exactly once each.',
+                'Prioritize overdue work first, then today, then earlier due dates. Within the same date, prefer high priority, then medium, then low.',
+                'Use client/task context only to break ties. Do not invent dependencies.',
+                'OUTPUT FORMAT: {"orderedIds":["id1","id2"]}',
+              ].join('\\n'),
+            }],
+          },
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+          },
+        }),
+      },
+    )
+
+    const responseText = await response.text()
+    if (!response.ok) {
+      const retryable = response.status === 429 || response.status >= 500
+      throw Object.assign(new Error(`Gemini ${response.status}: ${responseText.slice(0, 600)}`), { retryable, status: response.status })
+    }
+
+    const envelope = JSON.parse(responseText) as { candidates?: Array<{ content?: { parts?: Array<{ text?: unknown }> } }> }
+    const raw = envelope?.candidates?.[0]?.content?.parts?.[0]?.text
+    if (typeof raw !== 'string') throw new Error('Gemini returned no planner output.')
+
+    const parsed = JSON.parse(raw) as { orderedIds?: unknown }
+    if (!Array.isArray(parsed.orderedIds)) throw new Error('Invalid planner output.')
+
+    const allowed = new Set(allowedIds)
+    const seen = new Set<string>()
+    const orderedIds = parsed.orderedIds.filter((id): id is string =>
+      typeof id === 'string' && allowed.has(id) && !seen.has(id) && seen.add(id)
+    )
+
+    if (orderedIds.length !== allowedIds.length) throw new Error('Planner returned an incomplete task order.')
+    return orderedIds
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 async function callGemini(apiKey: string, prompt: string, model: string) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 20000)
@@ -148,12 +207,13 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
+    const mode = body.mode === 'plan' ? 'plan' : 'quick-add'
     const text = typeof body.text === 'string' ? body.text.trim() : ''
     const today = typeof body.today === 'string' ? body.today : ''
     const timezone = typeof body.timezone === 'string' ? body.timezone : 'UTC'
     const language = body.language === 'pt' ? 'pt' : 'en'
 
-    if (!text || text.length > MAX_INPUT_LENGTH) {
+    if (mode === 'quick-add' && (!text || text.length > MAX_INPUT_LENGTH)) {
       return Response.json({ message: 'Invalid text.' }, { status: 400, headers: corsHeaders })
     }
     if (!validDate(today)) {
@@ -161,6 +221,57 @@ Deno.serve(async (req) => {
     }
     if (timezone.length > 100 || !/^[A-Za-z0-9_+./-]+$/.test(timezone)) {
       return Response.json({ message: 'Invalid timezone.' }, { status: 400, headers: corsHeaders })
+    }
+
+    if (mode === 'plan') {
+      const rawTasks = Array.isArray(body.tasks) ? body.tasks : []
+      if (!rawTasks.length || rawTasks.length > 12) {
+        return Response.json({ message: 'Invalid planner tasks.' }, { status: 400, headers: corsHeaders })
+      }
+
+      const tasks = rawTasks.map((task: unknown) => {
+        if (!task || typeof task !== 'object') throw new Error('Invalid planner task.')
+        const value = task as Record<string, unknown>
+        if (typeof value.id !== 'string' || typeof value.title !== 'string' || typeof value.client !== 'string' || typeof value.dueDate !== 'string') {
+          throw new Error('Invalid planner task shape.')
+        }
+        if (!validDate(value.dueDate) || !['low', 'medium', 'high'].includes(String(value.priority))) {
+          throw new Error('Invalid planner task values.')
+        }
+        return { id: value.id, title: value.title.trim(), client: value.client.trim(), dueDate: value.dueDate, priority: value.priority }
+      })
+
+      const apiKey = Deno.env.get('GEMINI_API_KEY')
+      if (!apiKey) return Response.json({ message: 'GEMINI_API_KEY is not configured.' }, { status: 500, headers: corsHeaders })
+
+      const prompt = [
+        'CURRENT DATE: ' + today,
+        'USER TIMEZONE: ' + timezone,
+        'TASKS:',
+        JSON.stringify(tasks),
+        '',
+        'Return the best practical order for these exact tasks.',
+      ].join('\\n')
+
+      let orderedIds: string[] | null = null
+      let lastError: unknown = null
+      for (const model of MODELS) {
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            orderedIds = await callGeminiPlan(apiKey, prompt, model, tasks.map(task => task.id))
+            break
+          } catch (error) {
+            lastError = error
+            const status = typeof (error as { status?: unknown }).status === 'number' ? (error as { status: number }).status : 0
+            const retryable = Boolean((error as { retryable?: boolean }).retryable) || status === 503 || status === 429 || status >= 500 || error instanceof DOMException
+            if (!retryable || attempt === 2) break
+            await new Promise(resolve => setTimeout(resolve, 600 * attempt))
+          }
+        }
+        if (orderedIds) break
+      }
+      if (!orderedIds) throw lastError ?? new Error('No planner result.')
+      return Response.json({ orderedIds }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const apiKey = Deno.env.get('GEMINI_API_KEY')
