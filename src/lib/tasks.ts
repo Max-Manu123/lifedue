@@ -108,6 +108,45 @@ export async function updatePaymentStatus(user: User, id: string, status: Paymen
   if (error) throw error
 }
 
+export async function removeLegacyDemoTasks(user: User) {
+  if (!supabase) return
+  const { data: clients, error: clientsError } = await supabase
+    .from('clients')
+    .select('id,name')
+    .eq('user_id', user.id)
+
+  if (clientsError) throw clientsError
+
+  const legacyClients = (clients ?? []).filter((client: { id: string; name: string }) =>
+    ['John', 'Pedro'].includes(client.name.trim())
+  )
+  if (!legacyClients.length) return
+
+  const clientIds = legacyClients.map((client: { id: string }) => client.id)
+  const { data: legacyTasks, error: tasksError } = await supabase
+    .from('tasks')
+    .select('id,title,client_id,due_date')
+    .eq('user_id', user.id)
+    .in('client_id', clientIds)
+
+  if (tasksError) throw tasksError
+
+  const demoTasks = (legacyTasks ?? []).filter((task: { id: string; title: string; client_id: string; due_date: string }) =>
+    (task.title === 'Deliver website' && task.due_date === '2026-09-24') ||
+    (task.title === 'Send proposal' && task.due_date === '2026-09-27')
+  )
+
+  if (!demoTasks.length) return
+
+  const { error: deleteError } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('user_id', user.id)
+    .in('id', demoTasks.map((task: { id: string }) => task.id))
+
+  if (deleteError) throw deleteError
+}
+
 export async function fetchTasks(user: User): Promise<Task[]> {
   requireSupabaseUser(user)
   const { data, error } = await supabase!
