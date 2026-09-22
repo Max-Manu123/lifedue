@@ -563,8 +563,8 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
             <Sparkles size={18} />
           </div>
           <div className="ai-plan-list">
-            {plan.map(task => (
-              <div className="ai-plan-item" key={task.id}>
+            {plan.map((task, index) => (
+              <div className="ai-plan-item" key={`ai-plan-${task.id}-${index}`}>
                 <div className="ai-plan-icon">{task.title.toLowerCase().includes('payment') ? '💰' : task.title.toLowerCase().includes('proposal') ? '📄' : '💻'}</div>
                 <div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
               </div>
