@@ -15,7 +15,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import type { Client, Payment, Priority, Task } from './types'
+import type { Client, Payment, Priority, QuickAddItem, Task } from './types'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { fetchClients, fetchPayments, fetchTasks, createTasks, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
@@ -81,6 +81,8 @@ function App() {
   const [payments, setPayments] = useState<Payment[]>(() => load('lifedue-payments', seedPayments))
   const [quickText, setQuickText] = useState('')
   const [plan, setPlan] = useState<Task[]>([])
+  const [planPayments, setPlanPayments] = useState<QuickAddItem[]>([])
+  const [aiLoading, setAiLoading] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [showAddPayment, setShowAddPayment] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -240,56 +242,36 @@ function App() {
     setUpdatingTaskId(null)
   }
 
-  const createPlan = () => {
+  const createPlan = async () => {
     const normalized = quickText.trim().toLowerCase()
-    if (!normalized) {
-      setPlan(examplePlan)
-      setView('quick-add')
-      return
-    }
-
-    const generated: Task[] = []
-    const hasPayment = /\b(cobrar|receber|pagamento|pagar|payment|collect|invoice|fatura|paid|pay)\b/i.test(quickText)
-
-    const addIfMissing = (task: Task) => {
-      if (!generated.some(item => item.client.toLowerCase() === task.client.toLowerCase() && item.title === task.title)) {
-        generated.push({ ...task, id: crypto.randomUUID() })
+    if (!normalized) { setPlan(examplePlan); setPlanPayments([]); setView('quick-add'); return }
+    setAiLoading(true)
+    setTasksError('')
+    try {
+      if (supabase) {
+        const { data, error } = await supabase.functions.invoke('quick-add', { body: { text: quickText.trim(), today: iso(today), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone } })
+        if (error) throw error
+        const items = (data?.items ?? []) as QuickAddItem[]
+        if (items.length > 0) {
+          setPlan(items.map(item => ({ id: crypto.randomUUID(), title: item.kind === 'payment' ? 'Follow up payment' : item.title, client: item.client, dueDate: item.dueDate, priority: item.priority, status: 'open' })))
+          setPlanPayments(items.filter(item => item.kind === 'payment'))
+          setView('quick-add')
+          return
+        }
       }
-    }
-
-    if (/\bmaria\b/i.test(quickText)) {
-      addIfMissing({ ...examplePlan[0], title: hasPayment ? 'Follow up payment' : 'Follow up with client', id: crypto.randomUUID() })
-    }
-    if (/\bpedro\b/i.test(quickText)) {
-      addIfMissing({ ...examplePlan[1], title: /proposal|proposta/i.test(quickText) ? 'Send proposal' : 'Follow up with client', id: crypto.randomUUID() })
-    }
-    if (/\b(john|joão|joao)\b/i.test(quickText)) {
-      addIfMissing({ ...examplePlan[2], title: /website|site/i.test(quickText) ? 'Deliver website' : 'Complete client work', id: crypto.randomUUID() })
-    }
-
-    if (!generated.length) {
-      const chunks = quickText.split(/\s*(?:,|;|\band\b|\be\b)\s*/i).map(part => part.trim()).filter(Boolean)
-      chunks.slice(0, 6).forEach((chunk, index) => {
-        const clientMatch = chunk.match(/\b(?:for|from|do|da|de)\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'-]*)/i)
-        const client = clientMatch?.[1] ?? 'Client'
-        const title = chunk.replace(/\b(?:for|from|do|da|de)\s+[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'-]*/i, '').trim()
-        const dueDate = /tomorrow|amanhã/i.test(chunk) ? addDays(1)
-          : /friday|sexta/i.test(chunk) ? addDays((5 - today.getDay() + 7) % 7 || 7)
-          : /monday|segunda/i.test(chunk) ? addDays((1 - today.getDay() + 7) % 7 || 7)
-          : addDays(0)
-        generated.push({
-          id: crypto.randomUUID(),
-          title: title || 'Client task ' + (index + 1),
-          client,
-          dueDate,
-          priority: hasPayment ? 'high' : 'medium',
-          status: 'open',
-        })
-      })
-    }
-
-    setPlan(generated.length ? generated : examplePlan)
-    setView('quick-add')
+      const generated: Task[] = []
+      const hasPayment = /\b(cobrar|receber|pagamento|pagar|payment|collect|invoice|fatura|paid|pay)\b/i.test(quickText)
+      const addIfMissing = (task: Task) => { if (!generated.some(item => item.client.toLowerCase() === task.client.toLowerCase() && item.title === task.title)) generated.push({ ...task, id: crypto.randomUUID() }) }
+      if (/\bmaria\b/i.test(quickText)) addIfMissing({ ...examplePlan[0], title: hasPayment ? 'Follow up payment' : 'Follow up with client', id: crypto.randomUUID() })
+      if (/\bpedro\b/i.test(quickText)) addIfMissing({ ...examplePlan[1], title: /proposal|proposta/i.test(quickText) ? 'Send proposal' : 'Follow up with client', id: crypto.randomUUID() })
+      if (/\b(john|joão|joao)\b/i.test(quickText)) addIfMissing({ ...examplePlan[2], title: /website|site/i.test(quickText) ? 'Deliver website' : 'Complete client work', id: crypto.randomUUID() })
+      setPlan(generated.length ? generated : examplePlan)
+      setPlanPayments([])
+      setView('quick-add')
+    } catch (error) {
+      console.error('LifeDue AI Quick Add failed:', error)
+      setTasksError(currentLanguage === 'pt' ? 'A IA não está disponível agora. Tente novamente.' : 'AI Quick Add is unavailable right now. Please try again.')
+    } finally { setAiLoading(false) }
   }
 
   const addPlan = async () => {
@@ -303,7 +285,10 @@ function App() {
       if (user && supabase) {
         const created = await createTasks(user, plan)
         setTasks(current => [...created, ...current])
-        if (paymentTask && paymentAmount > 0) {
+        if (planPayments.length > 0) {
+          const createdPayments = await Promise.all(planPayments.map(item => createPayment(user, { client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate })))
+          setPayments(current => [...createdPayments, ...current])
+        } else if (paymentTask && paymentAmount > 0) {
           const createdPayment = await createPayment(user, {
             client: paymentTask.client,
             amount: paymentAmount,
@@ -319,7 +304,9 @@ function App() {
           .map(task => ({ id: crypto.randomUUID(), name: task.client }))
         if (newClients.length) setClients(current => [...current, ...newClients])
         setTasks(current => [...current, ...plan])
-        if (paymentTask && paymentAmount > 0) {
+        if (planPayments.length > 0) {
+          setPayments(current => [...planPayments.map(item => ({ id: crypto.randomUUID(), client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate, status: 'pending' as const })), ...current])
+        } else if (paymentTask && paymentAmount > 0) {
           setPayments(current => [{
             id: crypto.randomUUID(),
             client: paymentTask.client,
@@ -331,6 +318,7 @@ function App() {
         }
       }
       setPlan([])
+      setPlanPayments([])
       setQuickText('')
       setView('quick-add')
     } catch (error) {
@@ -555,7 +543,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
           <h3>{tr('quickQuestion')}</h3>
           <textarea value={text} onChange={e => setText(e.target.value)} placeholder="e.g. Deliver John's website Friday, collect $200 from Maria tomorrow, and send Pedro the proposal Monday." />
           <div className="quick-actions">
-            <button className="primary-button" onClick={onCreatePlan}>Create plan <ArrowRight size={17} /></button>
+            <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : 'Create plan'} {!aiLoading && <ArrowRight size={17} />}</button>
             <span>{tr('plain')}</span>
           </div>
         </div>
