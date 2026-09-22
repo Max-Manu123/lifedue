@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -25,6 +25,32 @@ export function AuthModal({
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const passwordStrength = useMemo(() => {
+    if (mode !== 'signup' || !password) return { score: 0, label: '', tone: '' }
+    let score = 0
+    if (password.length >= 8) score++
+    if (password.length >= 12) score++
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
+    if (/\d/.test(password)) score++
+    if (/[^A-Za-z0-9]/.test(password)) score++
+    if (password.length < 8) return { score, label: pt ? 'Fraca — use pelo menos 8 caracteres.' : 'Weak — use at least 8 characters.', tone: 'weak' }
+    if (score <= 2) return { score, label: pt ? 'Fraca' : 'Weak', tone: 'weak' }
+    if (score <= 3) return { score, label: pt ? 'Média' : 'Fair', tone: 'fair' }
+    return { score, label: pt ? 'Forte' : 'Strong', tone: 'strong' }
+  }, [mode, password, pt])
+
+  const suggestPassword = () => {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*?'
+    const values = new Uint32Array(16)
+    crypto.getRandomValues(values)
+    let suggestion = ''
+    for (const value of values) suggestion += alphabet[value % alphabet.length]
+    setPassword(suggestion)
+    setShowPassword(true)
+    setError('')
+    setSuccess('')
+  }
+
   const pt = language === 'pt'
   const title = mode === 'login' ? (pt ? 'Entrar no LifeDue' : 'Sign in to LifeDue')
     : mode === 'signup' ? (pt ? 'Criar sua conta' : 'Create your account')
@@ -38,7 +64,7 @@ export function AuthModal({
     if (message.includes('invalid login credentials')) return pt ? 'Email ou senha incorretos. Verifique os dados e tente novamente.' : 'Incorrect email or password. Check your details and try again.'
     if (message.includes('email not confirmed')) return pt ? 'Confirme seu email antes de entrar. Verifique também a pasta de spam.' : 'Confirm your email before signing in. Check your spam folder too.'
     if (message.includes('user already registered')) return pt ? 'Este email já tem uma conta. Entre em vez de criar outra.' : 'This email already has an account. Sign in instead of creating another one.'
-    if (message.includes('password should be at least')) return pt ? 'A senha precisa ter pelo menos 6 caracteres.' : 'Your password must be at least 6 characters.'
+    if (message.includes('password should be at least')) return pt ? 'A senha precisa ter pelo menos 8 caracteres.' : 'Your password must be at least 8 characters.'
     return pt ? 'Não foi possível concluir agora. Verifique os dados e tente novamente.' : 'We could not complete this right now. Check your details and try again.'
   }
 
@@ -47,6 +73,11 @@ export function AuthModal({
     if (loading) return
     setError('')
     setSuccess('')
+
+    if (mode === 'signup' && (password.length < 8 || passwordStrength.tone === 'weak')) {
+      setError(pt ? 'Escolha uma senha mais forte: use 8+ caracteres, maiúsculas, minúsculas, número e símbolo.' : 'Choose a stronger password: use 8+ characters, upper/lowercase letters, a number, and a symbol.')
+      return
+    }
 
     if (!supabase) {
       setError(pt ? 'O Supabase ainda não está configurado.' : 'Supabase is not configured yet.')
@@ -193,18 +224,38 @@ export function AuthModal({
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={event => setPassword(event.target.value)}
-                  minLength={6}
+                  minLength={8}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(value => !value)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? (pt ? 'Ocultar senha' : 'Hide password') : (pt ? 'Mostrar senha' : 'Show password')}
+                  title={showPassword ? (pt ? 'Ocultar senha' : 'Hide password') : (pt ? 'Mostrar senha' : 'Show password')}
                 >
-                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </span>
+              {mode === 'signup' && (
+                <>
+                  <div className={`password-strength ${passwordStrength.tone}`} aria-live="polite">
+                    <div className="password-strength-track">
+                      <span style={{ width: `${Math.min(100, passwordStrength.score * 20)}%` }} />
+                    </div>
+                    <span>{passwordStrength.label || (pt ? 'Use uma senha forte' : 'Use a strong password')}</span>
+                  </div>
+                  <div className="password-requirements">
+                    <span className={password.length >= 8 ? 'met' : ''}>{pt ? '8+ caracteres' : '8+ characters'}</span>
+                    <span className={/[A-Z]/.test(password) && /[a-z]/.test(password) ? 'met' : ''}>{pt ? 'Maiúscula + minúscula' : 'Upper + lowercase'}</span>
+                    <span className={/\d/.test(password) ? 'met' : ''}>{pt ? 'Número' : 'Number'}</span>
+                    <span className={/[^A-Za-z0-9]/.test(password) ? 'met' : ''}>{pt ? 'Símbolo' : 'Symbol'}</span>
+                  </div>
+                  <button type="button" className="password-suggestion" onClick={suggestPassword}>
+                    {pt ? 'Sugerir uma senha forte' : 'Suggest a strong password'}
+                  </button>
+                </>
+              )}
             </label>
           )}
 
