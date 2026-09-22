@@ -282,8 +282,10 @@ function App() {
       const paymentTask = plan.find(task => /payment|pagamento|collect|receber/i.test(task.title + ' ' + task.client))
       const paymentAmount = paymentMatch ? Number(paymentMatch[1]) : 0
 
+      const taskPlan = plan.filter(task => !planPayments.some(payment => payment.client.toLowerCase() === task.client.toLowerCase() && payment.dueDate === task.dueDate && task.title.toLowerCase().includes('payment')))
+
       if (user && supabase) {
-        const created = await createTasks(user, plan)
+        const created = taskPlan.length ? await createTasks(user, taskPlan) : []
         setTasks(current => [...created, ...current])
         if (planPayments.length > 0) {
           const createdPayments = await Promise.all(planPayments.map(item => createPayment(user, { client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate })))
@@ -299,11 +301,11 @@ function App() {
         }
       } else {
         const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
-        const newClients = plan
+        const newClients = taskPlan
           .filter(task => !clientNames.has(task.client.toLowerCase()))
           .map(task => ({ id: crypto.randomUUID(), name: task.client }))
         if (newClients.length) setClients(current => [...current, ...newClients])
-        setTasks(current => [...current, ...plan])
+        setTasks(current => [...current, ...taskPlan])
         if (planPayments.length > 0) {
           setPayments(current => [...planPayments.map(item => ({ id: crypto.randomUUID(), client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate, status: 'pending' as const })), ...current])
         } else if (paymentTask && paymentAmount > 0) {
@@ -532,7 +534,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, onToggle, plan, 
     <div className="content-stack">
       <section className="welcome-row">
         <div>
-          <p className="section-kicker">{currentLanguage==='pt' ? 'SEGUNDA, 21 DE SETEMBRO' : 'MONDAY, SEPTEMBER 21'}</p>
+          <p className="section-kicker">{new Intl.DateTimeFormat(currentLanguage==='pt'?'pt-PT':'en-US', { weekday: 'long', day: 'numeric', month: 'long' }).format(today).toUpperCase()}</p>
           <h2>{currentLanguage==='pt' ? 'Bom dia. Veja o que precisa de você.' : "Good morning. Here's what needs you."}</h2>
         </div>
         <div className="stat-card"><strong>{pendingAmount.toLocaleString(currentLanguage==='pt'?'pt-PT':'en-US', { style: 'currency', currency: 'USD' })}</strong><span>{tr('pending')}</span></div>
