@@ -1011,10 +1011,18 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, onQ
       </section>
 
       <section className="today-metrics" aria-label={tr('focusTitle')}>
-        <div className="today-metric"><span>{tr('openWork')}</span><strong>{openTasks.length}</strong><small>{currentLanguage === 'pt' ? 'tarefas abertas' : 'open tasks'}</small></div>
-        <div className={todayTasks.length ? 'today-metric attention' : 'today-metric'}><span>{tr('dueToday')}</span><strong>{todayTasks.length}</strong><small>{currentLanguage === 'pt' ? 'para entregar' : 'to deliver'}</small></div>
-        <div className={overdue.length ? 'today-metric danger' : 'today-metric'}><span>{tr('overdue')}</span><strong>{overdue.length}</strong><small>{currentLanguage === 'pt' ? 'precisam de ação' : 'need action'}</small></div>
-        <div className="today-metric money"><span>{tr('toCollect')}</span><strong>{totalPending}</strong><small>{currentLanguage === 'pt' ? 'pagamentos pendentes' : 'pending payments'}</small></div>
+        <button type="button" className="today-metric today-metric-action" onClick={onViewTasks} aria-label={currentLanguage === 'pt' ? 'Abrir tarefas abertas' : 'Open tasks'}>
+          <span>{tr('openWork')}</span><strong>{openTasks.length}</strong><small>{currentLanguage === 'pt' ? 'tarefas abertas' : 'open tasks'}</small><ArrowRight size={14} aria-hidden="true" />
+        </button>
+        <button type="button" className={todayTasks.length ? 'today-metric today-metric-action attention' : 'today-metric today-metric-action'} onClick={onViewTasks} aria-label={currentLanguage === 'pt' ? 'Abrir tarefas que vencem hoje' : 'Open tasks due today'}>
+          <span>{tr('dueToday')}</span><strong>{todayTasks.length}</strong><small>{currentLanguage === 'pt' ? 'para entregar' : 'to deliver'}</small><ArrowRight size={14} aria-hidden="true" />
+        </button>
+        <button type="button" className={overdue.length ? 'today-metric today-metric-action danger' : 'today-metric today-metric-action'} onClick={onViewTasks} aria-label={currentLanguage === 'pt' ? 'Abrir tarefas atrasadas' : 'Open overdue tasks'}>
+          <span>{tr('overdue')}</span><strong>{overdue.length}</strong><small>{currentLanguage === 'pt' ? 'precisam de ação' : 'need action'}</small><ArrowRight size={14} aria-hidden="true" />
+        </button>
+        <button type="button" className="today-metric today-metric-action money" onClick={onViewPayments} aria-label={currentLanguage === 'pt' ? 'Abrir pagamentos pendentes' : 'Open pending payments'}>
+          <span>{tr('toCollect')}</span><strong>{totalPending}</strong><small>{currentLanguage === 'pt' ? 'pagamentos pendentes' : 'pending payments'}</small><ArrowRight size={14} aria-hidden="true" />
+        </button>
       </section>
 
       <section className="quick-card today-quick-card">
