@@ -584,31 +584,47 @@ function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => vo
   return (
     <div className="landing">
       <header className="landing-nav">
-        <div className="brand"><span className="brand-mark">L</span><span>LifeDue</span></div><div className="language-switcher"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div>
-        <div className="landing-actions"><button className="ghost-button" onClick={onAuth}>{language==='pt' ? 'Entrar' : 'Sign in'}</button><button className="ghost-button" onClick={onStart}>Open app <ArrowRight size={16} /></button></div>
+        <div className="brand"><span className="brand-mark">L</span><span>LifeDue</span></div>
+        <div className="landing-nav-right">
+          <div className="language-switcher"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div>
+          <button className="ghost-button landing-signin" onClick={onAuth}>{language==='pt' ? 'Entrar' : 'Sign in'}</button>
+          <button className="nav-cta" onClick={onStart}>{language==='pt' ? 'Começar grátis' : 'Start for free'} <ArrowRight size={15} /></button>
+        </div>
       </header>
+
       <section className="hero">
         <div className="hero-copy">
-          <div className="pill"><Sparkles size={15} /> Built for client work</div>
-          <h1>{currentLanguage==='pt' ? 'Mantenha todos os prazos de clientes e ' : 'Keep every client deadline and '}<span>{currentLanguage==='pt' ? 'cobranças de pagamentos' : 'payment follow-up'}</span>{currentLanguage==='pt' ? ' sob controle.' : ' under control.'}</h1>
-          <p>{tr('heroText')}</p>
-          <button className="hero-cta" onClick={onStart}>Try it free <ArrowRight size={18} /></button>
-          <div className="microcopy"><Check size={14} /> {tr('noCard')}</div>
+          <div className="pill"><Sparkles size={14} /> {language==='pt' ? 'Feito para trabalho com clientes' : 'Built for client work'}</div>
+          <h1>{language==='pt' ? 'Nunca mais perca um ' : 'Never miss a client '}<span>{language==='pt' ? 'prazo ou cobrança.' : 'deadline or payment.'}</span></h1>
+          <p>{language==='pt'
+            ? 'Transforme tarefas, entregas e pagamentos de clientes em um plano simples para saber exatamente o que precisa da sua atenção.'
+            : 'Turn client tasks, deliveries, and payment follow-ups into a simple daily plan so you always know what needs your attention.'}</p>
+          <div className="hero-actions">
+            <button className="hero-cta" onClick={onStart}>{language==='pt' ? 'Começar grátis' : 'Start for free'} <ArrowRight size={18} /></button>
+            <button className="hero-secondary" onClick={onAuth}>{language==='pt' ? 'Já tenho uma conta' : 'I already have an account'}</button>
+          </div>
+          <div className="microcopy"><Check size={14} /> {language==='pt' ? 'Grátis para começar · sem cartão' : 'Free to start · no credit card'}</div>
         </div>
-        <div className="hero-preview">
-          <div className="preview-top"><span>LifeDue</span><span className="status-dot">●</span></div>
-          <div className="preview-title">{tr('today').toUpperCase()}</div>
-          <PreviewTask title="Finish homepage" client="John" urgent />
-          <PreviewTask title="Send invoice" client="Maria" />
-          <div className="preview-title muted">{tr('upNext').toUpperCase()}</div>
-          <PreviewTask title="Follow up payment" client="Pedro" />
-          <div className="preview-footer">3 {tr("tasks").toLowerCase()} · $200 {tr("pending")}</div>
+
+        <div className="hero-visual">
+          <div className="preview-glow" />
+          <div className="hero-preview">
+            <div className="preview-top"><span>LifeDue</span><span className="preview-status"><span className="status-dot">●</span> {language==='pt' ? 'Tudo sob controle' : 'All on track'}</span></div>
+            <div className="preview-balance"><div><span>{language==='pt' ? 'A receber' : 'To collect'}</span><strong>2.500 AOA</strong></div><CircleDollarSign size={22} /></div>
+            <div className="preview-title">{tr('today').toUpperCase()}</div>
+            <PreviewTask title={language==='pt' ? 'Entregar landing page' : 'Deliver landing page'} client={language==='pt' ? 'Maria' : 'Maria'} urgent />
+            <PreviewTask title={language==='pt' ? 'Cobrar pagamento' : 'Follow up payment'} client={language==='pt' ? 'João' : 'John'} />
+            <div className="preview-title muted">{tr('upNext').toUpperCase()}</div>
+            <PreviewTask title={language==='pt' ? 'Enviar proposta' : 'Send proposal'} client="Carlos" />
+            <div className="preview-footer"><Check size={14} /> {language==='pt' ? '3 itens organizados para você' : '3 items organized for you'}</div>
+          </div>
         </div>
       </section>
+
       <section className="feature-row">
-        <Feature icon={<Sparkles />} title={tr("quickAdd")} text={tr("quickAddText")} />
-        <Feature icon={<Clock3 />} title={tr("todayFirst")} text={tr("todayText")} />
-        <Feature icon={<CircleDollarSign />} title={tr("payments")} text={tr("paymentsText")} />
+        <Feature icon={<Sparkles />} title={language==='pt' ? 'Adicione com linguagem natural' : 'Add in natural language'} text={language==='pt' ? 'Escreva o que precisa fazer. O LifeDue transforma sua nota em tarefas e pagamentos.' : 'Write what you need to do. LifeDue turns your note into tasks and payments.'} />
+        <Feature icon={<Clock3 />} title={language==='pt' ? 'Saiba o que vem primeiro' : 'Know what comes first'} text={language==='pt' ? 'Veja atrasos, tarefas de hoje e próximos prazos sem uma lista confusa.' : 'See overdue work, today’s tasks, and upcoming deadlines without a messy list.'} />
+        <Feature icon={<CircleDollarSign />} title={language==='pt' ? 'Acompanhe o que falta receber' : 'Track what you’re owed'} text={language==='pt' ? 'Mantenha os pagamentos pendentes ligados aos seus clientes e prazos.' : 'Keep pending payments connected to the right clients and deadlines.'} />
       </section>
     </div>
   )
