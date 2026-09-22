@@ -469,6 +469,38 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   border-radius: 13px;
   background: #fff;
 }
+.today-metric-action {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  appearance: none;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.today-metric-action > svg {
+  position: absolute;
+  right: 13px;
+  top: 13px;
+  color: #94a3b8;
+  opacity: .8;
+  transition: transform .18s ease, color .18s ease;
+}
+.today-metric-action:hover {
+  transform: translateY(-1px);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .06);
+}
+.today-metric-action:hover > svg {
+  transform: translateX(2px);
+  color: #4f46e5;
+}
+.today-metric-action:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, .18);
+  outline-offset: 2px;
+}
 .today-metric span, .today-metric small { display: block; color: #64748b; }
 .today-metric span { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
 .today-metric strong { display: block; margin: 5px 0 2px; font-size: 24px; letter-spacing: -.04em; color: #0f172a; }
