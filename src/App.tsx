@@ -247,8 +247,8 @@ function App() {
   useEffect(() => localStorage.setItem('lifedue-payments', JSON.stringify(payments)), [payments])
 
   const openTasks = tasks.filter(t => t.status === 'open')
-  const overdue = openTasks.filter(t => t.dueDate < iso(today))
-  const todayTasks = openTasks.filter(t => t.dueDate === iso(today))
+  const overdue = openTasks.filter(t => t.dueDate < currentTodayKey())
+  const todayTasks = openTasks.filter(t => t.dueDate === currentTodayKey())
   const pendingPayments = payments.filter(p => p.status === 'pending')
   const pendingAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0)
 
@@ -330,7 +330,7 @@ function App() {
       const { data, error } = await supabase.functions.invoke('quick-add', {
         body: {
           text: input,
-          today: iso(today),
+          today: currentTodayKey(),
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           language,
         },
@@ -730,7 +730,7 @@ function App() {
                     const { data, error } = await supabase.functions.invoke('quick-add', {
                       body: {
                         mode: 'plan',
-                        today: iso(today),
+                        today: currentTodayKey(),
                         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                         language,
                         tasks: candidates,
@@ -1131,7 +1131,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
             {paymentAttention.slice(0, 4).map(payment => (
               <div className="today-payment-row" key={payment.id}>
                 <div className={payment.dueDate < todayKey ? 'today-payment-icon overdue' : 'today-payment-icon'}><CircleDollarSign size={17} /></div>
-                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDate < iso(today) ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
+                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDate < currentTodayKey() ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
                 <button className="secondary-button compact" onClick={() => onMarkPaid(payment.id)}>{tr('markPaidToday')}</button>
               </div>
             ))}
@@ -1409,7 +1409,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
 
 
 function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id: string) => void }) {
-  const isOverdue = payment.status === 'pending' && payment.dueDate < iso(today)
+  const isOverdue = payment.status === 'pending' && payment.dueDate < currentTodayKey()
   return <div className={isOverdue ? 'payment-row overdue-row' : 'payment-row'}><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{formatMoney(payment.amount, payment.currency)} · {payment.client}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? tr('paymentOverdueLabel') + ' · ' + tr('paymentDue').toLowerCase() + ' ' + formatDate(payment.dueDate) : tr('paymentDue') + ' ' + formatDate(payment.dueDate)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>{tr('markPaid')}</button> : <span className="paid-label"><Check size={15} /> {tr('paid')}</span>}</div>
 }
 
