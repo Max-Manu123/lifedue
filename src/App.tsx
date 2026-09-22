@@ -511,6 +511,11 @@ function App() {
   }, [user, pendingSaveAfterAuth, plan.length])
 
   const addTask = async (task: Omit<Task, 'id' | 'status'>) => {
+    if (!isValidDueDate(task.dueDate)) {
+      const message = currentLanguage === 'pt' ? 'A data de entrega deve ser hoje ou uma data futura válida.' : 'The due date must be today or a valid future date.'
+      setTasksError(message)
+      throw new Error(message)
+    }
     setTasksError('')
     try {
       if (user && supabase) {
@@ -1466,8 +1471,8 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
       setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
       return
     }
-    if (!dueDate) {
-      setError(currentLanguage === 'pt' ? 'Escolha uma data de entrega.' : 'Choose a due date.')
+    if (!isValidDueDate(dueDate)) {
+      setError(currentLanguage === 'pt' ? 'Escolha uma data de entrega válida a partir de hoje.' : 'Choose a valid due date from today onward.')
       return
     }
     if (saving) return
@@ -1522,6 +1527,14 @@ function getTodayGreeting() {
   if (hour < 12) return tr('todayGreetingMorning')
   if (hour < 18) return tr('todayGreetingAfternoon')
   return tr('todayGreetingEvening')
+}
+
+function isValidDueDate(value: string) {
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false
+  const [year, month, day] = value.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return false
+  return value >= iso(today)
 }
 
 function formatDate(value: string) {
