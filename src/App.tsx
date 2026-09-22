@@ -146,9 +146,6 @@ function App() {
     setClientsLoading(true)
     setClientsError('')
 
-    removeLegacyDemoTasks(user)
-      .catch(error => console.error('LifeDue legacy demo cleanup failed:', error))
-
     fetchClients(user)
       .then(remoteClients => {
         if (!cancelled) setClients(remoteClients)
@@ -191,7 +188,8 @@ function App() {
     setTasksLoading(true)
     setTasksError('')
 
-    fetchTasks(user)
+    removeLegacyDemoTasks(user)
+      .then(() => fetchTasks(user))
       .then(remoteTasks => {
         if (!cancelled) setTasks(remoteTasks)
       })
