@@ -24,6 +24,7 @@ export function AuthModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const pt = language === 'pt'
 
   const passwordStrength = useMemo(() => {
     if (mode !== 'signup' || !password) return { score: 0, label: '', tone: '' }
@@ -51,7 +52,6 @@ export function AuthModal({
     setSuccess('')
   }
 
-  const pt = language === 'pt'
   const title = mode === 'login' ? (pt ? 'Entrar no LifeDue' : 'Sign in to LifeDue')
     : mode === 'signup' ? (pt ? 'Criar sua conta' : 'Create your account')
     : (pt ? 'Redefinir senha' : 'Reset your password')
