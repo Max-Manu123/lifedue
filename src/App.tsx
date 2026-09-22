@@ -299,7 +299,7 @@ function App() {
     setTasksError('')
     try {
       if (supabase && user) {
-        const { data, error } = await supabase.functions.invoke('quick-add', { body: { text: quickText.trim(), today: iso(today), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone } })
+        const { data, error } = await supabase.functions.invoke('quick-add', { body: { text: quickText.trim(), today: iso(today), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, language } })
         if (error) throw error
         const items = (data?.items ?? []) as QuickAddItem[]
         if (items.length > 0) {
