@@ -144,6 +144,7 @@ function App() {
   const [plan, setPlan] = useState<Task[]>([])
   const [planPayments, setPlanPayments] = useState<QuickAddItem[]>([])
   const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
   const quickAddRequestId = useRef(0)
   const [showAdd, setShowAdd] = useState(false)
   const [showAddPayment, setShowAddPayment] = useState(false)
@@ -313,7 +314,7 @@ function App() {
     if (!input) {
       setPlan([])
       setPlanPayments([])
-      setTasksError(currentLanguage === 'pt' ? 'Escreva pelo menos uma tarefa ou pagamento para criar um plano.' : 'Describe at least one task or payment to create a plan.')
+      setAiError(currentLanguage === 'pt' ? 'Escreva pelo menos uma tarefa ou pagamento para criar um plano.' : 'Describe at least one task or payment to create a plan.')
       return
     }
 
@@ -321,7 +322,7 @@ function App() {
     setPlan([])
     setPlanPayments([])
     setAiLoading(true)
-    setTasksError('')
+    setAiError('')
 
     try {
       if (!supabase) throw new Error('Supabase is not configured.')
@@ -356,7 +357,7 @@ function App() {
       if (requestId !== quickAddRequestId.current) return
 
       if (!items.length) {
-        setTasksError(currentLanguage === 'pt'
+        setAiError(currentLanguage === 'pt'
           ? 'Não encontrei nenhuma tarefa ou cobrança clara no texto. Tente escrever uma ação, cliente e prazo.'
           : 'I could not find a clear task or payment. Try describing an action, client, and deadline.')
         return
@@ -395,7 +396,7 @@ function App() {
     } catch (error) {
       if (requestId !== quickAddRequestId.current) return
       console.error('LifeDue AI Quick Add failed:', error)
-      setTasksError(currentLanguage === 'pt'
+      setAiError(currentLanguage === 'pt'
         ? 'A IA não está disponível agora. Tente novamente.'
         : 'AI Quick Add is unavailable right now. Please try again.')
     } finally {
@@ -646,7 +647,8 @@ function App() {
                 todayTasks={todayTasks}
                 pendingPayments={pendingPayments}
                 quickText={quickText}
-                onQuickTextChange={setQuickText}
+                aiError={aiError}
+                onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }}
                 onToggle={toggleTask}
                 plan={plan}
                 onCreatePlan={createPlan}
@@ -1003,12 +1005,13 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, onQuickTextChange, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user }: {
+function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiError, onQuickTextChange, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
   pendingPayments: Payment[]
   quickText: string
+  aiError: string
   onQuickTextChange: (value: string) => void
   onToggle: (id: string) => void
   plan: Task[]
@@ -1075,6 +1078,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, onQ
             <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
             <span>{tr('plain')}</span>
           </div>
+          {aiError && <div className="quick-error" role="alert">{aiError}</div>}
         </div>
       </section>
 
