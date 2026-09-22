@@ -18,7 +18,7 @@ import {
 import type { Client, Payment, Priority, QuickAddItem, Task } from './types'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
-import { fetchClients, fetchPayments, fetchTasks, createTasks, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
+import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
@@ -145,6 +145,9 @@ function App() {
     let cancelled = false
     setClientsLoading(true)
     setClientsError('')
+
+    removeLegacyDemoTasks(user)
+      .catch(error => console.error('LifeDue legacy demo cleanup failed:', error))
 
     fetchClients(user)
       .then(remoteClients => {
