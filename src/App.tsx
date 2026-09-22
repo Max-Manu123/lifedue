@@ -637,7 +637,6 @@ function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => vo
         <div className="landing-nav-right">
           <div className="language-switcher"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div>
           <button className="ghost-button landing-signin" onClick={onAuth}>{language==='pt' ? 'Entrar' : 'Sign in'}</button>
-          <InstallPwaButton language={language} />
           <button className="nav-cta" onClick={onStart}>{language==='pt' ? 'Começar grátis' : 'Start for free'} <ArrowRight size={15} /></button>
         </div>
       </header>
@@ -661,12 +660,12 @@ function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => vo
           <div className="preview-glow" />
           <div className="hero-preview">
             <div className="preview-top"><span>LifeDue</span><span className="preview-status"><span className="status-dot">●</span> {language==='pt' ? 'Tudo sob controle' : 'All on track'}</span></div>
-            <div className="preview-balance"><div><span>{language==='pt' ? 'A receber' : 'To collect'}</span><strong>2.500 AOA</strong></div><CircleDollarSign size={22} /></div>
+            <div className="preview-balance"><div><span>{language==='pt' ? 'A receber' : 'To collect'}</span><strong>$2,500 USD</strong></div><CircleDollarSign size={22} /></div>
             <div className="preview-title">{tr('today').toUpperCase()}</div>
-            <PreviewTask title={language==='pt' ? 'Entregar landing page' : 'Deliver landing page'} client={language==='pt' ? 'Maria' : 'Maria'} urgent />
-            <PreviewTask title={language==='pt' ? 'Cobrar pagamento' : 'Follow up payment'} client={language==='pt' ? 'João' : 'John'} />
+            <PreviewTask title={language==='pt' ? 'Entregar landing page' : 'Deliver landing page'} client={language==='pt' ? 'Maria' : 'Maria'} kind={language==='pt' ? 'Entrega' : 'Delivery'} urgent />
+            <PreviewTask title={language==='pt' ? 'Cobrar pagamento' : 'Follow up payment'} client={language==='pt' ? 'João' : 'John'} kind={language==='pt' ? 'Pagamento' : 'Payment'} />
             <div className="preview-title muted">{tr('upNext').toUpperCase()}</div>
-            <PreviewTask title={language==='pt' ? 'Enviar proposta' : 'Send proposal'} client="Carlos" />
+            <PreviewTask title={language==='pt' ? 'Enviar proposta' : 'Send proposal'} client="Carlos" kind={language==='pt' ? 'Entrega' : 'Delivery'} />
             <div className="preview-footer"><Check size={14} /> {language==='pt' ? '3 itens organizados para você' : '3 items organized for you'}</div>
           </div>
         </div>
@@ -681,8 +680,8 @@ function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => vo
   )
 }
 
-function PreviewTask({ title, client, urgent = false }: { title: string; client: string; urgent?: boolean }) {
-  return <div className="preview-task"><span className={urgent ? 'preview-check urgent' : 'preview-check'}></span><div><strong>{title}</strong><small>{client}</small></div></div>
+function PreviewTask({ title, client, kind, urgent = false }: { title: string; client: string; kind: string; urgent?: boolean }) {
+  return <div className="preview-task"><span className={urgent ? 'preview-check urgent' : 'preview-check'}></span><div className="preview-task-content"><strong>{title}</strong><small>{client}</small></div><span className={kind === 'Payment' || kind === 'Pagamento' ? 'preview-badge payment' : 'preview-badge'}>{kind}</span></div>
 }
 
 function Feature({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
