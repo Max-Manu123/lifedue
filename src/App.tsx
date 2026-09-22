@@ -340,10 +340,10 @@ function App() {
     setTasksError('')
     try {
       const paymentMatch = quickText.match(/\$\s*(\d+(?:\.\d{1,2})?)/i)
-      const paymentTask = plan.find(task => /payment|pagamento|collect|receber/i.test(task.title + ' ' + task.client))
+      const paymentTask = plan.find(task => /payment|pagamento|collect|cobrar|receber/i.test(task.title))
       const paymentAmount = paymentMatch ? Number(paymentMatch[1]) : 0
 
-      const taskPlan = plan.filter(task => !planPayments.some(payment => payment.client.toLowerCase() === task.client.toLowerCase() && payment.dueDate === task.dueDate && task.title.toLowerCase().includes('payment')))
+      const taskPlan = plan.filter(task => !planPayments.some(payment => payment.client.trim().toLowerCase() === task.client.trim().toLowerCase() && payment.dueDate === task.dueDate && /payment|pagamento|collect|cobrar|receber/i.test(task.title)))
 
       if (user && supabase) {
         const existingTaskKeys = new Set(tasks.map(taskKey))
@@ -527,7 +527,7 @@ function App() {
             <MobileNav icon={<LayoutDashboard size={19} />} label={tr('today')} active={view === 'quick-add'} onClick={() => navigate('quick-add')} />
             <MobileNav icon={<ListTodo size={19} />} label={tr('tasks')} active={view === 'tasks'} onClick={() => navigate('tasks')} />
             <MobileNav icon={<Users size={19} />} label={tr('clients')} active={view === 'clients'} onClick={() => navigate('clients')} />
-            <MobileNav icon={<CreditCard size={19} />} label="Money" active={view === 'payments'} onClick={() => navigate('payments')} />
+            <MobileNav icon={<CreditCard size={19} />} label={tr('payments')} active={view === 'payments'} onClick={() => navigate('payments')} />
           </div>
         </div>
       )}
@@ -635,19 +635,19 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
           <div className="ai-result-head">
             <div>
               <div className="quick-label">{tr('yourPlan')}</div>
-              <h3>LifeDue found {plan.length} items.</h3>
+              <h3>{tr('foundItems').replace('{n}', String(plan.length))}</h3>
             </div>
             <Sparkles size={18} />
           </div>
           <div className="ai-plan-list">
             {plan.map((task, index) => (
               <div className="ai-plan-item" key={`ai-plan-${task.id}-${index}`}>
-                <div className="ai-plan-icon">{task.title.toLowerCase().includes('payment') ? '💰' : task.title.toLowerCase().includes('proposal') ? '📄' : '💻'}</div>
+                <div className="ai-plan-icon">{/payment|pagamento|cobrar|receber/i.test(task.title) ? '💰' : /proposal|proposta/i.test(task.title) ? '📄' : '💻'}</div>
                 <div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
               </div>
             ))}
           </div>
-          <button className="primary-button" onClick={onAddPlan}>Add all <ArrowRight size={17} /></button>
+          <button className="primary-button" onClick={onAddPlan}>{tr('addAll')} <ArrowRight size={17} /></button>
         </section>
       )}
 
@@ -658,7 +658,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
         <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('nothing')}</strong><p>{tr('breathing')}</p></div></div>
       )}
 
-      <div className="section-heading up-next"><h2>{tr('upNext')}</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> Organize my plan</button></div>
+      <div className="section-heading up-next"><h2>{tr('upNext')}</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> {tr('organize')}</button></div>
       {nextTasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} disabled={busyTaskId === task.id} />)}
       <div className="summary-line">{tasks.filter(t => t.status === 'open').length} {tr('open').toLowerCase()} · {pendingMoneyLabel(pendingPayments)} {tr('pending')}</div>
     </div>
@@ -685,8 +685,8 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
   const [filter, setFilter] = useState<'all' | 'open' | 'completed'>('open')
   const filtered = tasks.filter(t => filter === 'all' || t.status === filter)
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{tr('workQueue')}</p><h2>{tr('tasksHeadline')}</h2><p className="page-description">{tr('tasksDescription')}</p></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> Add task</button></div>
-    <div className="filter-tabs">{(['open', 'completed', 'all'] as const).map(item => <button key={item} className={filter === item ? 'filter-tab active' : 'filter-tab'} onClick={() => setFilter(item)}>{item === 'open' ? 'Open' : item === 'completed' ? 'Completed' : 'All'} <span>{tasks.filter(t => item === 'all' || t.status === item).length}</span></button>)}</div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('workQueue')}</p><h2>{tr('tasksHeadline')}</h2><p className="page-description">{tr('tasksDescription')}</p></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> {tr('addTask')}</button></div>
+    <div className="filter-tabs">{(['open', 'completed', 'all'] as const).map(item => <button key={item} className={filter === item ? 'filter-tab active' : 'filter-tab'} onClick={() => setFilter(item)}>{item === 'open' ? tr('open') : item === 'completed' ? tr('completed') : tr('all')} <span>{tasks.filter(t => item === 'all' || t.status === item).length}</span></button>)}</div>
     <div className="card-list">{filtered.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} />)}</div>
   </div>
 }
@@ -698,7 +698,7 @@ function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: T
       const clientTasks = tasks.filter(t => t.client.toLowerCase() === client.name.toLowerCase())
       const clientPayments = payments.filter(p => p.client.toLowerCase() === client.name.toLowerCase() && p.status === 'pending')
       const amount = clientPayments.reduce((sum, p) => sum + p.amount, 0)
-      return <div className="client-card" key={client.id}><div className="avatar">{client.name.charAt(0).toUpperCase()}</div><div className="client-name">{client.name}</div><div className="client-meta">{clientTasks.length} tasks · {amount ? '$' + amount + ' pending' : '$0'}</div><div className="client-progress"><span style={{ width: Math.min(100, clientTasks.length * 18) + '%' }} /></div></div>
+      return <div className="client-card" key={client.id}><div className="avatar">{client.name.charAt(0).toUpperCase()}</div><div className="client-name">{client.name}</div><div className="client-meta">{clientTasks.length} {tr('tasks').toLowerCase()} · {amount ? formatMoney(amount, clientPayments[0]?.currency ?? 'USD') + ' ' + tr('pending') : formatMoney(0, clientPayments[0]?.currency ?? 'USD')}</div><div className="client-progress"><span style={{ width: Math.min(100, clientTasks.length * 18) + '%' }} /></div></div>
     })}</div>
   </div>
 }
@@ -707,7 +707,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
   const pending = payments.filter(p => p.status === 'pending')
   const paid = payments.filter(p => p.status === 'paid')
   return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{tr('moneyDue')}</p><h2>{tr('paymentsHeadline')}</h2><p className="page-description">{tr('paymentsDescription')}</p></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> Add payment</button><div className="money-total">{pending.reduce((s, p) => s + p.amount, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}<span>pending</span></div></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('moneyDue')}</p><h2>{tr('paymentsHeadline')}</h2><p className="page-description">{tr('paymentsDescription')}</p></div><button className="primary-button" onClick={onAdd}><Plus size={17} /> {currentLanguage === 'pt' ? 'Adicionar pagamento' : 'Add payment'}</button><div className="money-total">{pendingMoneyLabel(pending)}<span>{tr('pending')}</span></div></div>
     {pending.length === 0 && <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('clear')}</strong><p>{tr('noPending')}</p></div></div>}
     <div className="payment-list">{pending.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div>
     {paid.length > 0 && <><div className="section-heading"><h2>{tr('paid')}</h2></div><div className="payment-list">{paid.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div></>}
