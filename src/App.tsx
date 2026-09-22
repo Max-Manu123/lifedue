@@ -604,7 +604,6 @@ function App() {
                 tasks={tasks}
                 overdue={overdue}
                 todayTasks={todayTasks}
-                pendingAmount={pendingAmount}
                 pendingPayments={pendingPayments}
                 quickText={quickText}
                 onQuickTextChange={setQuickText}
