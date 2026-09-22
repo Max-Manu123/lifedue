@@ -316,51 +316,91 @@ function App() {
       setTasksError(currentLanguage === 'pt' ? 'Escreva pelo menos uma tarefa ou pagamento para criar um plano.' : 'Describe at least one task or payment to create a plan.')
       return
     }
+
     const requestId = ++quickAddRequestId.current
     setPlan([])
     setPlanPayments([])
     setAiLoading(true)
     setTasksError('')
+
     try {
-      if (supabase && user) {
-        const { data, error } = await supabase.functions.invoke('quick-add', { body: { text: input, today: iso(today), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, language } })
-        if (error) {
-          let detail = ''
-          try {
-            const response = (error as FunctionsHttpError & { context?: Response }).context
-            if (response) {
-              const body = await response.clone().json()
-              detail = typeof body?.detail === 'string' ? body.detail : typeof body?.message === 'string' ? body.message : ''
-            }
-          } catch {}
-          console.error('LifeDue AI Quick Add failed:', error, detail)
-          throw new Error(detail || error.message)
-        }
-        const items = (data?.items ?? []) as QuickAddItem[]
-        if (items.length > 0 && requestId === quickAddRequestId.current) {
-          const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
-          const normalizedName = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
-          const exactClient = (value: string) => {
-            const match = clientNames.find(name => normalizedName(name) === normalizedName(value))
-            if (match) return match
-            if (normalizedName(value) === 'john') {
-              const joao = clientNames.find(name => normalizedName(name) === 'joao')
-              if (joao) return joao
-            }
-            return value
+      if (!supabase) throw new Error('Supabase is not configured.')
+
+      const { data, error } = await supabase.functions.invoke('quick-add', {
+        body: {
+          text: input,
+          today: iso(today),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          language,
+        },
+      })
+
+      if (error) {
+        let detail = ''
+        try {
+          const response = (error as FunctionsHttpError & { context?: Response }).context
+          if (response) {
+            const body = await response.clone().json()
+            detail = typeof body?.detail === 'string'
+              ? body.detail
+              : typeof body?.message === 'string'
+                ? body.message
+                : ''
           }
-          const normalizedItems = items.map(item => ({ ...item, client: exactClient(item.client), title: currentLanguage === 'pt' ? localizeAiTitle(item.title, item.kind) : item.title }))
-          setPlan(normalizedItems.map(item => ({ id: crypto.randomUUID(), title: item.kind === 'payment' ? (currentLanguage === 'pt' ? 'Cobrar pagamento' : 'Follow up payment') : item.title, client: item.client, dueDate: item.dueDate, priority: item.priority, status: 'open' })))
-          setPlanPayments(normalizedItems.filter(item => item.kind === 'payment'))
-          setView('quick-add')
-          return
-        }
+        } catch {}
+        console.error('LifeDue AI Quick Add failed:', error, detail)
+        throw new Error(detail || error.message)
       }
+
+      const items = Array.isArray(data?.items) ? data.items as QuickAddItem[] : []
+      if (requestId !== quickAddRequestId.current) return
+
+      if (!items.length) {
+        setTasksError(currentLanguage === 'pt'
+          ? 'Não encontrei nenhuma tarefa ou cobrança clara no texto. Tente escrever uma ação, cliente e prazo.'
+          : 'I could not find a clear task or payment. Try describing an action, client, and deadline.')
+        return
+      }
+
+      const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
+      const normalizedName = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+      const exactClient = (value: string) => {
+        const match = clientNames.find(name => normalizedName(name) === normalizedName(value))
+        if (match) return match
+        if (normalizedName(value) === 'john') {
+          const joao = clientNames.find(name => normalizedName(name) === 'joao')
+          if (joao) return joao
+        }
+        return value
+      }
+
+      const normalizedItems = items.map(item => ({
+        ...item,
+        client: exactClient(item.client),
+        title: currentLanguage === 'pt' ? localizeAiTitle(item.title, item.kind) : item.title,
+      }))
+
+      setPlan(normalizedItems.map(item => ({
+        id: crypto.randomUUID(),
+        title: item.kind === 'payment'
+          ? (currentLanguage === 'pt' ? 'Cobrar pagamento' : 'Follow up payment')
+          : item.title,
+        client: item.client,
+        dueDate: item.dueDate,
+        priority: item.priority,
+        status: 'open',
+      })))
+      setPlanPayments(normalizedItems.filter(item => item.kind === 'payment'))
+      setView('quick-add')
     } catch (error) {
       if (requestId !== quickAddRequestId.current) return
       console.error('LifeDue AI Quick Add failed:', error)
-      setTasksError(currentLanguage === 'pt' ? 'A IA não está disponível agora. Tente novamente.' : 'AI Quick Add is unavailable right now. Please try again.')
-    } finally { setAiLoading(false) }
+      setTasksError(currentLanguage === 'pt'
+        ? 'A IA não está disponível agora. Tente novamente.'
+        : 'AI Quick Add is unavailable right now. Please try again.')
+    } finally {
+      if (requestId === quickAddRequestId.current) setAiLoading(false)
+    }
   }
 
   const saveAuthDraft = () => {
