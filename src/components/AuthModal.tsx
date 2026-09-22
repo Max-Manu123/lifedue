@@ -33,6 +33,15 @@ export function AuthModal({
     : mode === 'signup' ? (pt ? 'Criar conta' : 'Create account')
     : (pt ? 'Enviar link' : 'Send reset link')
 
+  const friendlyAuthError = (authError: unknown) => {
+    const message = authError instanceof Error ? authError.message.toLowerCase() : ''
+    if (message.includes('invalid login credentials')) return pt ? 'Email ou senha incorretos. Verifique os dados e tente novamente.' : 'Incorrect email or password. Check your details and try again.'
+    if (message.includes('email not confirmed')) return pt ? 'Confirme seu email antes de entrar. Verifique também a pasta de spam.' : 'Confirm your email before signing in. Check your spam folder too.'
+    if (message.includes('user already registered')) return pt ? 'Este email já tem uma conta. Entre em vez de criar outra.' : 'This email already has an account. Sign in instead of creating another one.'
+    if (message.includes('password should be at least')) return pt ? 'A senha precisa ter pelo menos 6 caracteres.' : 'Your password must be at least 6 characters.'
+    return pt ? 'Não foi possível concluir agora. Verifique os dados e tente novamente.' : 'We could not complete this right now. Check your details and try again.'
+  }
+
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (loading) return
@@ -78,9 +87,8 @@ export function AuthModal({
       if (authError) throw authError
       setSuccess(pt ? 'Enviamos um link de redefinição para seu email.' : 'We sent a password reset link to your email.')
     } catch (authError) {
-      setError(authError instanceof Error
-        ? authError.message
-        : (pt ? 'Não foi possível concluir. Tente novamente.' : 'Something went wrong. Please try again.'))
+      console.error('LifeDue authentication failed:', authError)
+      setError(friendlyAuthError(authError))
     } finally {
       setLoading(false)
     }
@@ -110,7 +118,8 @@ export function AuthModal({
     })
 
     if (authError) {
-      setError(authError.message)
+      console.error('LifeDue Google authentication failed:', authError)
+      setError(friendlyAuthError(authError))
       setLoading(false)
     }
     // On success Supabase redirects immediately. Keep the button locked so
@@ -170,7 +179,8 @@ export function AuthModal({
               value={email}
               onChange={event => setEmail(event.target.value)}
               placeholder="you@example.com"
-              autoComplete="email"
+              autoComplete={mode === 'login' ? 'username' : 'email'}
+              autoFocus
               required
             />
           </label>
@@ -205,11 +215,6 @@ export function AuthModal({
         </form>
 
         <div className="auth-links">
-          {mode === 'login' && (
-            <button onClick={() => { setMode('reset'); setError(''); setSuccess('') }}>
-              {pt ? 'Esqueci minha senha' : 'Forgot password?'}
-            </button>
-          )}
           {mode === 'reset' && (
             <button onClick={() => { setMode('login'); setError(''); setSuccess('') }}>
               <ArrowLeft size={14} /> {pt ? 'Voltar para entrar' : 'Back to sign in'}
