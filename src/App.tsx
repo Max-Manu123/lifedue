@@ -511,11 +511,52 @@ function App() {
             {view === 'planner' && (
               <PlannerView
                 plan={plan}
-                onGenerate={() => {
-                  const suggested = [...openTasks].sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 5)
-                  setPlan(suggested)
-                  setPlanPayments([])
-                  setView('planner')
+                onGenerate={async () => {
+                  const candidates = [...openTasks].sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 5)
+                  if (!candidates.length || !user || !supabase) {
+                    setPlan(candidates)
+                    setPlanPayments([])
+                    setView('planner')
+                    return
+                  }
+
+                  const requestId = ++quickAddRequestId.current
+                  setAiLoading(true)
+                  setTasksError('')
+                  setPlan([])
+                  try {
+                    const { data, error } = await supabase.functions.invoke('quick-add', {
+                      body: {
+                        mode: 'plan',
+                        today: iso(today),
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        language,
+                        tasks: candidates,
+                      },
+                    })
+                    if (error) throw error
+                    const orderedIds = Array.isArray(data?.orderedIds) ? data.orderedIds as string[] : []
+                    const byId = new Map(candidates.map(task => [task.id, task]))
+                    const ordered = orderedIds.map(id => byId.get(id)).filter((task): task is Task => Boolean(task))
+                    if (requestId === quickAddRequestId.current && ordered.length === candidates.length) {
+                      setPlan(ordered)
+                      setPlanPayments([])
+                      setView('planner')
+                      return
+                    }
+                    throw new Error('Planner returned an invalid order.')
+                  } catch (error) {
+                    if (requestId !== quickAddRequestId.current) return
+                    console.error('LifeDue AI Planner failed:', error)
+                    setTasksError(currentLanguage === 'pt'
+                      ? 'O planejador IA não está disponível agora. Tente novamente.'
+                      : 'AI Planner is unavailable right now. Please try again.')
+                    setPlan([])
+                    setPlanPayments([])
+                    setView('planner')
+                  } finally {
+                    setAiLoading(false)
+                  }
                 }}
                 onAddPlan={addPlan}
               />
