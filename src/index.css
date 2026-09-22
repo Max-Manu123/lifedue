@@ -98,6 +98,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .quick-main textarea::placeholder { color: #94a3b8; }
 .quick-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
 .quick-actions span { color: #94a3b8; font-size: 11px; }
+.quick-error { margin-top: 9px; padding: 9px 11px; border: 1px solid #fecaca; border-radius: 9px; background: #fff7f7; color: #b91c1c; font-size: 11px; line-height: 1.45; }
 .ai-result-card { margin-top: 16px; background: #fff; border: 1px solid #c7d2fe; border-radius: 16px; padding: 18px; box-shadow: 0 8px 30px rgba(79,70,229,.06); }
 .ai-result-head { display: flex; justify-content: space-between; align-items: flex-start; color: #4f46e5; }
 .ai-result-head h3 { color: #0f172a; margin: 4px 0 0; font-size: 16px; }
