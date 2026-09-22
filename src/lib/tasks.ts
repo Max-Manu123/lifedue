@@ -1,4 +1,4 @@
-import type { User } from '@supabase/supabase-js'
+import type { SupabaseClient, User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import type { Client, Payment, Task } from '../types'
 
@@ -9,17 +9,22 @@ type RemoteTask = {
   priority: Task['priority']
   status: Task['status']
   client_id: string | null
-  clients: { name: string } | null
+  clients: { name: string } | { name: string }[] | null
 }
 
-function requireSupabaseUser(user: User | null) {
+function requireSupabaseUser(user: User | null): SupabaseClient {
   if (!supabase || !user) throw new Error('Authentication is required for cloud tasks.')
-  return user
+  return supabase!
+}
+
+function clientName(value: { name: string } | { name: string }[] | null | undefined, fallback: string) {
+  if (Array.isArray(value)) return value[0]?.name ?? fallback
+  return value?.name ?? fallback
 }
 
 export async function fetchClients(user: User): Promise<Client[]> {
   requireSupabaseUser(user)
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('clients')
     .select('id, name')
     .eq('user_id', user.id)
@@ -30,7 +35,7 @@ export async function fetchClients(user: User): Promise<Client[]> {
 
 export async function fetchPayments(user: User): Promise<Payment[]> {
   requireSupabaseUser(user)
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('payments')
     .select('id, amount, currency, due_date, status, client_id, clients(name)')
     .eq('user_id', user.id)
@@ -42,10 +47,10 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
     currency: string
     due_date: string
     status: Payment['status']
-    clients: { name: string } | null
+    clients: { name: string } | { name: string }[] | null
   }>).map(payment => ({
     id: payment.id,
-    client: payment.clients?.name ?? 'No client',
+    client: clientName(payment.clients, 'No client'),
     amount: Number(payment.amount),
     currency: payment.currency,
     dueDate: payment.due_date,
@@ -56,7 +61,7 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
 export async function createPayment(user: User, payment: Omit<Payment, 'id' | 'status'>): Promise<Payment> {
   requireSupabaseUser(user)
   const clientId = await getOrCreateClient(user, payment.client)
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('payments')
     .insert({
       user_id: user.id,
@@ -75,11 +80,11 @@ export async function createPayment(user: User, payment: Omit<Payment, 'id' | 's
     currency: string
     due_date: string
     status: Payment['status']
-    clients: { name: string } | null
+    clients: { name: string } | { name: string }[] | null
   }
   return {
     id: row.id,
-    client: row.clients?.name ?? payment.client,
+    client: clientName(row.clients, payment.client),
     amount: Number(row.amount),
     currency: row.currency,
     dueDate: row.due_date,
@@ -89,7 +94,7 @@ export async function createPayment(user: User, payment: Omit<Payment, 'id' | 's
 
 export async function updatePaymentStatus(user: User, id: string, status: Payment['status']) {
   requireSupabaseUser(user)
-  const { error } = await supabase
+  const { error } = await supabase!
     .from('payments')
     .update({ status })
     .eq('id', id)
@@ -99,7 +104,7 @@ export async function updatePaymentStatus(user: User, id: string, status: Paymen
 
 export async function fetchTasks(user: User): Promise<Task[]> {
   requireSupabaseUser(user)
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('tasks')
     .select('id, title, due_date, priority, status, client_id, clients(name)')
     .eq('user_id', user.id)
@@ -109,7 +114,7 @@ export async function fetchTasks(user: User): Promise<Task[]> {
   return ((data ?? []) as RemoteTask[]).map(task => ({
     id: task.id,
     title: task.title,
-    client: task.clients?.name ?? 'No client',
+    client: clientName(task.clients, 'No client'),
     dueDate: task.due_date,
     priority: task.priority,
     status: task.status,
@@ -119,7 +124,7 @@ export async function fetchTasks(user: User): Promise<Task[]> {
 async function getOrCreateClient(user: User, name: string): Promise<string> {
   requireSupabaseUser(user)
   const normalized = name.trim()
-  const { data: existing, error: lookupError } = await supabase
+  const { data: existing, error: lookupError } = await supabase!
     .from('clients')
     .select('id')
     .eq('user_id', user.id)
@@ -129,7 +134,7 @@ async function getOrCreateClient(user: User, name: string): Promise<string> {
   if (lookupError) throw lookupError
   if (existing) return existing.id
 
-  const { data: created, error: createError } = await supabase
+  const { data: created, error: createError } = await supabase!
     .from('clients')
     .insert({ user_id: user.id, name: normalized })
     .select('id')
@@ -154,7 +159,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
   }
   if (!rows.length) return []
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('tasks')
     .insert(rows)
     .select('id, title, due_date, priority, status, client_id, clients(name)')
@@ -163,7 +168,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
   return (data as RemoteTask[]).map(task => ({
     id: task.id,
     title: task.title,
-    client: task.clients?.name ?? 'No client',
+    client: clientName(task.clients, 'No client'),
     dueDate: task.due_date,
     priority: task.priority,
     status: task.status,
@@ -172,7 +177,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
 
 export async function updateTaskStatus(user: User, id: string, status: Task['status']) {
   requireSupabaseUser(user)
-  const { data, error } = await supabase
+  const { data, error } = await supabase!
     .from('tasks')
     .update({ status })
     .eq('id', id)
