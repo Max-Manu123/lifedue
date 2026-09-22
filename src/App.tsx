@@ -7,6 +7,7 @@ import {
   CircleDollarSign,
   Clock3,
   CreditCard,
+  Download,
   LayoutDashboard,
   ListTodo,
   Menu,
@@ -477,7 +478,7 @@ function App() {
                 <div className="eyebrow">{tr('workspace')}</div>
                 <h1>{view === 'quick-add' ? tr('today') : view === 'tasks' ? tr('tasks') : view === 'clients' ? tr('clients') : view === 'payments' ? tr('payments') : tr('planner')}</h1>
               </div>
-              <div className="topbar-actions">{user ? <button className="account-button" title={user.email ?? ''} onClick={handleSignOut}>{currentLanguage==='pt' ? 'Sair' : 'Sign out'}</button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{currentLanguage==='pt' ? 'Entrar' : 'Sign in'}</button>}<div className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div><button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button></div>
+              <div className="topbar-actions">{user ? <button className="account-button" title={user.email ?? ''} onClick={handleSignOut}>{currentLanguage==='pt' ? 'Sair' : 'Sign out'}</button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{currentLanguage==='pt' ? 'Entrar' : 'Sign in'}</button>}<InstallPwaButton language={language} /><div className="language-switcher desktop-language" aria-label="Change language"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div><button className="primary-button compact" onClick={() => setShowAdd(true)}><Plus size={17} /> {tr('addTask')}</button></div>
             </header>
 
             <div key={view} className={"route-view route-" + view}>
@@ -580,6 +581,49 @@ function App() {
   )
 }
 
+function InstallPwaButton({ language, variant = 'default' }: { language: Language; variant?: 'default' | 'hero' }) {
+  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
+  const [installed, setInstalled] = useState(false)
+
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
+    setInstalled(isStandalone)
+
+    const handleBeforeInstall = (event: Event) => {
+      event.preventDefault()
+      setInstallEvent(event as BeforeInstallPromptEvent)
+    }
+    const handleInstalled = () => {
+      setInstalled(true)
+      setInstallEvent(null)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+    window.addEventListener('appinstalled', handleInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+      window.removeEventListener('appinstalled', handleInstalled)
+    }
+  }, [])
+
+  if (installed || !installEvent) return null
+
+  const install = async () => {
+    const event = installEvent
+    if (!event) return
+    await event.prompt()
+    await event.userChoice
+    setInstallEvent(null)
+  }
+
+  return (
+    <button className={variant === 'hero' ? 'install-pwa-button install-pwa-hero' : 'install-pwa-button'} onClick={install}>
+      <Download size={15} />
+      {language === 'pt' ? 'Baixar LifeDue' : 'Install LifeDue'}
+    </button>
+  )
+}
+
 function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => void; onAuth: () => void; language: Language; setLanguage: (language: Language) => void }) {
   return (
     <div className="landing">
@@ -588,6 +632,7 @@ function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => vo
         <div className="landing-nav-right">
           <div className="language-switcher"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div>
           <button className="ghost-button landing-signin" onClick={onAuth}>{language==='pt' ? 'Entrar' : 'Sign in'}</button>
+          <InstallPwaButton language={language} />
           <button className="nav-cta" onClick={onStart}>{language==='pt' ? 'Começar grátis' : 'Start for free'} <ArrowRight size={15} /></button>
         </div>
       </header>
@@ -604,6 +649,7 @@ function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => vo
             <button className="hero-secondary" onClick={onAuth}>{language==='pt' ? 'Já tenho uma conta' : 'I already have an account'}</button>
           </div>
           <div className="microcopy"><Check size={14} /> {language==='pt' ? 'Grátis para começar · sem cartão' : 'Free to start · no credit card'}</div>
+          <InstallPwaButton language={language} variant="hero" />
         </div>
 
         <div className="hero-visual">
