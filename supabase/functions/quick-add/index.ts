@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const MAX_INPUT_LENGTH = 4000
 const MAX_ITEMS = 12
-const MODEL = 'gemini-2.5-flash'
+const MODEL = 'gemini-3.6-flash'
 
 const currencies = ['USD', 'EUR', 'BRL', 'AOA', 'GBP', 'Other'] as const
 type Currency = typeof currencies[number]
@@ -110,7 +110,6 @@ async function callGemini(apiKey: string, prompt: string) {
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: {
             responseMimeType: 'application/json',
-            temperature: 0.1,
           },
         }),
       },
