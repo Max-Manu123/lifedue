@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ArrowRight,
   Bot,
@@ -113,6 +113,7 @@ function App() {
   const [plan, setPlan] = useState<Task[]>([])
   const [planPayments, setPlanPayments] = useState<QuickAddItem[]>([])
   const [aiLoading, setAiLoading] = useState(false)
+  const quickAddRequestId = useRef(0)
   const [showAdd, setShowAdd] = useState(false)
   const [showAddPayment, setShowAddPayment] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -287,6 +288,9 @@ function App() {
       setAuthOpen(true)
       return
     }
+    const requestId = ++quickAddRequestId.current
+    setPlan([])
+    setPlanPayments([])
     setAiLoading(true)
     setTasksError('')
     try {
@@ -305,7 +309,7 @@ function App() {
           throw new Error(detail || error.message)
         }
         const items = (data?.items ?? []) as QuickAddItem[]
-        if (items.length > 0) {
+        if (items.length > 0 && requestId === quickAddRequestId.current) {
           const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
           const normalizedName = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
           const exactClient = (value: string) => {
@@ -325,6 +329,7 @@ function App() {
         }
       }
     } catch (error) {
+      if (requestId !== quickAddRequestId.current) return
       console.error('LifeDue AI Quick Add failed:', error)
       setTasksError(currentLanguage === 'pt' ? 'A IA não está disponível agora. Tente novamente.' : 'AI Quick Add is unavailable right now. Please try again.')
     } finally { setAiLoading(false) }
