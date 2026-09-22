@@ -785,3 +785,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .planner-empty p { margin:5px 0 0; }
 @media (max-width:700px) { .planner-page .page-intro { align-items:stretch; flex-direction:column; } .planner-page .page-intro .primary-button { width:100%; } .planner-overview { grid-template-columns:repeat(2,1fr); } .planner-actions { display:grid; grid-template-columns:1fr; } .planner-actions button { width:100%; } .plan-item { grid-template-columns:28px 1fr auto; gap:8px; } .plan-date { grid-column:2; grid-row:2; } .plan-main { grid-column:2; grid-row:1; } .plan-priority { grid-column:3; grid-row:1 / span 2; align-self:center; } }
 @media (max-width:360px) { .planner-overview { gap:6px; } .planner-overview > div { padding:11px; } .planner-overview strong { font-size:19px; } .plan-priority { display:none; } }
+
+
+/* Today: cleaner hierarchy and fewer competing CTAs */
+.route-quick-add .sidebar-add { opacity:.72; }
+.route-quick-add .topbar { margin-bottom:22px; }
+.route-quick-add .today-hero-actions { justify-content:flex-end; }
+.route-quick-add .today-hero-actions .secondary-button { min-width:132px; }
+.today-planner-cta { display:flex; align-items:center; gap:12px; margin-top:4px; padding:14px 16px; border:1px solid #e2e8f0; background:#fff; border-radius:14px; cursor:pointer; box-shadow:0 4px 16px rgba(15,23,42,.025); transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease; }
+.today-planner-cta:hover,.today-planner-cta:focus-visible { transform:translateY(-1px); border-color:#c7d2fe; box-shadow:0 8px 22px rgba(79,70,229,.08); outline:none; }
+.today-planner-icon { width:36px; height:36px; display:grid; place-items:center; flex:0 0 auto; border-radius:10px; background:#eef2ff; color:#4f46e5; }
+.today-planner-cta > div:nth-child(2) { flex:1; min-width:0; }
+.today-planner-cta strong,.today-planner-cta span { display:block; }
+.today-planner-cta strong { color:#0f172a; font-size:13px; }
+.today-planner-cta span { margin-top:3px; color:#64748b; font-size:10px; line-height:1.45; }
+@media (max-width:700px) { .route-quick-add .today-hero-actions { display:block; } .route-quick-add .today-hero-actions .secondary-button { width:auto; } .today-planner-cta { padding:13px; } }
+@media (max-width:360px) { .today-planner-cta span { font-size:9px; } }
