@@ -634,12 +634,12 @@ function App() {
             </header>
 
             <div key={view} className={"route-view route-" + view}>
-            {tasksError && <div className="error-banner" role="alert">{tasksError}</div>}
-            {clientsError && <div className="error-banner" role="alert">{clientsError}</div>}
-            {paymentsError && <div className="error-banner" role="alert">{paymentsError}</div>}
-            {tasksLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar tarefas…' : 'Loading tasks…'}</div>}
-            {clientsLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar clientes…' : 'Loading clients…'}</div>}
-            {paymentsLoading && <div className="loading-banner">{currentLanguage === 'pt' ? 'A carregar pagamentos…' : 'Loading payments…'}</div>}
+            {view === 'tasks' && tasksError && <div className="error-banner" role="alert">{tasksError}</div>}
+            {view === 'clients' && clientsError && <div className="error-banner" role="alert">{clientsError}</div>}
+            {view === 'payments' && paymentsError && <div className="error-banner" role="alert">{paymentsError}</div>}
+            {view === 'tasks' && tasksLoading && <div className="loading-banner" aria-live="polite">{currentLanguage === 'pt' ? 'A carregar tarefas…' : 'Loading tasks…'}</div>}
+            {view === 'clients' && clientsLoading && <div className="loading-banner" aria-live="polite">{currentLanguage === 'pt' ? 'A carregar clientes…' : 'Loading clients…'}</div>}
+            {view === 'payments' && paymentsLoading && <div className="loading-banner" aria-live="polite">{currentLanguage === 'pt' ? 'A carregar pagamentos…' : 'Loading payments…'}</div>}
             {view === 'quick-add' && (
               <TodayView
                 tasks={tasks}
@@ -1447,13 +1447,64 @@ function AddPaymentModal({ onClose, onAdd }: { onClose: () => void; onAdd: (paym
   </div></div>
 }
 
-function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: Omit<Task, 'id' | 'status'>) => void }) {
+function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: Omit<Task, 'id' | 'status'>) => Promise<void> | void }) {
   const [title, setTitle] = useState('')
   const [client, setClient] = useState('')
   const [dueDate, setDueDate] = useState(addDays(0))
   const [priority, setPriority] = useState<Priority>('medium')
-  const submit = () => { if (title.trim() && client.trim()) onAdd({ title: title.trim(), client: client.trim(), dueDate, priority }) }
-  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-head"><div><p className="section-kicker">{tr('newTask')}</p><h2>{tr('addTaskTitle')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div><label>{tr('task')}<input value={title} onChange={e => setTitle(e.target.value)} placeholder={tr('finishHomepage')} autoFocus /></label><label>{tr('client')}<input value={client} onChange={e => setClient(e.target.value)} placeholder={tr('john')} /></label><div className="form-grid"><label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></label><label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label></div><div className="modal-actions"><button className="secondary-button" onClick={onClose}>{tr('cancel')}</button><button className="primary-button" onClick={submit}>{tr('addTask')}</button></div></div></div>
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const submit = async () => {
+    const cleanTitle = title.trim()
+    const cleanClient = client.trim()
+    if (!cleanTitle) {
+      setError(currentLanguage === 'pt' ? 'Digite o que precisa ser feito.' : 'Enter the task you need to complete.')
+      return
+    }
+    if (!cleanClient) {
+      setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
+      return
+    }
+    if (!dueDate) {
+      setError(currentLanguage === 'pt' ? 'Escolha uma data de entrega.' : 'Choose a due date.')
+      return
+    }
+    if (saving) return
+
+    setError('')
+    setSaving(true)
+    try {
+      await onAdd({ title: cleanTitle, client: cleanClient, dueDate, priority })
+    } catch (error) {
+      console.error('LifeDue add task modal failed:', error)
+      setError(currentLanguage === 'pt' ? 'Não foi possível adicionar a tarefa. Tente novamente.' : 'Could not add the task. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <div className="modal-backdrop" onMouseDown={onClose}>
+    <div className="modal task-modal" onMouseDown={e => e.stopPropagation()}>
+      <div className="modal-head">
+        <div><p className="section-kicker">{tr('newTask')}</p><h2>{tr('addTaskTitle')}</h2></div>
+        <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={currentLanguage === 'pt' ? 'Fechar' : 'Close'}><X size={20} /></button>
+      </div>
+      <label>{tr('task')}<input value={title} onChange={e => { setTitle(e.target.value); setError('') }} placeholder={tr('finishHomepage')} autoFocus disabled={saving} /></label>
+      <label>{tr('client')}<input value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={tr('john')} disabled={saving} /></label>
+      <div className="form-grid">
+        <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={iso(today)} disabled={saving} /></label>
+        <label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)} disabled={saving}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label>
+      </div>
+      {error && <div className="form-error" role="alert">{error}</div>}
+      <div className="modal-actions">
+        <button type="button" className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button>
+        <button type="button" className="primary-button" onClick={() => void submit()} disabled={saving}>
+          {saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addTask')}
+        </button>
+      </div>
+    </div>
+  </div>
 }
 
 function PriorityBadge({ priority }: { priority: Priority }) {
