@@ -109,40 +109,30 @@ export async function updatePaymentStatus(user: User, id: string, status: Paymen
 }
 
 export async function removeLegacyDemoTasks(user: User) {
-  if (!supabase) return
-  const { data: clients, error: clientsError } = await supabase
-    .from('clients')
-    .select('id,name')
-    .eq('user_id', user.id)
+  requireSupabaseUser(user)
 
-  if (clientsError) throw clientsError
-
-  const legacyClients = (clients ?? []).filter((client: { id: string; name: string }) =>
-    ['John', 'Pedro'].includes(client.name.trim())
-  )
-  if (!legacyClients.length) return
-
-  const clientIds = legacyClients.map((client: { id: string }) => client.id)
-  const { data: legacyTasks, error: tasksError } = await supabase
+  const { data: legacyTasks, error: fetchError } = await supabase!
     .from('tasks')
-    .select('id,title,client_id,due_date')
+    .select('id,title,due_date')
     .eq('user_id', user.id)
-    .in('client_id', clientIds)
+    .or('title.eq.Deliver website,title.eq.Send proposal')
 
-  if (tasksError) throw tasksError
+  if (fetchError) throw fetchError
 
-  const demoTasks = (legacyTasks ?? []).filter((task: { id: string; title: string; client_id: string; due_date: string }) =>
-    (task.title === 'Deliver website' && task.due_date === '2026-09-24') ||
-    (task.title === 'Send proposal' && task.due_date === '2026-09-27')
-  )
+  const demoTaskIds = ((legacyTasks ?? []) as Array<{ id: string; title: string; due_date: string }>)
+    .filter(task =>
+      (task.title === 'Deliver website' && task.due_date === '2026-09-24') ||
+      (task.title === 'Send proposal' && task.due_date === '2026-09-27')
+    )
+    .map(task => task.id)
 
-  if (!demoTasks.length) return
+  if (!demoTaskIds.length) return
 
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await supabase!
     .from('tasks')
     .delete()
     .eq('user_id', user.id)
-    .in('id', demoTasks.map((task: { id: string }) => task.id))
+    .in('id', demoTaskIds)
 
   if (deleteError) throw deleteError
 }
