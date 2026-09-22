@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const MAX_INPUT_LENGTH = 4000
 const MAX_ITEMS = 12
-const MODEL = 'gemini-3.6-flash'
+const MODELS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'] as const
 
 const currencies = ['USD', 'EUR', 'BRL', 'AOA', 'GBP', 'Other'] as const
 type Currency = typeof currencies[number]
@@ -94,13 +94,13 @@ function cleanItems(value: unknown) {
   return { items: cleaned }
 }
 
-async function callGemini(apiKey: string, prompt: string) {
+async function callGemini(apiKey: string, prompt: string, model: string) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 20000)
 
   try {
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent?key=' + encodeURIComponent(apiKey),
+      'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(apiKey),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -119,7 +119,7 @@ async function callGemini(apiKey: string, prompt: string) {
     if (!response.ok) {
       console.error('Gemini request failed:', response.status, responseText.slice(0, 1000))
       const retryable = response.status === 429 || response.status >= 500
-      throw Object.assign(new Error(`Gemini ${response.status}: ${responseText.slice(0, 600)}`), { retryable })
+      throw Object.assign(new Error(`Gemini ${response.status}: ${responseText.slice(0, 600)}`), { retryable, status: response.status })
     }
 
     let result: unknown
@@ -182,16 +182,20 @@ Deno.serve(async (req) => {
     let result
     let lastError: unknown = null
 
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        result = await callGemini(apiKey, prompt)
-        break
-      } catch (error) {
-        lastError = error
-        const retryable = Boolean((error as { retryable?: boolean }).retryable) || error instanceof DOMException
-        if (!retryable || attempt === 2) throw error
-        await new Promise(resolve => setTimeout(resolve, 350 * attempt))
+    for (const model of MODELS) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          result = await callGemini(apiKey, prompt, model)
+          break
+        } catch (error) {
+          lastError = error
+          const status = typeof (error as { status?: unknown }).status === 'number' ? (error as { status: number }).status : 0
+          const retryable = Boolean((error as { retryable?: boolean }).retryable) || status === 503 || status === 429 || status >= 500 || error instanceof DOMException
+          if (!retryable || attempt === 2) break
+          await new Promise(resolve => setTimeout(resolve, 600 * attempt))
+        }
       }
+      if (result) break
     }
 
     if (!result) throw lastError ?? new Error('No AI result.')
