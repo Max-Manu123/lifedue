@@ -19,12 +19,12 @@ import {
 import type { Client, Payment, Priority, QuickAddItem, Task } from './types'
 import type { User, FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
-import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
+import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createClient, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
 type Language='en'|'pt'
-const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',saveToLifeDue:'Save to LifeDue',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',addAllToday:'Add all to Today',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.',todayFocus:'Here is what needs your attention.',focusTitle:'Today\'s focus',openWork:'Open work',dueToday:'Due today',urgent:'Urgent',toCollect:'To collect',allClearToday:'You\'re clear for today',allClearDesc:'No overdue work or payments need attention right now.',paymentAttention:'Payment follow-ups',paymentAttentionDesc:'Money that still needs to move.',noPaymentAttention:'No payment follow-ups due.',upcomingWork:'Coming up next',upcomingDesc:'The next work after today.',noUpcoming:'Nothing else is scheduled yet.',viewAllTasks:'View all tasks',viewPayments:'View payments',addTaskToday:'Add a task',addPaymentToday:'Add payment',markPaidToday:'Mark paid',tasksHeadline:'Everything you need to deliver.',tasksDescription:'Keep work visible, prioritize what matters, and close tasks as you finish them.',taskSearch:'Search tasks or clients',taskSummary:'taskSummary',taskProgress:'complete',noTasks:'No tasks here',noTasksDesc:'Add a task or change the filter to see more work.',clearSearch:'Clear search',dueSoon:'Due soon',overdueTasks:'Overdue',todayTasks:'Today',upcomingTasks:'Upcoming',completedTasks:'Completed',priorityFilter:'Priority',allPriorities:'All priorities',clientsHeadline:'A clear view of your client work.',clientsDescription:'See who you work with, how much work is open, and what is still pending.',paymentsHeadline:'Keep every payment moving.',paymentsDescription:'Track money due by client and quickly mark payments as settled.',newPayment:'New payment',addPaymentTitle:'Add a payment',amount:'Amount',addPayment:'Add payment',addTaskTitle:'Add a task'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',saveToLifeDue:'Guardar no LifeDue',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',addAllToday:'Adicionar tudo para hoje',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.',todayFocus:'Veja o que precisa da sua atenção.',focusTitle:'Foco de hoje',openWork:'Trabalho aberto',dueToday:'Vence hoje',urgent:'Urgente',toCollect:'A receber',allClearToday:'Tudo tranquilo por hoje',allClearDesc:'Nenhum trabalho atrasado ou pagamento precisa de atenção agora.',paymentAttention:'Cobranças a acompanhar',paymentAttentionDesc:'Dinheiro que ainda precisa entrar.',noPaymentAttention:'Nenhuma cobrança pendente para acompanhar.',upcomingWork:'A seguir',upcomingDesc:'O próximo trabalho depois de hoje.',noUpcoming:'Ainda não há nada agendado.',viewAllTasks:'Ver todas as tarefas',viewPayments:'Ver pagamentos',addTaskToday:'Adicionar tarefa',addPaymentToday:'Adicionar pagamento',markPaidToday:'Marcar como pago',tasksHeadline:'Tudo o que você precisa entregar.',tasksDescription:'Mantenha o trabalho visível, priorize o que importa e conclua tarefas à medida que avança.',taskSearch:'Pesquisar tarefas ou clientes',taskSummary:'taskSummary',taskProgress:'concluída',noTasks:'Nenhuma tarefa aqui',noTasksDesc:'Adicione uma tarefa ou altere o filtro para ver mais trabalho.',clearSearch:'Limpar pesquisa',dueSoon:'Próximas',overdueTasks:'Atrasadas',todayTasks:'Hoje',upcomingTasks:'A seguir',completedTasks:'Concluídas',priorityFilter:'Prioridade',allPriorities:'Todas as prioridades',clientsHeadline:'Uma visão clara do seu trabalho com clientes.',clientsDescription:'Veja com quem trabalha, quanto trabalho está aberto e o que ainda está pendente.',paymentsHeadline:'Mantenha cada pagamento em andamento.',paymentsDescription:'Acompanhe o dinheiro a receber por cliente e marque pagamentos como concluídos rapidamente.',newPayment:'Novo pagamento',addPaymentTitle:'Adicionar pagamento',amount:'Valor',addPayment:'Adicionar pagamento',addTaskTitle:'Adicionar tarefa'}}
+const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',saveToLifeDue:'Save to LifeDue',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',addClient:'Add client',addClientTitle:'Add a client',clientName:'Client name',clientNamePlaceholder:'e.g. Maria',noClientName:'Enter a client name.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',addAllToday:'Add all to Today',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.',todayFocus:'Here is what needs your attention.',focusTitle:'Today\'s focus',openWork:'Open work',dueToday:'Due today',urgent:'Urgent',toCollect:'To collect',allClearToday:'You\'re clear for today',allClearDesc:'No overdue work or payments need attention right now.',paymentAttention:'Payment follow-ups',paymentAttentionDesc:'Money that still needs to move.',noPaymentAttention:'No payment follow-ups due.',upcomingWork:'Coming up next',upcomingDesc:'The next work after today.',noUpcoming:'Nothing else is scheduled yet.',viewAllTasks:'View all tasks',viewPayments:'View payments',addTaskToday:'Add a task',addPaymentToday:'Add payment',markPaidToday:'Mark paid',tasksHeadline:'Everything you need to deliver.',tasksDescription:'Keep work visible, prioritize what matters, and close tasks as you finish them.',taskSearch:'Search tasks or clients',taskSummary:'taskSummary',taskProgress:'complete',noTasks:'No tasks here',noTasksDesc:'Add a task or change the filter to see more work.',clearSearch:'Clear search',dueSoon:'Due soon',overdueTasks:'Overdue',todayTasks:'Today',upcomingTasks:'Upcoming',completedTasks:'Completed',priorityFilter:'Priority',allPriorities:'All priorities',clientsHeadline:'A clear view of your client work.',clientsDescription:'See who you work with, how much work is open, and what is still pending.',paymentsHeadline:'Keep every payment moving.',paymentsDescription:'Track money due by client and quickly mark payments as settled.',newPayment:'New payment',addPaymentTitle:'Add a payment',amount:'Amount',addPayment:'Add payment',addTaskTitle:'Add a task'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',saveToLifeDue:'Guardar no LifeDue',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',addClient:'Adicionar cliente',addClientTitle:'Adicionar cliente',clientName:'Nome do cliente',clientNamePlaceholder:'ex.: Maria',noClientName:'Digite o nome de um cliente.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',addAllToday:'Adicionar tudo para hoje',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.',todayFocus:'Veja o que precisa da sua atenção.',focusTitle:'Foco de hoje',openWork:'Trabalho aberto',dueToday:'Vence hoje',urgent:'Urgente',toCollect:'A receber',allClearToday:'Tudo tranquilo por hoje',allClearDesc:'Nenhum trabalho atrasado ou pagamento precisa de atenção agora.',paymentAttention:'Cobranças a acompanhar',paymentAttentionDesc:'Dinheiro que ainda precisa entrar.',noPaymentAttention:'Nenhuma cobrança pendente para acompanhar.',upcomingWork:'A seguir',upcomingDesc:'O próximo trabalho depois de hoje.',noUpcoming:'Ainda não há nada agendado.',viewAllTasks:'Ver todas as tarefas',viewPayments:'Ver pagamentos',addTaskToday:'Adicionar tarefa',addPaymentToday:'Adicionar pagamento',markPaidToday:'Marcar como pago',tasksHeadline:'Tudo o que você precisa entregar.',tasksDescription:'Mantenha o trabalho visível, priorize o que importa e conclua tarefas à medida que avança.',taskSearch:'Pesquisar tarefas ou clientes',taskSummary:'taskSummary',taskProgress:'concluída',noTasks:'Nenhuma tarefa aqui',noTasksDesc:'Adicione uma tarefa ou altere o filtro para ver mais trabalho.',clearSearch:'Limpar pesquisa',dueSoon:'Próximas',overdueTasks:'Atrasadas',todayTasks:'Hoje',upcomingTasks:'A seguir',completedTasks:'Concluídas',priorityFilter:'Prioridade',allPriorities:'Todas as prioridades',clientsHeadline:'Uma visão clara do seu trabalho com clientes.',clientsDescription:'Veja com quem trabalha, quanto trabalho está aberto e o que ainda está pendente.',paymentsHeadline:'Mantenha cada pagamento em andamento.',paymentsDescription:'Acompanhe o dinheiro a receber por cliente e marque pagamentos como concluídos rapidamente.',newPayment:'Novo pagamento',addPaymentTitle:'Adicionar pagamento',amount:'Valor',addPayment:'Adicionar pagamento',addTaskTitle:'Adicionar tarefa'}}
 let currentLanguage:Language='en'
 const tr=(key:keyof typeof trMap.en)=>trMap[currentLanguage][key]
 
@@ -117,6 +117,7 @@ function App() {
   const quickAddRequestId = useRef(0)
   const [showAdd, setShowAdd] = useState(false)
   const [showAddPayment, setShowAddPayment] = useState(false)
+  const [showAddClient, setShowAddClient] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
@@ -554,7 +555,7 @@ function App() {
               />
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
-            {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} />}
+            {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} onAdd={() => setShowAddClient(true)} />}
             {view === 'payments' && <PaymentsView payments={payments} onMarkPaid={markPaid} onAdd={() => setShowAddPayment(true)} />}
             {view === 'planner' && (
               <PlannerView
@@ -622,6 +623,7 @@ function App() {
         </div>
       )}
 
+      {showAddClient && user && <AddClientModal onClose={() => setShowAddClient(false)} onAdd={async name => { if (!supabase || !user) return; const created = await createClient(user, name); setClients(current => current.some(client => client.name.trim().toLowerCase() === created.name.trim().toLowerCase()) ? current : [...current, created].sort((a,b) => a.name.localeCompare(b.name))) }} />}
       {showAdd && <AddTaskModal onClose={() => setShowAdd(false)} onAdd={addTask} />}
       {showAddPayment && <AddPaymentModal onClose={() => setShowAddPayment(false)} onAdd={addPayment} />}
       {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
@@ -965,20 +967,111 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
   </div>
 }
 
-function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: Task[]; payments: Payment[] }) {
-  return <div className="content-stack">
-    <div className="page-intro"><div><p className="section-kicker">{tr('clients')}</p><h2>{tr('clientsHeadline')}</h2><p className="page-description">{tr('clientsDescription')}</p></div></div>
+function ClientsView({ clients, tasks, payments, onAdd }: { clients: Client[]; tasks: Task[]; payments: Payment[]; onAdd: () => void }) {
+  const [search, setSearch] = useState('')
+  const todayKey = iso(today)
+  const query = search.trim().toLowerCase()
+
+  const rows = clients.map(client => {
+    const name = client.name.trim().toLowerCase()
+    const clientTasks = tasks.filter(task => task.client.trim().toLowerCase() === name)
+    const openTasks = clientTasks.filter(task => task.status === 'open')
+    const overdueTasks = openTasks.filter(task => task.dueDate < todayKey)
+    const paidTasks = clientTasks.filter(task => task.status === 'completed')
+    const pendingPayments = payments.filter(payment => payment.client.trim().toLowerCase() === name && payment.status === 'pending')
+    const pendingByCurrency = [...new Set(pendingPayments.map(payment => payment.currency))].map(currency => ({
+      currency,
+      amount: pendingPayments.filter(payment => payment.currency === currency).reduce((sum, payment) => sum + payment.amount, 0),
+    }))
+    return {
+      client,
+      clientTasks,
+      openTasks,
+      overdueTasks,
+      pendingPayments,
+      pendingByCurrency,
+      completion: clientTasks.length ? Math.round((paidTasks.length / clientTasks.length) * 100) : 0,
+    }
+  }).filter(row => !query || row.client.name.toLowerCase().includes(query))
+    .sort((a, b) => b.overdueTasks.length - a.overdueTasks.length || b.pendingPayments.length - a.pendingPayments.length || a.client.name.localeCompare(b.client.name))
+
+  const totalOpen = clients.reduce((sum, client) => sum + tasks.filter(t => t.client.trim().toLowerCase() === client.name.trim().toLowerCase() && t.status === 'open').length, 0)
+  const totalOverdue = clients.reduce((sum, client) => sum + tasks.filter(t => t.client.trim().toLowerCase() === client.name.trim().toLowerCase() && t.status === 'open' && t.dueDate < todayKey).length, 0)
+  const clientsWithMoney = clients.filter(client => payments.some(p => p.client.trim().toLowerCase() === client.name.trim().toLowerCase() && p.status === 'pending')).length
+
+  return <div className="content-stack clients-page">
+    <div className="page-intro clients-page-intro">
+      <div><p className="section-kicker">{tr('clients')}</p><h2>{tr('clientsHeadline')}</h2><p className="page-description">{tr('clientsDescription')}</p></div>
+      <button className="primary-button" onClick={onAdd}><Plus size={17} /> {tr('addClient')}</button>
+    </div>
+
+    <section className="clients-overview">
+      <div><span>{tr('clients')}</span><strong>{clients.length}</strong><small>{currentLanguage === 'pt' ? 'clientes ativos' : 'active clients'}</small></div>
+      <div><span>{tr('openWork')}</span><strong>{totalOpen}</strong><small>{currentLanguage === 'pt' ? 'tarefas abertas' : 'open tasks'}</small></div>
+      <div className={totalOverdue ? 'danger' : ''}><span>{tr('overdueTasks')}</span><strong>{totalOverdue}</strong><small>{currentLanguage === 'pt' ? 'precisam de atenção' : 'need attention'}</small></div>
+      <div className={clientsWithMoney ? 'money' : ''}><span>{tr('toCollect')}</span><strong>{clientsWithMoney}</strong><small>{currentLanguage === 'pt' ? 'com pagamentos pendentes' : 'with pending payments'}</small></div>
+    </section>
+
+    {clients.length > 0 && <div className="clients-toolbar">
+      <div className="client-search"><span>⌕</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder={currentLanguage === 'pt' ? 'Pesquisar clientes' : 'Search clients'} aria-label={currentLanguage === 'pt' ? 'Pesquisar clientes' : 'Search clients'} />{search && <button type="button" onClick={() => setSearch('')} aria-label={currentLanguage === 'pt' ? 'Limpar pesquisa' : 'Clear search'}>×</button>}</div>
+      <span className="client-count">{rows.length} / {clients.length}</span>
+    </div>}
+
     {clients.length === 0 ? (
-      <div className="empty-card"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente ainda' : 'No clients yet'}</strong><p>{currentLanguage === 'pt' ? 'Adicione seu primeiro cliente para começar a acompanhar o trabalho.' : 'Add your first client to start tracking work.'}</p></div></div>
+      <div className="empty-card clients-empty"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente ainda' : 'No clients yet'}</strong><p>{currentLanguage === 'pt' ? 'Adicione seu primeiro cliente para começar a acompanhar o trabalho.' : 'Add your first client to start tracking work.'}</p><button className="secondary-button" onClick={onAdd}><Plus size={15} /> {tr('addClient')}</button></div></div>
+    ) : rows.length === 0 ? (
+      <div className="empty-card clients-empty"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente encontrado' : 'No clients found'}</strong><p>{currentLanguage === 'pt' ? 'Tente outro nome de cliente.' : 'Try a different client name.'}</p></div></div>
     ) : (
-      <div className="client-grid">{clients.map(client => {
-        const clientTasks = tasks.filter(t => t.client.toLowerCase() === client.name.toLowerCase())
-        const clientPayments = payments.filter(p => p.client.toLowerCase() === client.name.toLowerCase() && p.status === 'pending')
-        const amount = clientPayments.reduce((sum, p) => sum + p.amount, 0)
-        return <div className="client-card" key={client.id}><div className="avatar">{client.name.charAt(0).toUpperCase()}</div><div className="client-name">{client.name}</div><div className="client-meta">{clientTasks.length} {tr('tasks').toLowerCase()} · {amount ? formatMoney(amount, clientPayments[0]?.currency ?? 'USD') + ' ' + tr('pending') : formatMoney(0, clientPayments[0]?.currency ?? 'USD')}</div><div className="client-progress"><span style={{ width: Math.min(100, clientTasks.length * 18) + '%' }} /></div></div>
+      <div className="client-grid">{rows.map(row => {
+        const initials = row.client.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()
+        return <article className="client-card enriched" key={row.client.id}>
+          <div className="client-card-head"><div className="avatar">{initials}</div><div className="client-heading"><strong>{row.client.name}</strong><span>{row.clientTasks.length} {row.clientTasks.length === 1 ? tr('task').toLowerCase() : tr('tasks').toLowerCase()}</span></div></div>
+          <div className="client-metrics">
+            <div><span>{tr('open')}</span><strong>{row.openTasks.length}</strong></div>
+            <div><span>{tr('overdueTasks')}</span><strong className={row.overdueTasks.length ? 'danger-text' : ''}>{row.overdueTasks.length}</strong></div>
+            <div><span>{tr('completed')}</span><strong>{row.completion}%</strong></div>
+          </div>
+          <div className="client-progress"><span style={{ width: row.completion + '%' }} /></div>
+          <div className="client-card-footer">
+            <span className={row.pendingPayments.length ? 'client-money pending' : 'client-money'}><CircleDollarSign size={14} />{row.pendingPayments.length ? row.pendingByCurrency.map(item => formatMoney(item.amount, item.currency)).join(' · ') : (currentLanguage === 'pt' ? 'Sem pagamentos pendentes' : 'No pending payments')}</span>
+            {row.overdueTasks.length > 0 && <span className="client-alert">{currentLanguage === 'pt' ? 'Atenção' : 'Needs attention'}</span>}
+          </div>
+        </article>
       })}</div>
     )}
   </div>
+}
+
+function AddClientModal({ onClose, onAdd }: { onClose: () => void; onAdd: (name: string) => Promise<void> }) {
+  const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const submit = async () => {
+    const normalized = name.trim()
+    if (!normalized) {
+      setError(tr('noClientName'))
+      return
+    }
+    setSaving(true)
+    setError('')
+    try {
+      await onAdd(normalized)
+      onClose()
+    } catch (err) {
+      console.error('LifeDue client creation failed:', err)
+      setError(currentLanguage === 'pt' ? 'Não foi possível adicionar este cliente.' : 'Could not add this client.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}>
+    <div className="modal-head"><div><p className="section-kicker">{tr('addClient')}</p><h2>{tr('addClientTitle')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div>
+    <label>{tr('clientName')}<input value={name} onChange={e => { setName(e.target.value); setError('') }} placeholder={tr('clientNamePlaceholder')} autoFocus onKeyDown={e => { if (e.key === 'Enter') void submit() }} /></label>
+    {error && <div className="auth-error">{error}</div>}
+    <div className="modal-actions"><button className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button><button className="primary-button" onClick={() => void submit()} disabled={saving || !name.trim()}>{saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addClient')}</button></div>
+  </div></div>
 }
 
 function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; onMarkPaid: (id: string) => void; onAdd: () => void }) {
