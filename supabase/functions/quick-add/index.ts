@@ -200,14 +200,13 @@ async function callGemini(apiKey: string, prompt: string, model: string) {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  const auth = await createSupabaseContext(req, { auth: 'user' })
-  if (auth.error) {
-    return Response.json({ message: auth.error.message }, { status: auth.error.status, headers: corsHeaders })
-  }
-
   try {
     const body = await req.json()
     const mode = body.mode === 'plan' ? 'plan' : 'quick-add'
+    const auth = mode === 'plan' ? await createSupabaseContext(req, { auth: 'user' }) : null
+    if (auth?.error) {
+      return Response.json({ message: auth.error.message }, { status: auth.error.status, headers: corsHeaders })
+    }
     const text = typeof body.text === 'string' ? body.text.trim() : ''
     const today = typeof body.today === 'string' ? body.today : ''
     const timezone = typeof body.timezone === 'string' ? body.timezone : 'UTC'
