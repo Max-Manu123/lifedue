@@ -13,33 +13,6 @@ const MODEL = 'gemini-2.5-flash'
 const currencies = ['USD', 'EUR', 'BRL', 'AOA', 'GBP', 'Other'] as const
 type Currency = typeof currencies[number]
 
-const schema = {
-  type: 'object',
-  properties: {
-    items: {
-      type: 'array',
-      minItems: 0,
-      maxItems: MAX_ITEMS,
-      items: {
-        type: 'object',
-        properties: {
-          kind: { type: 'string', enum: ['task', 'payment'] },
-          title: { type: 'string', description: 'Short actionable title, without the client name.' },
-          client: { type: 'string', description: 'Client/person name copied literally from the user note.' },
-          dueDate: { type: 'string', format: 'date', description: 'ISO date YYYY-MM-DD.' },
-          priority: { type: 'string', enum: ['low', 'medium', 'high'] },
-          amount: { type: ['number', 'null'] },
-          currency: { type: ['string', 'null'], enum: [...currencies] },
-        },
-        required: ['kind', 'title', 'client', 'dueDate', 'priority', 'amount', 'currency'],
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ['items'],
-  additionalProperties: false,
-}
-
 const systemInstruction = [
   'You are LifeDue Quick Add, a careful task-and-payment extraction engine for freelancers and solopreneurs.',
   'Your job is extraction and normalization, not creative writing.',
@@ -147,7 +120,7 @@ async function callGemini(apiKey: string, prompt: string) {
     if (!response.ok) {
       console.error('Gemini request failed:', response.status, responseText.slice(0, 1000))
       const retryable = response.status === 429 || response.status >= 500
-      throw Object.assign(new Error('Gemini request failed.'), { retryable })
+      throw Object.assign(new Error(`Gemini ${response.status}: ${responseText.slice(0, 600)}`), { retryable })
     }
 
     let result: unknown
