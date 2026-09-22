@@ -624,7 +624,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
           <h3>{tr('quickQuestion')}</h3>
           <textarea value={quickText} onChange={e => onQuickTextChange(e.target.value)} placeholder="e.g. Deliver John's website Friday, collect $200 from Maria tomorrow, and send Pedro the proposal Monday." />
           <div className="quick-actions">
-            <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : 'Create plan'} {!aiLoading && <ArrowRight size={17} />}</button>
+            <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
             <span>{tr('plain')}</span>
           </div>
         </div>
@@ -653,8 +653,8 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
 
       <div className="section-heading"><div><p className="section-kicker">{tr('today')}</p><h2>{tr('todayFocus')}</h2></div><button className="text-button" onClick={onCreatePlan}><Sparkles size={15} /> {tr('quickAdd')}</button></div>
 
-      {overdue.length > 0 && <TaskSection title="OVERDUE" tone="danger" tasks={overdue} onToggle={onToggle} />}
-      {todayTasks.length > 0 ? <TaskSection title="TODAY" tasks={todayTasks} onToggle={onToggle} /> : (
+      {overdue.length > 0 && <TaskSection title={tr('overdue')} tone="danger" tasks={overdue} onToggle={onToggle} />}
+      {todayTasks.length > 0 ? <TaskSection title={tr('today').toUpperCase()} tasks={todayTasks} onToggle={onToggle} /> : (
         <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('nothing')}</strong><p>{tr('breathing')}</p></div></div>
       )}
 
@@ -753,7 +753,8 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
 }
 
 function PriorityBadge({ priority }: { priority: Priority }) {
-  return <span className={'priority ' + priority}>{priority}</span>
+  const label = priority === 'low' ? tr('low') : priority === 'medium' ? tr('medium') : tr('high')
+  return <span className={'priority ' + priority}>{label}</span>
 }
 
 function formatDate(value: string) {
