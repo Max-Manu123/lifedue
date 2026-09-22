@@ -24,7 +24,7 @@ function clientName(value: { name: string } | { name: string }[] | null | undefi
 
 export async function fetchClients(user: User): Promise<Client[]> {
   requireSupabaseUser(user)
-  const { data, error } = await supabase!!
+  const { data, error } = await supabase!
     .from('clients')
     .select('id, name')
     .eq('user_id', user.id)
