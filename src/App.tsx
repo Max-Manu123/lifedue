@@ -30,7 +30,12 @@ const tr=(key:keyof typeof trMap.en)=>trMap[currentLanguage][key]
 const today = new Date()
 today.setHours(0, 0, 0, 0)
 
-const iso = (date: Date) => date.toISOString().slice(0, 10)
+const iso = (date: Date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 const addDays = (days: number) => {
   const date = new Date(today)
   date.setDate(date.getDate() + days)
@@ -62,31 +67,6 @@ const uniquePayments = (items: Payment[]) => {
     return true
   })
 }
-
-const seedTasks: Task[] = [
-  { id: '1', title: 'Finish homepage', client: 'John', dueDate: addDays(0), priority: 'high', status: 'open' },
-  { id: '2', title: 'Send invoice', client: 'Maria', dueDate: addDays(0), priority: 'medium', status: 'open' },
-  { id: '3', title: 'Follow up payment', client: 'Pedro', dueDate: addDays(1), priority: 'high', status: 'open' },
-  { id: '4', title: 'Deliver website', client: 'John', dueDate: addDays(4), priority: 'high', status: 'open' },
-  { id: '5', title: 'Send proposal', client: 'Pedro', dueDate: addDays(7), priority: 'medium', status: 'open' },
-]
-
-const seedClients: Client[] = [
-  { id: '1', name: 'John' },
-  { id: '2', name: 'Maria' },
-  { id: '3', name: 'Pedro' },
-]
-
-const seedPayments: Payment[] = [
-  { id: '1', client: 'Maria', amount: 200, currency: 'USD', dueDate: addDays(-1), status: 'pending' },
-  { id: '2', client: 'John', amount: 500, currency: 'USD', dueDate: addDays(0), status: 'pending' },
-]
-
-const examplePlan: Task[] = [
-  { id: 'ai-1', title: 'Follow up payment', client: 'Maria', dueDate: addDays(1), priority: 'high', status: 'open' },
-  { id: 'ai-2', title: 'Send proposal', client: 'Pedro', dueDate: addDays(7), priority: 'medium', status: 'open' },
-  { id: 'ai-3', title: 'Deliver website', client: 'John', dueDate: addDays(4), priority: 'high', status: 'open' },
-]
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -126,9 +106,9 @@ function App() {
   currentLanguage=language
   useEffect(()=>localStorage.setItem('lifedue-language',language),[language])
   const [view, setView] = useState<View>('home')
-  const [tasks, setTasks] = useState<Task[]>(() => uniqueTasks(load('lifedue-tasks', seedTasks)))
-  const [clients, setClients] = useState<Client[]>(() => load('lifedue-clients', seedClients))
-  const [payments, setPayments] = useState<Payment[]>(() => uniquePayments(load('lifedue-payments', seedPayments)))
+  const [tasks, setTasks] = useState<Task[]>(() => uniqueTasks(load('lifedue-tasks', [])))
+  const [clients, setClients] = useState<Client[]>(() => load('lifedue-clients', []))
+  const [payments, setPayments] = useState<Payment[]>(() => uniquePayments(load('lifedue-payments', [])))
   const [quickText, setQuickText] = useState('')
   const [plan, setPlan] = useState<Task[]>([])
   const [planPayments, setPlanPayments] = useState<QuickAddItem[]>([])
@@ -525,7 +505,12 @@ function App() {
             {view === 'planner' && (
               <PlannerView
                 plan={plan}
-                onGenerate={() => { setPlan(examplePlan); setView('planner') }}
+                onGenerate={() => {
+                  const suggested = [...openTasks].sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 5)
+                  setPlan(suggested)
+                  setPlanPayments([])
+                  setView('planner')
+                }}
                 onAddPlan={addPlan}
               />
             )}
