@@ -37,8 +37,7 @@ const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payment
 let currentLanguage:Language='en'
 const tr=(key:keyof typeof trMap.en)=>trMap[currentLanguage][key]
 
-const today = new Date()
-today.setHours(0, 0, 0, 0)
+const currentTodayKey = () => iso(new Date())
 
 const iso = (date: Date) => {
   const year = date.getFullYear()
@@ -47,7 +46,8 @@ const iso = (date: Date) => {
   return `${year}-${month}-${day}`
 }
 const addDays = (days: number) => {
-  const date = new Date(today)
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
   date.setDate(date.getDate() + days)
   return iso(date)
 }
@@ -1166,7 +1166,7 @@ function TaskSection({ title, tone, tasks, onToggle }: { title: string; tone?: '
 function TaskRow({ task, onToggle, disabled }: { task: Task; onToggle: (id: string) => void; disabled?: boolean }) {
   return (
     <div className="task-row">
-      <button type="button" disabled={disabled} className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={task.status === 'completed' ? 'Reopen task' : tr('complete')} aria-busy={disabled}>
+      <button type="button" disabled={disabled} className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={task.status === 'completed' ? (currentLanguage === 'pt' ? 'Reabrir tarefa' : 'Reopen task') : (currentLanguage === 'pt' ? 'Concluir tarefa' : 'Complete task')} aria-busy={disabled}>
         {task.status === 'completed' && <Check size={14} />}
       </button>
       <div className="task-info"><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
@@ -1179,12 +1179,13 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
   const [filter, setFilter] = useState<'all' | 'open' | 'completed'>('open')
   const [priority, setPriority] = useState<'all' | Priority>('all')
   const [search, setSearch] = useState('')
-  const todayKey = iso(today)
+  const todayKey = currentTodayKey()
   const openTasks = tasks.filter(t => t.status === 'open')
   const completedTasks = tasks.filter(t => t.status === 'completed')
   const overdueCount = openTasks.filter(t => t.dueDate < todayKey).length
   const todayCount = openTasks.filter(t => t.dueDate === todayKey).length
   const completionRate = tasks.length ? Math.round((completedTasks.length / tasks.length) * 100) : 0
+  const progressLabel = tasks.length ? `${completedTasks.length} ${currentLanguage === 'pt' ? 'de' : 'of'} ${tasks.length} ${currentLanguage === 'pt' ? 'tarefas concluídas' : 'tasks completed'}` : (currentLanguage === 'pt' ? 'Nenhuma tarefa criada ainda' : 'No tasks created yet')
 
   const filtered = tasks
     .filter(t => filter === 'all' || t.status === filter)
@@ -1217,7 +1218,7 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
       <div className="tasks-overview-main">
         <div><span>{currentLanguage === 'pt' ? 'Progresso geral' : 'Overall progress'}</span><strong>{completionRate}%</strong></div>
         <div className="tasks-progress-track"><span style={{width: completionRate + '%'}} /></div>
-        <small>{completedTasks.length} {currentLanguage === 'pt' ? 'de' : 'of'} {tasks.length} {currentLanguage === 'pt' ? 'tarefas concluídas' : 'tasks completed'}</small>
+        <small>{progressLabel}</small>
       </div>
       <div className="task-stat"><span>{tr('open')}</span><strong>{openTasks.length}</strong></div>
       <div className={overdueCount ? 'task-stat danger' : 'task-stat'}><span>{tr('overdueTasks')}</span><strong>{overdueCount}</strong></div>
@@ -1244,7 +1245,7 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
 
 function ClientsView({ clients, tasks, payments, onAdd }: { clients: Client[]; tasks: Task[]; payments: Payment[]; onAdd: () => void }) {
   const [search, setSearch] = useState('')
-  const todayKey = iso(today)
+  const todayKey = currentTodayKey()
   const query = search.trim().toLowerCase()
 
   const rows = clients.map(client => {
@@ -1352,7 +1353,7 @@ function AddClientModal({ onClose, onAdd }: { onClose: () => void; onAdd: (name:
 function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; onMarkPaid: (id: string) => void; onAdd: () => void }) {
   const [filter, setFilter] = useState<'all' | 'pending' | 'overdue' | 'paid'>('pending')
   const [search, setSearch] = useState('')
-  const todayKey = iso(today)
+  const todayKey = currentTodayKey()
   const pending = payments.filter(p => p.status === 'pending')
   const paid = payments.filter(p => p.status === 'paid')
   const overdue = pending.filter(p => p.dueDate < todayKey)
@@ -1414,9 +1415,9 @@ function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id
 
 
 function PlannerView({ plan, openTasks, aiLoading, isAuthenticated, onGenerate, onAddPlan }: { plan: Task[]; openTasks: Task[]; aiLoading: boolean; isAuthenticated: boolean; onGenerate: () => void; onAddPlan: () => void }) {
-  const overdueCount = openTasks.filter(task => task.dueDate < iso(today)).length
-  const todayCount = openTasks.filter(task => task.dueDate === iso(today)).length
-  const upcomingCount = openTasks.filter(task => task.dueDate > iso(today)).length
+  const overdueCount = openTasks.filter(task => task.dueDate < currentTodayKey()).length
+  const todayCount = openTasks.filter(task => task.dueDate === currentTodayKey()).length
+  const upcomingCount = openTasks.filter(task => task.dueDate > currentTodayKey()).length
 
   return <div className="content-stack planner-page">
     <div className="page-intro"><div><p className="section-kicker">{tr('aiPlanner')}</p><h2>{tr('calmer')}</h2><p className="page-description">{tr('plannerDesc')}</p></div><button className="primary-button" onClick={onGenerate} disabled={aiLoading || !openTasks.length}><Sparkles size={16} className={aiLoading ? 'spin' : ''} /> {aiLoading ? (currentLanguage === 'pt' ? 'A organizar…' : 'Organizing…') : tr('generatePlan')}</button></div>
@@ -1499,7 +1500,7 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
       <label>{tr('task')}<input value={title} onChange={e => { setTitle(e.target.value); setError('') }} placeholder={tr('finishHomepage')} autoFocus disabled={saving} /></label>
       <label>{tr('client')}<input value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={tr('john')} disabled={saving} /></label>
       <div className="form-grid">
-        <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={iso(today)} disabled={saving} /></label>
+        <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={currentTodayKey()} disabled={saving} /></label>
         <label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)} disabled={saving}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label>
       </div>
       {error && <div className="form-error" role="alert">{error}</div>}
@@ -1535,12 +1536,12 @@ function isValidDueDate(value: string) {
   const [year, month, day] = value.split('-').map(Number)
   const date = new Date(year, month - 1, day)
   if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return false
-  return value >= iso(today)
+  return value >= currentTodayKey()
 }
 
 function formatDate(value: string) {
   const date = new Date(value + 'T00:00:00')
-  if (value === iso(today)) return tr('today')
+  if (value === currentTodayKey()) return tr('today')
   if (value === addDays(1)) return tr('tomorrow')
   return date.toLocaleDateString(currentLanguage === 'pt' ? 'pt-PT' : 'en-US', { month: 'short', day: 'numeric' })
 }
