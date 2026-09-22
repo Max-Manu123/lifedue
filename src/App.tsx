@@ -129,6 +129,7 @@ function App() {
   const [paymentsError, setPaymentsError] = useState('')
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null)
   const [pendingSaveAfterAuth, setPendingSaveAfterAuth] = useState(false)
+  const authDraftKey = 'lifedue-auth-draft-v1'
 
   useEffect(() => {
     if (!supabase) return
@@ -331,11 +332,35 @@ function App() {
     } finally { setAiLoading(false) }
   }
 
+  const saveAuthDraft = () => {
+    if (!plan.length) return
+    localStorage.setItem(authDraftKey, JSON.stringify({ plan, planPayments, quickText, savedAt: Date.now() }))
+  }
+
+  const restoreAuthDraft = () => {
+    try {
+      const raw = localStorage.getItem(authDraftKey)
+      if (!raw) return false
+      const draft = JSON.parse(raw) as { plan?: Task[]; planPayments?: QuickAddItem[]; quickText?: string }
+      if (!Array.isArray(draft.plan) || draft.plan.length === 0) return false
+      setPlan(draft.plan)
+      setPlanPayments(Array.isArray(draft.planPayments) ? draft.planPayments : [])
+      setQuickText(typeof draft.quickText === 'string' ? draft.quickText : '')
+      return true
+    } catch {
+      localStorage.removeItem(authDraftKey)
+      return false
+    }
+  }
+
+  const clearAuthDraft = () => localStorage.removeItem(authDraftKey)
+
   const addPlan = async () => {
     if (!plan.length) return
     setTasksError('')
 
     if (!user) {
+      saveAuthDraft()
       setPendingSaveAfterAuth(true)
       setAuthMode('signup')
       setAuthOpen(true)
@@ -390,6 +415,7 @@ function App() {
           }, ...current])
         }
       }
+      clearAuthDraft()
       setPlan([])
       setPlanPayments([])
       setQuickText('')
@@ -399,6 +425,12 @@ function App() {
       setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar o plano.' : 'Could not save the plan.')
     }
   }
+
+  useEffect(() => {
+    if (!user) return
+    const hasDraft = restoreAuthDraft()
+    if (hasDraft) setPendingSaveAfterAuth(true)
+  }, [user])
 
   useEffect(() => {
     if (!user || !pendingSaveAfterAuth || !plan.length) return
