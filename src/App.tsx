@@ -1305,7 +1305,7 @@ function ClientsView({ clients, tasks, payments, onAdd }: { clients: Client[]; t
           <div className="client-metrics">
             <div><span>{tr('open')}</span><strong>{row.openTasks.length}</strong></div>
             <div><span>{tr('overdueTasks')}</span><strong className={row.overdueTasks.length ? 'danger-text' : ''}>{row.overdueTasks.length}</strong></div>
-            <div><span>{tr('completed')}</span><strong>{row.completion}%</strong></div>
+            <div><span>{tr('completed')}</span><strong>{row.completion}%</strong><small>{row.clientTasks.length ? (row.clientTasks.filter(task => task.status === 'completed').length + '/' + row.clientTasks.length) : (currentLanguage === 'pt' ? 'Sem tarefas' : 'No tasks')}</small></div>
           </div>
           <div className="client-progress"><span style={{ width: row.completion + '%' }} /></div>
           <div className="client-card-footer">
