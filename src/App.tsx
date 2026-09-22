@@ -24,7 +24,7 @@ import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner'
 type Language='en'|'pt'
-const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',saveToLifeDue:'Save to LifeDue',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',addAllToday:'Add all to Today',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.',todayFocus:'Here is what needs your attention.',tasksHeadline:'Everything you need to deliver.',tasksDescription:'Keep work visible, prioritize what matters, and close tasks as you finish them.',clientsHeadline:'A clear view of your client work.',clientsDescription:'See who you work with, how much work is open, and what is still pending.',paymentsHeadline:'Keep every payment moving.',paymentsDescription:'Track money due by client and quickly mark payments as settled.',newPayment:'New payment',addPaymentTitle:'Add a payment',amount:'Amount',addPayment:'Add payment',addTaskTitle:'Add a task'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',saveToLifeDue:'Guardar no LifeDue',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',addAllToday:'Adicionar tudo para hoje',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.',todayFocus:'Veja o que precisa da sua atenção.',tasksHeadline:'Tudo o que você precisa entregar.',tasksDescription:'Mantenha o trabalho visível, priorize o que importa e conclua tarefas à medida que avança.',clientsHeadline:'Uma visão clara do seu trabalho com clientes.',clientsDescription:'Veja com quem trabalha, quanto trabalho está aberto e o que ainda está pendente.',paymentsHeadline:'Mantenha cada pagamento em andamento.',paymentsDescription:'Acompanhe o dinheiro a receber por cliente e marque pagamentos como concluídos rapidamente.',newPayment:'Novo pagamento',addPaymentTitle:'Adicionar pagamento',amount:'Valor',addPayment:'Adicionar pagamento',addTaskTitle:'Adicionar tarefa'}}
+const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',saveToLifeDue:'Save to LifeDue',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',addAllToday:'Add all to Today',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.',todayFocus:'Here is what needs your attention.',focusTitle:'Today\'s focus',openWork:'Open work',dueToday:'Due today',urgent:'Urgent',toCollect:'To collect',allClearToday:'You\'re clear for today',allClearDesc:'No overdue work or payments need attention right now.',paymentAttention:'Payment follow-ups',paymentAttentionDesc:'Money that still needs to move.',noPaymentAttention:'No payment follow-ups due.',upcomingWork:'Coming up next',upcomingDesc:'The next work after today.',noUpcoming:'Nothing else is scheduled yet.',viewAllTasks:'View all tasks',viewPayments:'View payments',addTaskToday:'Add a task',addPaymentToday:'Add payment',markPaidToday:'Mark paid',tasksHeadline:'Everything you need to deliver.',tasksDescription:'Keep work visible, prioritize what matters, and close tasks as you finish them.',clientsHeadline:'A clear view of your client work.',clientsDescription:'See who you work with, how much work is open, and what is still pending.',paymentsHeadline:'Keep every payment moving.',paymentsDescription:'Track money due by client and quickly mark payments as settled.',newPayment:'New payment',addPaymentTitle:'Add a payment',amount:'Amount',addPayment:'Add payment',addTaskTitle:'Add a task'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',saveToLifeDue:'Guardar no LifeDue',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',addAllToday:'Adicionar tudo para hoje',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.',todayFocus:'Veja o que precisa da sua atenção.',focusTitle:'Foco de hoje',openWork:'Trabalho aberto',dueToday:'Vence hoje',urgent:'Urgente',toCollect:'A receber',allClearToday:'Tudo tranquilo por hoje',allClearDesc:'Nenhum trabalho atrasado ou pagamento precisa de atenção agora.',paymentAttention:'Cobranças a acompanhar',paymentAttentionDesc:'Dinheiro que ainda precisa entrar.',noPaymentAttention:'Nenhuma cobrança pendente para acompanhar.',upcomingWork:'A seguir',upcomingDesc:'O próximo trabalho depois de hoje.',noUpcoming:'Ainda não há nada agendado.',viewAllTasks:'Ver todas as tarefas',viewPayments:'Ver pagamentos',addTaskToday:'Adicionar tarefa',addPaymentToday:'Adicionar pagamento',markPaidToday:'Marcar como pago',tasksHeadline:'Tudo o que você precisa entregar.',tasksDescription:'Mantenha o trabalho visível, priorize o que importa e conclua tarefas à medida que avança.',clientsHeadline:'Uma visão clara do seu trabalho com clientes.',clientsDescription:'Veja com quem trabalha, quanto trabalho está aberto e o que ainda está pendente.',paymentsHeadline:'Mantenha cada pagamento em andamento.',paymentsDescription:'Acompanhe o dinheiro a receber por cliente e marque pagamentos como concluídos rapidamente.',newPayment:'Novo pagamento',addPaymentTitle:'Adicionar pagamento',amount:'Valor',addPayment:'Adicionar pagamento',addTaskTitle:'Adicionar tarefa'}}
 let currentLanguage:Language='en'
 const tr=(key:keyof typeof trMap.en)=>trMap[currentLanguage][key]
 
@@ -543,6 +543,11 @@ function App() {
                 onCreatePlan={createPlan}
                 onAddPlan={addPlan}
                 onPlanner={() => navigate('planner')}
+                onMarkPaid={markPaid}
+                onViewTasks={() => navigate('tasks')}
+                onViewPayments={() => navigate('payments')}
+                onAddTask={() => setShowAdd(true)}
+                onAddPayment={() => setShowAddPayment(true)}
                 busyTaskId={updatingTaskId}
                 aiLoading={aiLoading}
                 user={user}
@@ -739,11 +744,10 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments, quickText, onQuickTextChange, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, busyTaskId, aiLoading, user }: {
+function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, onQuickTextChange, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
-  pendingAmount: number
   pendingPayments: Payment[]
   quickText: string
   onQuickTextChange: (value: string) => void
@@ -752,28 +756,54 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
   onCreatePlan: () => void
   onAddPlan: () => void
   onPlanner: () => void
+  onMarkPaid: (id: string) => void
+  onViewTasks: () => void
+  onViewPayments: () => void
+  onAddTask: () => void
+  onAddPayment: () => void
   busyTaskId: string | null
   aiLoading: boolean
   user: User | null
 }) {
-  const nextTasks = tasks.filter(t => t.status === 'open' && t.dueDate > iso(today)).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 3)
+  const openTasks = tasks.filter(t => t.status === 'open')
+  const upcomingTasks = openTasks
+    .filter(t => t.dueDate > iso(today))
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .slice(0, 4)
+  const urgentCount = overdue.length + todayTasks.filter(t => t.priority === 'high').length
+  const paymentAttention = pendingPayments
+    .filter(payment => payment.dueDate <= iso(today))
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+  const totalPending = pendingMoneyLabel(pendingPayments)
+  const hasAttention = overdue.length > 0 || todayTasks.length > 0 || paymentAttention.length > 0
 
   return (
     <div className="content-stack">
-      <section className="welcome-row">
-        <div>
+      <section className="today-hero">
+        <div className="today-hero-copy">
           <p className="section-kicker">{new Intl.DateTimeFormat(currentLanguage==='pt'?'pt-PT':'en-US', { weekday: 'long', day: 'numeric', month: 'long' }).format(today).toUpperCase()}</p>
-          <h2>{currentLanguage==='pt' ? 'Bom dia. Veja o que precisa de você.' : "Good morning. Here's what needs you."}</h2>
+          <h2>{currentLanguage==='pt' ? 'Bom dia. Vamos cuidar do que importa.' : "Good morning. Let's handle what matters."}</h2>
+          <p>{tr('todayFocus')}</p>
         </div>
-        <div className="stat-card"><strong>{pendingMoneyLabel(pendingPayments)}</strong><span>{tr('pending')}</span></div>
+        <div className="today-hero-actions">
+          <button className="secondary-button" onClick={onAddTask}><Plus size={16} /> {tr('addTaskToday')}</button>
+          <button className="secondary-button" onClick={onViewPayments}><CircleDollarSign size={16} /> {tr('toCollect')}</button>
+        </div>
       </section>
 
-      <section className="quick-card">
+      <section className="today-metrics" aria-label={tr('focusTitle')}>
+        <div className="today-metric"><span>{tr('openWork')}</span><strong>{openTasks.length}</strong><small>{currentLanguage === 'pt' ? 'tarefas abertas' : 'open tasks'}</small></div>
+        <div className={todayTasks.length ? 'today-metric attention' : 'today-metric'}><span>{tr('dueToday')}</span><strong>{todayTasks.length}</strong><small>{currentLanguage === 'pt' ? 'para entregar' : 'to deliver'}</small></div>
+        <div className={overdue.length ? 'today-metric danger' : 'today-metric'}><span>{tr('overdue')}</span><strong>{overdue.length}</strong><small>{currentLanguage === 'pt' ? 'precisam de ação' : 'need action'}</small></div>
+        <div className="today-metric money"><span>{tr('toCollect')}</span><strong>{totalPending}</strong><small>{currentLanguage === 'pt' ? 'pagamentos pendentes' : 'pending payments'}</small></div>
+      </section>
+
+      <section className="quick-card today-quick-card">
         <div className="quick-icon"><Sparkles size={19} /></div>
         <div className="quick-main">
           <div className="quick-label">{tr('aiQuick')}</div>
           <h3>{tr('quickQuestion')}</h3>
-          <textarea value={quickText} onChange={e => onQuickTextChange(e.target.value)} placeholder="e.g. Deliver John's website Friday, collect $200 from Maria tomorrow, and send Pedro the proposal Monday." />
+          <textarea value={quickText} onChange={e => onQuickTextChange(e.target.value)} placeholder={currentLanguage === 'pt' ? 'ex.: Entregar o site da Maria sexta, cobrar 200 USD amanhã e enviar a proposta ao Carlos segunda.' : "e.g. Deliver Maria's website Friday, collect $200 tomorrow, and send Carlos the proposal Monday."} />
           <div className="quick-actions">
             <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
             <span>{tr('plain')}</span>
@@ -802,16 +832,52 @@ function TodayView({ tasks, overdue, todayTasks, pendingAmount, pendingPayments,
         </section>
       )}
 
-      <div className="section-heading"><div><p className="section-kicker">{tr('today')}</p><h2>{tr('todayFocus')}</h2></div><button className="text-button" onClick={onCreatePlan}><Sparkles size={15} /> {tr('quickAdd')}</button></div>
+      <section className="today-focus-section">
+        <div className="section-heading today-section-heading">
+          <div><p className="section-kicker">{tr('focusTitle')}</p><h2>{hasAttention ? (currentLanguage === 'pt' ? 'Resolva primeiro o que está pendente.' : 'Handle the important things first.') : tr('allClearToday')}</h2></div>
+          <span className="today-urgent-count">{urgentCount > 0 ? `${urgentCount} ${tr('urgent').toLowerCase()}` : '✓'}</span>
+        </div>
 
-      {overdue.length > 0 && <TaskSection title={tr('overdue')} tone="danger" tasks={overdue} onToggle={onToggle} />}
-      {todayTasks.length > 0 ? <TaskSection title={tr('today').toUpperCase()} tasks={todayTasks} onToggle={onToggle} /> : (
-        <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('nothing')}</strong><p>{tr('breathing')}</p></div></div>
-      )}
+        {overdue.length > 0 && <TaskSection title={tr('overdue')} tone="danger" tasks={overdue} onToggle={onToggle} />}
+        {todayTasks.length > 0 ? <TaskSection title={tr('today').toUpperCase()} tasks={todayTasks} onToggle={onToggle} /> : !overdue.length ? (
+          <div className="empty-card"><CheckCircle2 size={23} /><div><strong>{tr('allClearToday')}</strong><p>{tr('allClearDesc')}</p></div></div>
+        ) : null}
+      </section>
 
-      <div className="section-heading up-next"><h2>{tr('upNext')}</h2><button className="text-button" onClick={onPlanner}><Bot size={16} /> {tr('organize')}</button></div>
-      {nextTasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} disabled={busyTaskId === task.id} />)}
-      <div className="summary-line">{tasks.filter(t => t.status === 'open').length} {tr('open').toLowerCase()} · {pendingMoneyLabel(pendingPayments)} {tr('pending')}</div>
+      <section className="today-two-column">
+        <div className="today-panel">
+          <div className="today-panel-head">
+            <div><p className="section-kicker">{tr('paymentAttention')}</p><h3>{tr('paymentAttentionDesc')}</h3></div>
+            <button className="text-button" onClick={onViewPayments}>{tr('viewPayments')}</button>
+          </div>
+          {paymentAttention.length > 0 ? <div className="today-payment-list">
+            {paymentAttention.slice(0, 4).map(payment => (
+              <div className="today-payment-row" key={payment.id}>
+                <div className={payment.dueDate < iso(today) ? 'today-payment-icon overdue' : 'today-payment-icon'}><CircleDollarSign size={17} /></div>
+                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDate < iso(today) ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
+                <button className="secondary-button compact" onClick={() => onMarkPaid(payment.id)}>{tr('markPaidToday')}</button>
+              </div>
+            ))}
+          </div> : <div className="today-panel-empty"><CheckCircle2 size={19} /><span>{tr('noPaymentAttention')}</span></div>}
+        </div>
+
+        <div className="today-panel">
+          <div className="today-panel-head">
+            <div><p className="section-kicker">{tr('upcomingWork')}</p><h3>{tr('upcomingDesc')}</h3></div>
+            <button className="text-button" onClick={onViewTasks}>{tr('viewAllTasks')}</button>
+          </div>
+          {upcomingTasks.length > 0 ? <div className="today-upcoming-list">
+            {upcomingTasks.map(task => <TaskRow key={task.id} task={task} onToggle={onToggle} disabled={busyTaskId === task.id} />)}
+          </div> : <div className="today-panel-empty"><Clock3 size={19} /><span>{tr('noUpcoming')}</span></div>}
+        </div>
+      </section>
+
+      <div className="today-footer-actions">
+        <button className="secondary-button" onClick={onAddTask}><Plus size={16} /> {tr('addTaskToday')}</button>
+        <button className="secondary-button" onClick={onPlanner}><Bot size={16} /> {tr('organize')}</button>
+      </div>
+
+      <div className="summary-line">{openTasks.length} {tr('open').toLowerCase()} · {pendingMoneyLabel(pendingPayments)} {tr('pending')}</div>
     </div>
   )
 }
