@@ -670,7 +670,7 @@ function App() {
               />
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
-            {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} onAdd={() => setShowAddClient(true)} />}
+            {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} />}
             {view === 'payments' && <PaymentsView payments={payments} onMarkPaid={markPaid} onAdd={() => setShowAddPayment(true)} />}
             {view === 'feedback' && <FeedbackView
               type={feedbackType}
@@ -1243,7 +1243,7 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
   </div>
 }
 
-function ClientsView({ clients, tasks, payments, onAdd }: { clients: Client[]; tasks: Task[]; payments: Payment[]; onAdd: () => void }) {
+function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: Task[]; payments: Payment[] }) {
   const [search, setSearch] = useState('')
   const todayKey = currentTodayKey()
   const query = search.trim().toLowerCase()
@@ -1278,7 +1278,6 @@ function ClientsView({ clients, tasks, payments, onAdd }: { clients: Client[]; t
   return <div className="content-stack clients-page">
     <div className="page-intro clients-page-intro">
       <div><p className="section-kicker">{tr('clients')}</p><h2>{tr('clientsHeadline')}</h2><p className="page-description">{tr('clientsDescription')}</p></div>
-      <button className="primary-button" onClick={onAdd}><Plus size={17} /> {tr('addClient')}</button>
     </div>
 
     <section className="clients-overview">
@@ -1294,7 +1293,7 @@ function ClientsView({ clients, tasks, payments, onAdd }: { clients: Client[]; t
     </div>}
 
     {clients.length === 0 ? (
-      <div className="empty-card clients-empty"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente ainda' : 'No clients yet'}</strong><p>{currentLanguage === 'pt' ? 'Adicione seu primeiro cliente para começar a acompanhar o trabalho.' : 'Add your first client to start tracking work.'}</p><button className="secondary-button" onClick={onAdd}><Plus size={15} /> {tr('addClient')}</button></div></div>
+      <div className="empty-card clients-empty"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente ainda' : 'No clients yet'}</strong><p>{currentLanguage === 'pt' ? 'Os clientes aparecem aqui quando você os associa a uma tarefa ou pagamento.' : 'Clients appear here when you associate them with a task or payment.'}</p></div></div>
     ) : rows.length === 0 ? (
       <div className="empty-card clients-empty"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente encontrado' : 'No clients found'}</strong><p>{currentLanguage === 'pt' ? 'Tente outro nome de cliente.' : 'Try a different client name.'}</p></div></div>
     ) : (
