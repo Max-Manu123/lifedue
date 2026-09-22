@@ -127,3 +127,27 @@ grant select, insert, update, delete on table public.profiles to authenticated;
 grant select, insert, update, delete on table public.clients to authenticated;
 grant select, insert, update, delete on table public.tasks to authenticated;
 grant select, insert, update, delete on table public.payments to authenticated;
+
+
+-- Additional hardening for new environments.
+-- These constraints protect the database even if a future client bypasses UI validation.
+alter table public.payments
+  drop constraint if exists payments_amount_nonnegative;
+alter table public.payments
+  add constraint payments_amount_nonnegative check (amount >= 0);
+
+alter table public.clients
+  drop constraint if exists clients_name_not_blank;
+alter table public.clients
+  add constraint clients_name_not_blank check (length(trim(name)) > 0);
+
+alter table public.tasks
+  drop constraint if exists tasks_title_not_blank;
+alter table public.tasks
+  add constraint tasks_title_not_blank check (length(trim(title)) > 0);
+
+create index if not exists tasks_user_client_due_idx
+  on public.tasks(user_id, client_id, due_date);
+
+create index if not exists payments_user_client_due_idx
+  on public.payments(user_id, client_id, due_date);
