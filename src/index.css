@@ -420,3 +420,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .google-primary { min-height: 44px; border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(15,23,42,.04); }
 .google-primary:hover { border-color: #94a3b8; box-shadow: 0 7px 18px rgba(15,23,42,.07); }
 .auth-links { align-items: center; }
+
+
+.password-strength { display: grid; gap: 5px; margin: -4px 0 6px; font-size: 10px; font-weight: 700; }
+.password-strength > span { color: #64748b; }
+.password-strength.weak > span { color: #b91c1c; }
+.password-strength.fair > span { color: #a16207; }
+.password-strength.strong > span { color: #15803d; }
+.password-strength-track { height: 4px; width: 100%; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+.password-strength-track span { display: block; height: 100%; border-radius: 99px; background: #dc2626; transition: width .2s ease, background-color .2s ease; }
+.password-strength.fair .password-strength-track span { background: #d97706; }
+.password-strength.strong .password-strength-track span { background: #16a34a; }
+.password-requirements { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 5px; }
+.password-requirements span { color: #94a3b8; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 7px; font-size: 9px; font-weight: 700; }
+.password-requirements span.met { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+.password-suggestion { width: 100%; border: 0; background: transparent; color: #4f46e5; text-align: left; padding: 2px 0 0; font-size: 10px; font-weight: 800; cursor: pointer; }
+.password-suggestion:hover { color: #3730a3; text-decoration: underline; }
