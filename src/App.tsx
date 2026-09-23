@@ -176,6 +176,7 @@ function App() {
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null)
   const [pendingSaveAfterAuth, setPendingSaveAfterAuth] = useState(false)
   const [pendingOnboardingSkip, setPendingOnboardingSkip] = useState(false)
+  const pendingOnboardingSkipRef = useRef(false)
   const [pendingOnboardingPaymentAfterAuth, setPendingOnboardingPaymentAfterAuth] = useState(false)
   const authDraftKey = 'lifedue-auth-draft-v1'
 
@@ -185,7 +186,7 @@ function App() {
       const sessionUser = data.session?.user ?? null
       setUser(sessionUser)
       if (sessionUser) {
-        if (pendingOnboardingSkip) setView('home')
+        if (pendingOnboardingSkipRef.current) setView('home')
         else setView('quick-add')
       }
     })
@@ -200,7 +201,8 @@ function App() {
       if (session?.user) {
         if (passwordRecoveryRef.current) return
         setAuthOpen(false)
-        if (pendingOnboardingSkip) {
+        if (pendingOnboardingSkipRef.current) {
+          pendingOnboardingSkipRef.current = false
           setPendingOnboardingSkip(false)
           setView('home')
         } else {
@@ -467,6 +469,7 @@ function App() {
       setView('home')
       return
     }
+    pendingOnboardingSkipRef.current = true
     setPendingOnboardingSkip(true)
     setAuthMode('signup')
     setAuthOpen(true)
@@ -1201,6 +1204,7 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
 }) {
   const pt = language === 'pt'
   const resultRef = useRef<HTMLElement>(null)
+  const [showPaymentSuggestion, setShowPaymentSuggestion] = useState(true)
 
   useEffect(() => {
     if (plan.length > 0 && !aiLoading) {
@@ -1254,7 +1258,7 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
               {user ? (pt ? 'Guardar no LifeDue' : 'Save to LifeDue') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
             </button>
             {!user && <p className="onboarding-save-note">{pt ? 'Você só cria uma conta quando quiser guardar seu trabalho. Google ou email — sem cartão.' : 'You only create an account when you want to save your work. Google or email — no card.'}</p>}
-            {planPayments.length === 0 && (
+            {planPayments.length === 0 && showPaymentSuggestion && (
               <div className="onboarding-payment-option">
                 <div className="onboarding-payment-copy">
                   <div className="onboarding-payment-icon"><CircleDollarSign size={18} /></div>
@@ -1265,7 +1269,7 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
                 </div>
                 <div className="onboarding-payment-actions">
                   <button type="button" className="secondary-button" onClick={onAddPayment}>{pt ? 'Adicionar pagamento' : 'Add payment'}</button>
-                  <button type="button" className="text-button">{pt ? 'Agora não' : 'Not now'}</button>
+                  <button type="button" className="text-button" onClick={() => setShowPaymentSuggestion(false)}>{pt ? 'Agora não' : 'Not now'}</button>
                 </div>
               </div>
             )}
