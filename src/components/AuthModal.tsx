@@ -21,6 +21,7 @@ export function AuthModal({
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [resetCompleted, setResetCompleted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -81,7 +82,7 @@ export function AuthModal({
       return
     }
 
-    if (mode === 'signup' && password !== confirmPassword) {
+    if ((mode === 'signup' || mode === 'reset') && password !== confirmPassword) {
       setError(pt ? 'As senhas não coincidem.' : 'Passwords do not match.')
       return
     }
@@ -140,9 +141,12 @@ export function AuthModal({
       }
       const { error: authError } = await supabase.auth.updateUser({ password: cleanPassword })
       if (authError) throw authError
-      setSuccess(pt ? 'Senha redefinida com sucesso. Sua conta está pronta.' : 'Password reset successfully. Your account is ready.')
-      setMode('login')
+      await supabase.auth.signOut()
       setPassword('')
+      setConfirmPassword('')
+      setResetCompleted(true)
+      setMode('login')
+      setSuccess(pt ? 'Senha redefinida com sucesso. Agora entre com a nova senha.' : 'Password reset successfully. Now sign in with your new password.')
       return
     } catch (authError) {
       console.error('LifeDue authentication failed:', authError)
@@ -237,20 +241,22 @@ export function AuthModal({
         )}
 
         <form onSubmit={submit} className="auth-form">
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={event => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              autoComplete={mode === 'login' ? 'username' : 'email'}
-              autoFocus
-              required
-            />
-          </label>
+          {(mode !== 'reset') && (
+            <label>
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={event => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                autoComplete={mode === 'login' ? 'username' : 'email'}
+                autoFocus
+                required
+              />
+            </label>
+          )}
 
-          {(mode === 'login' || mode === 'signup') && (
+          {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
             <label>
               {pt ? 'Senha' : 'Password'}
               <span className="auth-password">
@@ -271,6 +277,19 @@ export function AuthModal({
                   {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </span>
+              {mode === 'reset' && (
+                <span className="auth-password">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={event => setConfirmPassword(event.target.value)}
+                    minLength={8}
+                    autoComplete="new-password"
+                    placeholder={pt ? 'Confirme a nova senha' : 'Confirm new password'}
+                    required
+                  />
+                </span>
+              )}
               {mode === 'signup' && (
                 <>
                   <div className={`password-strength ${passwordStrength.tone}`} aria-live="polite">
