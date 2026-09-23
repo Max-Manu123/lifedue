@@ -534,15 +534,11 @@ function App() {
     try {
       const savablePayments = planPayments.filter(item =>
         item.amount !== null &&
-        item.amount !== undefined &&
-        item.currency !== null &&
-        item.currency !== undefined
+        item.amount !== undefined
       )
       const incompletePaymentItems = planPayments.filter(item =>
         item.amount === null ||
-        item.amount === undefined ||
-        item.currency === null ||
-        item.currency === undefined
+        item.amount === undefined
       )
       const taskPlan = [
         ...plan.filter(task => !planPayments.some(payment =>
@@ -577,7 +573,7 @@ function App() {
           const createdPayments = await Promise.all(newPayments.map(item => createPayment(user, {
             client: item.client,
             amount: item.amount as number,
-            currency: item.currency as string,
+            currency: item.currency ?? null,
             dueDate: item.dueDate,
             dueDateProvided: item.dueDateProvided !== false,
           })))
