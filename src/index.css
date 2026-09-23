@@ -865,7 +865,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .sidebar-secondary.active { color:#4f46e5; }
 .account-button { display:flex; align-items:center; gap:7px; }
 .account-button-label { max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.feedback-page,.settings-page { max-width:900px; }
+.feedback-page,.install-pwa-wrap { display:flex; flex-direction:column; align-items:flex-end; gap:7px; }
+.install-pwa-wrap-hero { align-items:flex-start; }
+.install-pwa-installed { display:inline-flex; align-items:center; gap:7px; color:#15803d; font-size:12px; font-weight:700; }
+.install-pwa-help { max-width:330px; color:#64748b; font-size:11px; line-height:1.4; text-align:right; }
+.install-pwa-wrap-hero .install-pwa-help { text-align:left; }
+.settings-page { max-width:900px; }
 .feedback-card,.settings-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:18px; box-shadow:0 6px 24px rgba(15,23,42,.035); }
 .feedback-card { max-width:760px; }
 .feedback-card-header,.settings-section-head { display:flex; align-items:flex-start; gap:11px; }
@@ -914,7 +919,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .theme-dark .sidebar-secondary:hover { background:#172033; }
 .theme-dark .main-content,.theme-dark .topbar { background:#0b1120; color:#e5e7eb; }
 .theme-dark .topbar { border-color:#1e293b; }
-.theme-dark .eyebrow,.theme-dark .page-description,.theme-dark .feedback-card-header p,.theme-dark .settings-section-head p,.theme-dark .settings-row span,.theme-dark .settings-action-row span { color:#94a3b8; }
+.theme-dark .eyebrow,.theme-dark .page-description,.theme-dark .feedback-card-header p,.theme-dark .install-pwa-installed { color:#86efac; }
+.theme-dark .install-pwa-help { color:#94a3b8; }
+.theme-dark .settings-section-head p,.theme-dark .settings-row span,.theme-dark .settings-action-row span { color:#94a3b8; }
 .theme-dark .today-hero,.theme-dark .today-metric,.theme-dark .today-panel,.theme-dark .quick-card,.theme-dark .ai-result-card,.theme-dark .tasks-overview-main,.theme-dark .task-stat,.theme-dark .client-card,.theme-dark .payments-overview > div,.theme-dark .payment-currency-summary,.theme-dark .planner-overview > div,.theme-dark .card-list,.theme-dark .feedback-card,.theme-dark .settings-card { background:#111827; border-color:#243244; color:#e5e7eb; }
 .theme-dark .today-hero { background:linear-gradient(135deg,#111827,#0f172a); }
 .theme-dark .today-metric strong,.theme-dark .feedback-card-header strong,.theme-dark .settings-section-head h3,.theme-dark .account-details strong,.theme-dark .settings-row strong,.theme-dark .settings-action-row strong,.theme-dark .today-panel-head h3,.theme-dark .task-info strong,.theme-dark .client-heading strong,.theme-dark .payment-info strong,.theme-dark .plan-main strong { color:#f8fafc; }
