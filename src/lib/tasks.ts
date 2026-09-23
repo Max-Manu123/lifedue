@@ -264,7 +264,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
   requireSupabaseUser(user)
   const rows = []
   for (const task of tasks) {
-    const clientId = await getOrCreateClient(user, task.client)
+    const clientId = task.client.trim() ? await getOrCreateClient(user, task.client) : null
     rows.push({
       user_id: user.id,
       client_id: clientId,
