@@ -93,7 +93,7 @@ export async function createPayment(user: User, payment: Omit<Payment, 'id' | 's
   const row = data as {
     id: string
     amount: number
-    currency: string
+    currency: string | null
     due_date: string
     due_date_is_explicit: boolean
     status: Payment['status']
