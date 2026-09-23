@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const MAX_INPUT_LENGTH = 4000
 const MAX_ITEMS = 12
-const MODELS = ['gemini-3.8-flash', 'gemini-2.5-flash'] as const
+const MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite'] as const
 
 const currencies = ['USD', 'EUR', 'BRL', 'AOA', 'GBP', 'Other'] as const
 type Currency = typeof currencies[number]
@@ -159,10 +159,10 @@ async function callGemini(apiKey: string, prompt: string, model: string) {
 
   try {
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(apiKey),
+      'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
         signal: controller.signal,
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemInstruction.join('\n') }] },
@@ -294,7 +294,7 @@ Deno.serve(async (req) => {
           lastError = error
           const status = typeof (error as { status?: unknown }).status === 'number' ? (error as { status: number }).status : 0
           const retryable = Boolean((error as { retryable?: boolean }).retryable) || status === 503 || status === 429 || status >= 500 || error instanceof DOMException
-          if (!retryable || attempt === 2) break
+          if (!retryable || attempt === 3) break
           await new Promise(resolve => setTimeout(resolve, 700 * attempt))
         }
       }
