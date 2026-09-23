@@ -65,7 +65,7 @@ const uniqueTasks = (items: Task[]) => {
   })
 }
 
-const paymentKey = (payment: Pick<Payment, 'client' | 'amount' | 'dueDate'>) =>
+const paymentKey = (payment: Pick<Payment, 'client' | 'amount' | 'currency' | 'dueDate'>) =>
   `${payment.client.trim().toLowerCase()}|${payment.amount}|${payment.dueDate}|${payment.currency ?? ''}`
 
 const uniquePayments = (items: Payment[]) => {
