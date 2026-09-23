@@ -380,7 +380,7 @@ function App() {
       }
 
       const items = Array.isArray(data?.items) ? data.items as QuickAddItem[] : []
-      if (requestId !== plannerRequestId.current) return
+      if (requestId !== quickAddRequestId.current) return
 
       if (!items.length) {
         setAiError(currentLanguage === 'pt'
