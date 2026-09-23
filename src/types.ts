@@ -31,7 +31,7 @@ export interface Payment {
   id: string
   client: string
   amount: number
-  currency: string
+  currency: string | null
   dueDate: string
   status: 'pending' | 'paid'
 }
