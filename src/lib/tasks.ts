@@ -52,7 +52,7 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
   return ((data ?? []) as Array<{
     id: string
     amount: number
-    currency: string
+    currency: string | null
     due_date: string
     due_date_is_explicit: boolean
     status: Payment['status']
@@ -84,9 +84,10 @@ export async function createPayment(user: User, payment: Omit<Payment, 'id' | 's
       amount: payment.amount,
       currency: payment.currency,
       due_date: payment.dueDate,
+      due_date_is_explicit: payment.dueDateProvided !== false,
       status: 'pending',
     })
-    .select('id, amount, currency, due_date, status, client_id, clients(name)')
+    .select('id, amount, currency, due_date, due_date_is_explicit, status, client_id, clients(name)')
     .single()
   if (error) throw error
   const row = data as {
