@@ -65,7 +65,7 @@ const uniqueTasks = (items: Task[]) => {
   })
 }
 
-const paymentKey = (payment: Pick<Payment, 'client' | 'amount' | 'currency' | 'dueDate'>) =>
+const paymentKey = (payment: Pick<Payment, 'client' | 'amount' | 'dueDate'> & { currency?: string | null }) =>
   `${payment.client.trim().toLowerCase()}|${payment.amount}|${payment.dueDate}|${payment.currency ?? ''}`
 
 const uniquePayments = (items: Payment[]) => {
@@ -1235,6 +1235,8 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
   onUpdatePlanTask: (id: string, patch: Partial<Pick<Task, 'dueDate' | 'dueDateProvided' | 'priority'>>) => void
   onUpdatePlanPayment: (index: number, patch: Partial<Pick<QuickAddItem, 'amount' | 'currency' | 'dueDate' | 'dueDateProvided'>>) => void
   onSkip: () => void
+  onUpdatePlanTask?: (id: string, patch: Partial<Pick<Task, 'dueDate' | 'dueDateProvided' | 'priority'>>) => void
+  onUpdatePlanPayment?: (index: number, patch: Partial<Pick<QuickAddItem, 'amount' | 'currency' | 'dueDate' | 'dueDateProvided'>>) => void
   aiLoading: boolean
   aiError: string
   user: User | null
