@@ -178,6 +178,7 @@ function App() {
   const [pendingOnboardingSkip, setPendingOnboardingSkip] = useState(false)
   const pendingOnboardingSkipRef = useRef(false)
   const [pendingOnboardingPaymentAfterAuth, setPendingOnboardingPaymentAfterAuth] = useState(false)
+  const pendingOnboardingPaymentAfterAuthRef = useRef(false)
   const authDraftKey = 'lifedue-auth-draft-v1'
 
   useEffect(() => {
@@ -201,6 +202,9 @@ function App() {
       if (session?.user) {
         if (passwordRecoveryRef.current) return
         setAuthOpen(false)
+        if (pendingOnboardingPaymentAfterAuthRef.current) {
+          return
+        }
         if (pendingOnboardingSkipRef.current) {
           pendingOnboardingSkipRef.current = false
           setPendingOnboardingSkip(false)
@@ -482,6 +486,7 @@ function App() {
       return
     }
     saveAuthDraft()
+    pendingOnboardingPaymentAfterAuthRef.current = true
     setPendingOnboardingPaymentAfterAuth(true)
     setPendingSaveAfterAuth(true)
     setAuthMode('signup')
@@ -575,7 +580,8 @@ function App() {
       setPlan([])
       setPlanPayments([])
       setQuickText('')
-      if (pendingOnboardingPaymentAfterAuth) {
+      if (pendingOnboardingPaymentAfterAuthRef.current) {
+        pendingOnboardingPaymentAfterAuthRef.current = false
         setPendingOnboardingPaymentAfterAuth(false)
         setPaymentDraftClient(taskPlan[0]?.client ?? '')
         setShowAddPayment(true)
