@@ -1,3 +1,10 @@
+-- Create the profile table when this migration is applied to a database where it does not exist yet.
+create table if not exists public.profile (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
 -- Keep the existing public.profile table usable and link every profile to auth.users.
 alter table if exists public.profile
   add column if not exists created_at timestamptz;
