@@ -175,6 +175,8 @@ function App() {
   const [paymentsError, setPaymentsError] = useState('')
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null)
   const [pendingSaveAfterAuth, setPendingSaveAfterAuth] = useState(false)
+  const [pendingOnboardingSkip, setPendingOnboardingSkip] = useState(false)
+  const [pendingOnboardingPaymentAfterAuth, setPendingOnboardingPaymentAfterAuth] = useState(false)
   const authDraftKey = 'lifedue-auth-draft-v1'
 
   useEffect(() => {
@@ -182,7 +184,10 @@ function App() {
     supabase.auth.getSession().then(({ data }) => {
       const sessionUser = data.session?.user ?? null
       setUser(sessionUser)
-      if (sessionUser) setView('quick-add')
+      if (sessionUser) {
+        if (pendingOnboardingSkip) setView('home')
+        else setView('quick-add')
+      }
     })
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
@@ -195,7 +200,12 @@ function App() {
       if (session?.user) {
         if (passwordRecoveryRef.current) return
         setAuthOpen(false)
-        setView('quick-add')
+        if (pendingOnboardingSkip) {
+          setPendingOnboardingSkip(false)
+          setView('home')
+        } else {
+          setView('quick-add')
+        }
       }
     })
     return () => listener.subscription.unsubscribe()
@@ -452,6 +462,29 @@ function App() {
     }
   }
 
+  const skipOnboarding = () => {
+    if (user) {
+      setView('home')
+      return
+    }
+    setPendingOnboardingSkip(true)
+    setAuthMode('signup')
+    setAuthOpen(true)
+  }
+
+  const addOnboardingPayment = () => {
+    if (user) {
+      setPaymentDraftClient(plan[0]?.client ?? '')
+      setShowAddPayment(true)
+      return
+    }
+    saveAuthDraft()
+    setPendingOnboardingPaymentAfterAuth(true)
+    setPendingSaveAfterAuth(true)
+    setAuthMode('signup')
+    setAuthOpen(true)
+  }
+
   const saveAuthDraft = () => {
     if (!plan.length) return
     localStorage.setItem(authDraftKey, JSON.stringify({ plan, planPayments, quickText, savedAt: Date.now() }))
@@ -539,6 +572,11 @@ function App() {
       setPlan([])
       setPlanPayments([])
       setQuickText('')
+      if (pendingOnboardingPaymentAfterAuth) {
+        setPendingOnboardingPaymentAfterAuth(false)
+        setPaymentDraftClient(taskPlan[0]?.client ?? '')
+        setShowAddPayment(true)
+      }
       setView('quick-add')
     } catch (error) {
       console.error('LifeDue plan save failed:', error)
@@ -702,7 +740,7 @@ function App() {
       {view === 'home' ? (
         <Landing onStart={() => navigate('onboarding')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} language={language} setLanguage={setLanguage} user={user} />
       ) : view === 'onboarding' ? (
-        <OnboardingView quickText={quickText} onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }} onCreatePlan={() => void createPlan()} plan={plan} planSource={planSource} onAddPlan={() => void addPlan()} aiLoading={aiLoading} aiError={aiError} user={user} onBack={() => navigate('home')} language={language} />
+        <OnboardingView quickText={quickText} onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }} onCreatePlan={() => void createPlan()} plan={plan} planSource={planSource} planPayments={planPayments} onAddPlan={() => void addPlan()} onAddPayment={addOnboardingPayment} onSkip={skipOnboarding} aiLoading={aiLoading} aiError={aiError} user={user} onBack={() => navigate('home')} language={language} />
       ) : (
         <div className="workspace">
           <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
@@ -1145,13 +1183,16 @@ function Landing({ onStart, onAuth, onOpenApp, language, setLanguage, user }: { 
   )
 }
 
-function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, planSource, onAddPlan, aiLoading, aiError, user, onBack, language }: {
+function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, planSource, planPayments, onAddPlan, onAddPayment, onSkip, aiLoading, aiError, user, onBack, language }: {
   quickText: string
   onQuickTextChange: (value: string) => void
   onCreatePlan: () => void
   plan: Task[]
   planSource: 'quick-add' | 'planner' | null
+  planPayments: QuickAddItem[]
   onAddPlan: () => void
+  onAddPayment: () => void
+  onSkip: () => void
   aiLoading: boolean
   aiError: string
   user: User | null
@@ -1164,12 +1205,8 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
   useEffect(() => {
     if (plan.length > 0 && !aiLoading) {
       const timer = window.setTimeout(() => {
-        resultRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
+        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 100)
-
       return () => window.clearTimeout(timer)
     }
   }, [plan.length, aiLoading])
@@ -1179,7 +1216,10 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
       <header className="onboarding-header">
         <button className="brand onboarding-brand" onClick={onBack}><span className="brand-mark">L</span><span>LifeDue</span></button>
         <div className="onboarding-progress"><span className="active" /><span className={plan.length ? 'active' : ''} /><span className={user ? 'active' : ''} /></div>
-        <button className="ghost-button" onClick={onBack}>{pt ? 'Voltar' : 'Back'}</button>
+        <div className="onboarding-header-actions">
+          <button className="ghost-button" onClick={onSkip}>{pt ? 'Pular por agora' : 'Skip for now'}</button>
+          <button className="ghost-button" onClick={onBack}>{pt ? 'Voltar' : 'Back'}</button>
+        </div>
       </header>
       <main className="onboarding-main">
         <div className="onboarding-intro">
@@ -1214,6 +1254,21 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
               {user ? (pt ? 'Guardar no LifeDue' : 'Save to LifeDue') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
             </button>
             {!user && <p className="onboarding-save-note">{pt ? 'Você só cria uma conta quando quiser guardar seu trabalho. Google ou email — sem cartão.' : 'You only create an account when you want to save your work. Google or email — no card.'}</p>}
+            {planPayments.length === 0 && (
+              <div className="onboarding-payment-option">
+                <div className="onboarding-payment-copy">
+                  <div className="onboarding-payment-icon"><CircleDollarSign size={18} /></div>
+                  <div>
+                    <strong>{pt ? 'Quer acompanhar um pagamento também?' : 'Want to track a payment too?'}</strong>
+                    <span>{pt ? 'Opcional. Você pode adicionar valor, moeda e data depois.' : 'Optional. You can add the amount, currency, and due date later.'}</span>
+                  </div>
+                </div>
+                <div className="onboarding-payment-actions">
+                  <button type="button" className="secondary-button" onClick={onAddPayment}>{pt ? 'Adicionar pagamento' : 'Add payment'}</button>
+                  <button type="button" className="text-button">{pt ? 'Agora não' : 'Not now'}</button>
+                </div>
+              </div>
+            )}
           </section>
         )}
       </main>
