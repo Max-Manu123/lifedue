@@ -923,6 +923,7 @@ interface BeforeInstallPromptEvent extends Event {
 function InstallPwaButton({ language, variant = 'default' }: { language: Language; variant?: 'default' | 'hero' }) {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
   const [installed, setInstalled] = useState(false)
+  const [help, setHelp] = useState('')
 
   useEffect(() => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
@@ -935,6 +936,7 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
     const handleInstalled = () => {
       setInstalled(true)
       setInstallEvent(null)
+      setHelp('')
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall)
@@ -945,21 +947,33 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
     }
   }, [])
 
-  if (installed || !installEvent) return null
+  if (installed) {
+    return <span className="install-pwa-installed"><CheckCircle size={15} /> {language === 'pt' ? 'LifeDue já está instalado' : 'LifeDue is already installed'}</span>
+  }
 
   const install = async () => {
     const event = installEvent
-    if (!event) return
-    await event.prompt()
-    await event.userChoice
-    setInstallEvent(null)
+    if (event) {
+      await event.prompt()
+      await event.userChoice
+      setInstallEvent(null)
+      return
+    }
+
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    setHelp(isIOS
+      ? (language === 'pt' ? 'No iPhone/iPad: use Partilhar → Adicionar ao ecrã principal.' : 'On iPhone/iPad: use Share → Add to Home Screen.')
+      : (language === 'pt' ? 'No menu do navegador, escolha “Instalar LifeDue” ou “Adicionar ao ecrã principal”.' : 'Open your browser menu and choose “Install LifeDue” or “Add to Home Screen”.'))
   }
 
   return (
-    <button className={variant === 'hero' ? 'install-pwa-button install-pwa-hero' : 'install-pwa-button'} onClick={install}>
-      <Download size={15} />
-      {language === 'pt' ? 'Baixar LifeDue' : 'Install LifeDue'}
-    </button>
+    <div className={variant === 'hero' ? 'install-pwa-wrap install-pwa-wrap-hero' : 'install-pwa-wrap'}>
+      <button className={variant === 'hero' ? 'install-pwa-button install-pwa-hero' : 'install-pwa-button'} onClick={install}>
+        <Download size={15} />
+        {language === 'pt' ? 'Baixar LifeDue' : 'Install LifeDue'}
+      </button>
+      {help && <span className="install-pwa-help" role="status">{help}</span>}
+    </div>
   )
 }
 
