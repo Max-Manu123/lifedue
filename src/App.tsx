@@ -582,7 +582,7 @@ function App() {
       } else {
         const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
         const newClients = taskPlan
-          .filter(task => !clientNames.has(task.client.toLowerCase()))
+          .filter(task => task.client.trim() && !clientNames.has(task.client.toLowerCase()))
           .map(task => ({ id: crypto.randomUUID(), name: task.client }))
         if (newClients.length) setClients(current => [...current, ...newClients])
         setTasks(current => uniqueTasks([...taskPlan, ...current]))
