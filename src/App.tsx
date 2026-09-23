@@ -621,7 +621,7 @@ function App() {
 
   const joinProWaitlist = async () => {
     const email = (waitlistEmail || user?.email || '').trim().toLowerCase()
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setWaitlistError(tr('waitlistInvalidEmail'))
       return
     }
