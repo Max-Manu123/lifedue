@@ -399,9 +399,9 @@ function App() {
       if (requestId !== quickAddRequestId.current) return
 
       if (!items.length) {
-        setAiError(currentLanguage === 'pt'
-          ? 'Não encontrei nenhuma tarefa ou cobrança clara no texto. Tente escrever uma ação, cliente e prazo.'
-          : 'I could not find a clear task or payment. Try describing an action, client, and deadline.')
+        setAiError(typeof data?.message === 'string' ? data.message : (currentLanguage === 'pt'
+          ? 'Não encontrei nenhuma tarefa ou cobrança clara. Escreva uma ação concreta.'
+          : 'I could not find a clear task or payment. Describe one concrete action.'))
         return
       }
 
