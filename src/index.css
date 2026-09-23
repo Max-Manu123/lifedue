@@ -1,30 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
 :root {
-  --brand: #4f46e5;
-  --brand-strong: #4338ca;
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --accent-success: #0d9488;
+  --accent-danger: #e11d48;
+  --accent-warning: #d97706;
+  --brand: var(--primary);
+  --brand-strong: var(--primary-hover);
   --brand-soft: #eef2ff;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --surface: #ffffff;
-  --surface-soft: #f8fafc;
-  --success: #16a34a;
-  --danger: #dc2626;
-  --radius-sm: 9px;
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --line: var(--border-color);
+  --surface: var(--bg-card);
+  --surface-soft: var(--bg-main);
+  --success: var(--accent-success);
+  --danger: var(--accent-danger);
+  --warning: var(--accent-warning);
+  --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --shadow-sm: 0 4px 16px rgba(15,23,42,.05);
   --shadow-md: 0 12px 34px rgba(15,23,42,.08);
   --ease: cubic-bezier(.2,.8,.2,1);
 
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
+  font-family: 'Plus Jakarta Sans', Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-main);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  line-height: 1.4;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
+* { box-sizing: border-box; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; background: #f8fafc; }
 button, input, textarea, select { font: inherit; }
@@ -929,60 +945,39 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .segmented-control button.active,.theme-options button.active { background:#fff; color:#4338ca; box-shadow:0 1px 4px rgba(15,23,42,.09); }
 .danger-button { display:flex; align-items:center; gap:6px; border:1px solid #fecaca; background:#fffafa; color:#b91c1c; border-radius:9px; padding:8px 10px; font:inherit; font-size:10px; font-weight:900; cursor:pointer; }
 .danger-icon { background:#fef2f2; color:#dc2626; }
-.theme-dark { background:#0b1120; color:#e5e7eb; }
-.theme-dark .page-intro h2,.theme-dark .section-kicker,.theme-dark .page-description,.theme-dark .section-title,.theme-dark label { color:#e5e7eb; }
-.theme-dark .card-list,.theme-dark .empty-card,.theme-dark .modal,.theme-dark .modal-content,.theme-dark .dropdown-menu,.theme-dark .task-row,.theme-dark .client-card,.theme-dark .payment-row,.theme-dark .plan-item,.theme-dark .quick-card,.theme-dark .ai-result-card { background:#111827; border-color:#263449; color:#e5e7eb; }
-.theme-dark input,.theme-dark select,.theme-dark textarea { background:#0f172a; border-color:#334155; color:#f1f5f9; }
-.theme-dark input::placeholder,.theme-dark textarea::placeholder { color:#64748b; }
-.theme-dark .secondary-button { background:#172033; border-color:#334155; color:#cbd5e1; }
-.theme-dark .secondary-button:hover { background:#1e293b; color:#f8fafc; }
-.theme-dark .filter-tab { color:#94a3b8; }
-.theme-dark .filter-tab.active { background:#1e293b; color:#c7d2fe; border-color:#334155; }
-.theme-dark .task-stat small,.theme-dark .client-metric small,.theme-dark .payment-info span,.theme-dark .plan-item small,.theme-dark .summary-line { color:#94a3b8; }
-.theme-dark .progress-track { background:#263449; }
-.theme-dark .settings-icon,.theme-dark .feedback-icon { background:#1e293b; color:#a5b4fc; }
-.theme-dark .settings-plan-badge { background:rgba(99,102,241,.16); color:#c7d2fe; }
-.theme-dark .danger-button { background:#2a1519; border-color:#6b2a32; color:#fda4af; }
-.theme-dark .danger-icon { background:#2a1519; color:#fb7185; }
-.theme-dark .today-planner-cta { background:#111827; border-color:#334155; color:#e5e7eb; }
-.theme-dark .planner-how-it-works { background:#0f172a; border-color:#334155; }
-
-.theme-dark .workspace { background:#0b1120; }
-.theme-dark .sidebar { background:#0f172a; border-color:#1e293b; }
-.theme-dark .brand,.theme-dark .nav-item,.theme-dark .sidebar-secondary { color:#e2e8f0; }
-.theme-dark .nav-item.active,.theme-dark .sidebar-secondary.active { background:#1e293b; color:#a5b4fc; }
-.theme-dark .sidebar-secondary:hover { background:#172033; }
-.theme-dark .main-content,.theme-dark .topbar { background:#0b1120; color:#e5e7eb; }
-.theme-dark .topbar { border-color:#1e293b; }
-.theme-dark .eyebrow,.theme-dark .page-description,.theme-dark .feedback-card-header p,.theme-dark .install-pwa-installed { color:#86efac; }
-.theme-dark .install-pwa-help { color:#94a3b8; }
-.theme-dark .settings-section-head p,.theme-dark .settings-row span,.theme-dark .settings-action-row span { color:#94a3b8; }
-.theme-dark .today-hero,.theme-dark .today-metric,.theme-dark .today-panel,.theme-dark .quick-card,.theme-dark .ai-result-card,.theme-dark .tasks-overview-main,.theme-dark .task-stat,.theme-dark .client-card,.theme-dark .payments-overview > div,.theme-dark .payment-currency-summary,.theme-dark .planner-overview > div,.theme-dark .card-list,.theme-dark .feedback-card,.theme-dark .settings-card { background:#111827; border-color:#243244; color:#e5e7eb; }
-.theme-dark .today-hero { background:linear-gradient(135deg,#111827,#0f172a); }
-.theme-dark .today-metric strong,.theme-dark .feedback-card-header strong,.theme-dark .settings-section-head h3,.theme-dark .account-details strong,.theme-dark .settings-row strong,.theme-dark .settings-action-row strong,.theme-dark .today-panel-head h3,.theme-dark .task-info strong,.theme-dark .client-heading strong,.theme-dark .payment-info strong,.theme-dark .plan-main strong { color:#f8fafc; }
-.theme-dark .task-row,.theme-dark .payment-row { border-color:#243244; }
-.theme-dark .task-search,.theme-dark .client-search,.theme-dark .payment-search,.theme-dark .tasks-toolbar select,.theme-dark .feedback-option,.theme-dark .feedback-rating-option,.theme-dark .feedback-field textarea { background:#0f172a; border-color:#243244; color:#e5e7eb; }
-.theme-dark .task-search input,.theme-dark .client-search input,.theme-dark .payment-search input,.theme-dark .feedback-field textarea { color:#e5e7eb; }
-.theme-dark .settings-row,.theme-dark .settings-action-row { border-color:#243244; }
-.theme-dark .account-summary,.theme-dark .segmented-control,.theme-dark .theme-options { background:#0f172a; border-color:#243244; }
-.theme-dark .segmented-control button.active,.theme-dark .theme-options button.active { background:#1e293b; color:#a5b4fc; }
-.theme-dark .feedback-option.active,.theme-dark .feedback-rating-option.active { background:#1e293b; border-color:#6366f1; color:#c7d2fe; }
-.theme-dark .feedback-option,.theme-dark .feedback-rating-option { color:#cbd5e1; }
-.theme-dark .today-metric.money,.theme-dark .clients-overview .money,.theme-dark .payment-overview-main { background:#10231a !important; border-color:#235c3b !important; }
-.theme-dark .today-metric.attention,.theme-dark .payments-overview .attention,.theme-dark .planner-overview .attention { background:#241f0c; border-color:#66551b; }
-.theme-dark .today-metric.danger,.theme-dark .payments-overview .danger,.theme-dark .settings-danger { background:#241214; border-color:#64252b; }
-.theme-dark .text-button,.theme-dark .ghost-button { color:#a5b4fc; }
-.theme-dark .summary-line,.theme-dark .loading-banner { color:#94a3b8; }
-@media (max-width:560px) {
-  .feedback-options { grid-template-columns:1fr 1fr; }
-  .feedback-submit-row { align-items:stretch; flex-direction:column; }
-  .feedback-submit-row .primary-button { width:100%; justify-content:center; }
-  .settings-row,.settings-action-row { align-items:flex-start; flex-direction:column; }
-  .segmented-control,.theme-options { width:100%; box-sizing:border-box; }
-  .segmented-control button,.theme-options button { flex:1; justify-content:center; }
-  .account-summary { align-items:flex-start; flex-wrap:wrap; }
-  .settings-plan-badge { margin-left:51px; }
+.theme-dark {
+  --bg-main: #0f172a;
+  --bg-card: #1e293b;
+  --bg-elevated: #334155;
+  --border-color: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --primary: #6366f1;
+  --primary-hover: #818cf8;
+  --accent-success: #14b8a6;
+  --accent-danger: #fb7185;
+  --accent-warning: #fbbf24;
+  background: var(--bg-main);
+  color: var(--text-primary);
 }
+.theme-dark .page-intro h2,.theme-dark .section-kicker,.theme-dark .page-description,.theme-dark .section-title,.theme-dark label { color: var(--text-primary); }
+.theme-dark .card-list,.theme-dark .empty-card,.theme-dark .modal,.theme-dark .modal-content,.theme-dark .dropdown-menu,.theme-dark .task-row,.theme-dark .client-card,.theme-dark .payment-row,.theme-dark .plan-item,.theme-dark .quick-card,.theme-dark .ai-result-card { background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary); }
+.theme-dark input,.theme-dark select,.theme-dark textarea { background: var(--bg-main); border-color: var(--border-color); color: var(--text-primary); }
+.theme-dark input::placeholder,.theme-dark textarea::placeholder { color: var(--text-muted); }
+.theme-dark .secondary-button { background: var(--bg-elevated); border-color: var(--border-color); color: var(--text-primary); }
+.theme-dark .secondary-button:hover { background: #475569; color: #fff; }
+.theme-dark .filter-tab { color: var(--text-secondary); }
+.theme-dark .filter-tab.active { background: var(--bg-elevated); color: #c7d2fe; border-color: var(--border-color); }
+.theme-dark .task-stat small,.theme-dark .client-metric small,.theme-dark .payment-info span,.theme-dark .plan-item small,.theme-dark .summary-line { color: var(--text-secondary); }
+.theme-dark .progress-track { background: var(--bg-elevated); }
+.theme-dark .settings-icon,.theme-dark .feedback-icon { background: var(--bg-card); color: #a5b4fc; }
+.theme-dark .settings-plan-badge { background: rgba(99,102,241,.16); color: #c7d2fe; }
+.theme-dark .danger-button { background: #2a1519; border-color: #6b2a32; color: #fda4af; }
+.theme-dark .danger-icon { background: #2a1519; color: var(--accent-danger); }
+.theme-dark .today-planner-cta { background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary); }
+.theme-dark .planner-how-it-works { background: #111827; border-color: var(--border-color); color: var(--text-secondary); }
+
 @media (max-width:360px) {
   .feedback-card,.settings-card { padding:14px; }
   .feedback-rating-option { min-height:62px; }
@@ -1105,3 +1100,6 @@ button:disabled { cursor: not-allowed; opacity: .58; }
 .theme-dark .preview-task small,.theme-dark .preview-title,.theme-dark .preview-status { color:#a8b3c2; }
 .theme-dark .feature-row { border-color:#293548; }
 .theme-dark .pill,.theme-dark .feature-icon { background:#1e1b4b; border-color:#3730a3; color:#c7d2fe; }
+
+/* Design-system accessibility refinements */
+button, input, textarea, select { transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease; }
