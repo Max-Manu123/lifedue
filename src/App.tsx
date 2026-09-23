@@ -178,7 +178,11 @@ function App() {
 
   useEffect(() => {
     if (!supabase) return
-    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
+    supabase.auth.getSession().then(({ data }) => {
+      const sessionUser = data.session?.user ?? null
+      setUser(sessionUser)
+      if (sessionUser) setView('quick-add')
+    })
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
       if (event === 'PASSWORD_RECOVERY') {
@@ -672,7 +676,7 @@ function App() {
   return (
     <div className="app-shell" data-theme={resolvedTheme}>
       {view === 'home' ? (
-        <Landing onStart={() => navigate('quick-add')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} language={language} setLanguage={setLanguage} />
+        <Landing onStart={() => navigate('quick-add')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} language={language} setLanguage={setLanguage} user={user} />
       ) : (
         <div className="workspace">
           <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
@@ -1052,15 +1056,21 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
   )
 }
 
-function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => void; onAuth: () => void; language: Language; setLanguage: (language: Language) => void }) {
+function Landing({ onStart, onAuth, onOpenApp, language, setLanguage, user }: { onStart: () => void; onAuth: () => void; onOpenApp: () => void; language: Language; setLanguage: (language: Language) => void; user: User | null }) {
   return (
     <div className="landing">
       <header className="landing-nav">
         <div className="brand"><span className="brand-mark">L</span><span>LifeDue</span></div>
         <div className="landing-nav-right">
           <div className="language-switcher"><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div>
-          <button className="ghost-button landing-signin" onClick={onAuth}>{language==='pt' ? 'Entrar' : 'Sign in'}</button>
-          <button className="nav-cta" onClick={onStart}>{language==='pt' ? 'Começar grátis' : 'Start for free'} <ArrowRight size={15} /></button>
+          {user ? (
+            <button className="nav-cta" onClick={onOpenApp}>{language==='pt' ? 'Abrir LifeDue' : 'Open LifeDue'} <ArrowRight size={15} /></button>
+          ) : (
+            <>
+              <button className="ghost-button landing-signin" onClick={onAuth}>{language==='pt' ? 'Entrar' : 'Sign in'}</button>
+              <button className="nav-cta" onClick={onStart}>{language==='pt' ? 'Começar grátis' : 'Start for free'} <ArrowRight size={15} /></button>
+            </>
+          )}
         </div>
       </header>
 
@@ -1072,8 +1082,14 @@ function Landing({ onStart, onAuth, language, setLanguage }: { onStart: () => vo
             ? 'Transforme seu trabalho com clientes em um plano diário simples. Saiba exatamente o que precisa da sua atenção hoje.'
             : 'Turn your client work into a simple daily plan. Know exactly what needs your attention today.'}</p>
           <div className="hero-actions">
-            <button className="hero-cta" onClick={onStart}>{language==='pt' ? 'Começar grátis' : 'Start for free'} <ArrowRight size={18} /></button>
-            <button className="hero-secondary" onClick={onAuth}>{language==='pt' ? 'Já tenho uma conta' : 'I already have an account'}</button>
+            {user ? (
+              <button className="hero-cta" onClick={onOpenApp}>{language==='pt' ? 'Ir para o app' : 'Go to app'} <ArrowRight size={18} /></button>
+            ) : (
+              <>
+                <button className="hero-cta" onClick={onStart}>{language==='pt' ? 'Começar grátis' : 'Start for free'} <ArrowRight size={18} /></button>
+                <button className="hero-secondary" onClick={onAuth}>{language==='pt' ? 'Já tenho uma conta' : 'I already have an account'}</button>
+              </>
+            )}
           </div>
           <div className="microcopy"><Check size={14} /> {language==='pt' ? 'Grátis para começar · sem cartão' : 'Free to start · no credit card'}</div>
           <InstallPwaButton language={language} variant="hero" />
