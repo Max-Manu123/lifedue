@@ -1687,8 +1687,8 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
     const matchesSearch = !query || payment.client.toLowerCase().includes(query)
     return matchesFilter && matchesSearch
   }).sort((a, b) => {
-    const aOverdue = a.status === 'pending' && a.dueDate < todayKey
-    const bOverdue = b.status === 'pending' && b.dueDate < todayKey
+    const aOverdue = a.status === 'pending' && a.dueDateProvided !== false && a.dueDate < todayKey
+    const bOverdue = b.status === 'pending' && b.dueDateProvided !== false && b.dueDate < todayKey
     if (aOverdue !== bOverdue) return aOverdue ? -1 : 1
     if (a.dueDate !== b.dueDate) return (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate)
     return a.client.localeCompare(b.client)
