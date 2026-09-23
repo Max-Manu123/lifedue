@@ -29,7 +29,7 @@ const systemInstruction = [
   '8. Keep dates in the user\'s timezone. Do not shift a date because of UTC conversion.',
   '9. If a money amount is present, extract the numeric amount exactly. Recognize common symbols/codes such as $, US$, €, EUR, R$, BRL, Kz/AOA, £/GBP. If currency is genuinely unknown, use Other rather than guessing.',
   '10. For payments, amount and currency are null only when the user did not provide them.',
-  '11. Priority should reflect urgency stated by the user. If urgency is not stated, use medium. Use high only for clearly urgent/critical/overdue/asap language.',
+  '11. Priority should reflect urgency stated by the user. If urgency is not stated or omitted, use medium. Use high only for clearly urgent/critical/overdue/asap language.',
   '12. Titles must be concise actions and should be written in the same language as the user note when possible. Do not put the client name in the title.',
   '13. Preserve multiple actions in the same sentence and in the order they appear.',
   '14. Do not create reminders or recurring schedules unless the note explicitly states the recurrence; when explicit, represent the immediate actionable occurrence rather than inventing a recurrence model.',
@@ -72,9 +72,10 @@ function cleanItems(value: unknown, fallbackDate: string) {
     if (kind !== 'task' && kind !== 'payment') throw new Error('Invalid item kind.')
     if (!title || title.length > 240) throw new Error('Invalid item title.')
     if (client.length > 160) throw new Error('Invalid client name.')
-    const normalizedDueDate = dueDate === null || dueDate === undefined || dueDate === '' ? fallbackDate : dueDate
+    const dueDateProvided = dueDate !== null && dueDate !== undefined && dueDate !== ''
+    const normalizedDueDate = dueDateProvided ? dueDate : fallbackDate
     if (!validDate(normalizedDueDate)) throw new Error('Invalid due date.')
-    if (priority !== 'low' && priority !== 'medium' && priority !== 'high') throw new Error('Invalid priority.')
+    const normalizedPriority = priority === 'low' || priority === 'medium' || priority === 'high' ? priority : 'medium'
 
     if (kind === 'payment') {
       if (amount !== null && (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0)) {
@@ -92,7 +93,7 @@ function cleanItems(value: unknown, fallbackDate: string) {
     const key = JSON.stringify([kind, title.toLowerCase(), client.toLowerCase(), normalizedDueDate, amount, currency])
     if (seen.has(key)) continue
     seen.add(key)
-    cleaned.push({ kind, title, client, dueDate: normalizedDueDate, priority, amount, currency })
+    cleaned.push({ kind, title, client, dueDate: normalizedDueDate, dueDateProvided, priority: normalizedPriority, amount, currency })
   }
 
   return { items: cleaned }
