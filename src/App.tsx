@@ -423,9 +423,30 @@ function App() {
     } catch (error) {
       if (requestId !== quickAddRequestId.current) return
       console.error('LifeDue AI Quick Add failed:', error)
-      setAiError(currentLanguage === 'pt'
-        ? 'A IA não está disponível agora. Tente novamente.'
-        : 'AI Quick Add is unavailable right now. Please try again.')
+
+      const message = error instanceof Error ? error.message : ''
+      const normalized = message.toLowerCase()
+      const configurationError = normalized.includes('gemini_api_key') || normalized.includes('not configured')
+      const rateLimitError = normalized.includes('429') || normalized.includes('quota') || normalized.includes('rate limit')
+      const providerError = normalized.includes('gemini 4') || normalized.includes('gemini 5') || normalized.includes('gemini 503') || normalized.includes('gemini 502') || normalized.includes('gemini 500')
+
+      setAiError(
+        currentLanguage === 'pt'
+          ? configurationError
+            ? 'A IA ainda não foi configurada no servidor. Adicione a GEMINI_API_KEY no Supabase e publique a função quick-add.'
+            : rateLimitError
+              ? 'A IA atingiu o limite temporário. Aguarde alguns segundos e tente novamente.'
+              : providerError
+                ? 'O serviço de IA está temporariamente indisponível. Tente novamente em alguns segundos.'
+                : 'Não foi possível criar seu plano agora. Tente novamente.'
+          : configurationError
+            ? 'AI is not configured on the server yet. Add GEMINI_API_KEY in Supabase and deploy the quick-add function.'
+            : rateLimitError
+              ? 'AI hit a temporary rate limit. Wait a few seconds and try again.'
+              : providerError
+                ? 'The AI service is temporarily unavailable. Try again in a few seconds.'
+                : 'We could not create your plan right now. Please try again.'
+      )
     } finally {
       if (requestId === quickAddRequestId.current) setAiLoading(false)
     }
