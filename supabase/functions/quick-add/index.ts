@@ -34,12 +34,15 @@ const systemInstruction = [
   '13. Preserve multiple actions in the same sentence and in the order they appear.',
   '14. Do not create reminders or recurring schedules unless the note explicitly states the recurrence; when explicit, represent the immediate actionable occurrence rather than inventing a recurrence model.',
   '15. Ignore greetings, explanations, opinions, and non-actionable text.',
+  '16. If the entire note is profanity, an insult, random characters, a greeting with no task, an unrelated question, or otherwise contains no actionable client-work intent, return an empty items array. Do not manufacture a task from it.',
+  '17. If the note is ambiguous but contains a plausible action, extract only what is safe and never invent a client or specific action.'
   '',
   'OUTPUT QUALITY:',
   '- Return only valid JSON matching this exact shape: {"items":[{"kind":"task"|"payment","title":"string","client":"string","dueDate":"YYYY-MM-DD","priority":"low"|"medium"|"high","amount":number|null,"currency":"USD"|"EUR"|"BRL"|"AOA"|"GBP"|"Other"|null}]}',
   '- Every returned date must be a real calendar date in YYYY-MM-DD.',
   '- Every payment amount must be finite and greater than or equal to zero.',
   '- Do not return duplicate items.',
+  '- For empty or non-actionable input, return exactly {"items":[]} rather than inventing content.',
 ]
 
 function validDate(value: unknown): value is string {
@@ -302,7 +305,17 @@ Deno.serve(async (req) => {
     }
 
     if (!result) throw lastError ?? new Error('No AI result.')
-    return Response.json(result, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const normalizedResult = result as { items?: unknown[] }
+    if (!Array.isArray(normalizedResult.items) || normalizedResult.items.length === 0) {
+      return Response.json({
+        items: [],
+        status: 'needs_input',
+        message: language === 'pt'
+          ? 'Não encontrei uma tarefa ou cobrança clara. Escreva uma ação concreta, por exemplo: "Entregar o site da Maria sexta".'
+          : 'I could not find a clear task or payment. Describe one concrete action, for example: "Deliver Maria\'s website Friday".',
+      }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    return Response.json({ ...normalizedResult, status: 'ok' }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
     console.error('quick-add function failed:', error)
     const message = error instanceof Error ? error.message : 'Unknown Quick Add error.'
