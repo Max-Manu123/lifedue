@@ -1363,7 +1363,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
   const todayKey = iso(new Date())
   const openTasks = tasks.filter(t => t.status === 'open')
   const upcomingTasks = openTasks
-    .filter(t => t.dueDateProvided !== false && t.dueDateProvided !== false && t.dueDate > todayKey)
+    .filter(t => t.dueDateProvided !== false && t.dueDate > todayKey)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 4)
   const urgentCount = overdue.length + todayTasks.filter(t => t.priority === 'high').length
@@ -1458,7 +1458,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
           {paymentAttention.length > 0 ? <div className="today-payment-list">
             {paymentAttention.slice(0, 4).map(payment => (
               <div className="today-payment-row" key={payment.id}>
-                <div className={payment.dueDateProvided !== false && t.dueDate < todayKey ? 'today-payment-icon overdue' : 'today-payment-icon'}><CircleDollarSign size={17} /></div>
+                <div className={payment.dueDateProvided !== false && payment.dueDate < todayKey ? 'today-payment-icon overdue' : 'today-payment-icon'}><CircleDollarSign size={17} /></div>
                 <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDateProvided !== false && payment.dueDate < currentTodayKey() ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
                 <button className="secondary-button compact" onClick={() => onMarkPaid(payment.id)}>{tr('markPaidToday')}</button>
               </div>
@@ -1532,7 +1532,7 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
   const groups = [
     { key: 'overdue', label: tr('overdueTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDate < todayKey), tone: 'danger' as const },
     { key: 'today', label: tr('todayTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDate === todayKey), tone: 'today' as const },
-    { key: 'upcoming', label: tr('upcomingTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDateProvided !== false && t.dueDate > todayKey), tone: 'upcoming' as const },
+    { key: 'upcoming', label: tr('upcomingTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDate > todayKey), tone: 'upcoming' as const },
     { key: 'completed', label: tr('completedTasks'), items: filtered.filter(t => t.status === 'completed'), tone: 'completed' as const },
   ].filter(group => group.items.length)
 
@@ -1736,7 +1736,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
 
 
 function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id: string) => void }) {
-  const isOverdue = payment.status === 'pending' && payment.dueDateProvided !== false && t.dueDate < currentTodayKey()
+  const isOverdue = payment.status === 'pending' && payment.dueDateProvided !== false && payment.dueDate < currentTodayKey()
   return <div className={isOverdue ? 'payment-row overdue-row' : 'payment-row'}><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{formatMoney(payment.amount, payment.currency)} · {payment.client}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? tr('paymentOverdueLabel') + ' · ' + tr('paymentDue').toLowerCase() + ' ' + formatDate(payment.dueDate, payment.dueDateProvided !== false) : tr('paymentDue') + ' ' + formatDate(payment.dueDate, payment.dueDateProvided !== false)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>{tr('markPaid')}</button> : <span className="paid-label"><Check size={15} /> {tr('paid')}</span>}</div>
 }
 
