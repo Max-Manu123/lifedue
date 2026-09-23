@@ -349,14 +349,9 @@ export function AuthModal({
             </button>
           )}
           {mode === 'login' && (
-            <>
-              <button onClick={() => { setMode('forgot'); setPassword(''); setError(''); setSuccess('') }}>
-                {pt ? 'Esqueci minha senha' : 'Forgot my password'}
-              </button>
-              <button onClick={() => { setMode('signup'); setError(''); setSuccess('') }}>
-                {pt ? 'Criar uma conta' : 'Create an account'}
-              </button>
-            </>
+            <button onClick={() => { setMode('signup'); setError(''); setSuccess('') }}>
+              {pt ? 'Criar uma conta' : 'Create an account'}
+            </button>
           )}
           {mode === 'signup' && (
             <button onClick={() => { setMode('login'); setError(''); setSuccess('') }}>
