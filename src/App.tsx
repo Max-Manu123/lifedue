@@ -531,30 +531,55 @@ function App() {
     }
 
     try {
-      const paymentMatch = quickText.match(/\$\s*(\d+(?:\.\d{1,2})?)/i)
-      const paymentTask = plan.find(task => /payment|pagamento|collect|cobrar|receber/i.test(task.title))
-      const paymentAmount = paymentMatch ? Number(paymentMatch[1]) : 0
-
-      const taskPlan = plan.filter(task => !planPayments.some(payment => payment.client.trim().toLowerCase() === task.client.trim().toLowerCase() && payment.dueDate === task.dueDate && /payment|pagamento|collect|cobrar|receber/i.test(task.title)))
+      const savablePayments = planPayments.filter(item =>
+        item.amount !== null &&
+        item.amount !== undefined &&
+        item.currency !== null &&
+        item.currency !== undefined
+      )
+      const incompletePaymentItems = planPayments.filter(item =>
+        item.amount === null ||
+        item.amount === undefined ||
+        item.currency === null ||
+        item.currency === undefined
+      )
+      const taskPlan = [
+        ...plan.filter(task => !planPayments.some(payment =>
+          payment.client.trim().toLowerCase() === task.client.trim().toLowerCase() &&
+          payment.dueDate === task.dueDate &&
+          /payment|pagamento|collect|cobrar|receber/i.test(task.title)
+        )),
+        ...incompletePaymentItems.map(item => ({
+          id: crypto.randomUUID(),
+          title: currentLanguage === 'pt' ? 'Cobrar pagamento' : 'Follow up payment',
+          client: item.client,
+          dueDate: item.dueDate,
+          dueDateProvided: item.dueDateProvided !== false,
+          priority: item.priority,
+          status: 'open' as const,
+        })),
+      ]
 
       if (user && supabase) {
         const existingTaskKeys = new Set(tasks.map(taskKey))
         const newTaskPlan = taskPlan.filter(task => !existingTaskKeys.has(taskKey(task)))
         const created = newTaskPlan.length ? await createTasks(user, newTaskPlan) : []
         setTasks(current => uniqueTasks([...created, ...current]))
-        if (planPayments.length > 0) {
+        if (savablePayments.length > 0) {
           const existingPaymentKeys = new Set(payments.map(paymentKey))
-          const newPayments = planPayments.filter(item => !existingPaymentKeys.has(paymentKey({ client: item.client, amount: item.amount ?? 0, dueDate: item.dueDate })))
-          const createdPayments = await Promise.all(newPayments.map(item => createPayment(user, { client: item.client, amount: item.amount ?? 0, currency: item.currency ?? 'USD', dueDate: item.dueDate })))
+          const newPayments = savablePayments.filter(item => !existingPaymentKeys.has(paymentKey({
+            client: item.client,
+            amount: item.amount as number,
+            dueDate: item.dueDate,
+          })))
+          const createdPayments = await Promise.all(newPayments.map(item => createPayment(user, {
+            client: item.client,
+            amount: item.amount as number,
+            currency: item.currency as string,
+            dueDate: item.dueDate,
+            dueDateProvided: item.dueDateProvided !== false,
+          })))
           setPayments(current => uniquePayments([...createdPayments, ...current]))
-        } else if (paymentTask && paymentAmount > 0) {
-          const createdPayment = await createPayment(user, {
-            client: paymentTask.client,
-            amount: paymentAmount,
-            currency: 'USD',
-            dueDate: paymentTask.dueDate,
-          })
-          setPayments(current => [createdPayment, ...current])
         }
       } else {
         const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
@@ -563,19 +588,25 @@ function App() {
           .map(task => ({ id: crypto.randomUUID(), name: task.client }))
         if (newClients.length) setClients(current => [...current, ...newClients])
         setTasks(current => uniqueTasks([...taskPlan, ...current]))
-        if (planPayments.length > 0) {
+        if (savablePayments.length > 0) {
           const existingPaymentKeys = new Set(payments.map(paymentKey))
-          const newPayments = planPayments.filter(item => !existingPaymentKeys.has(paymentKey({ client: item.client, amount: item.amount ?? 0, dueDate: item.dueDate })))
-          setPayments(current => uniquePayments([...newPayments.map(item => ({ id: crypto.randomUUID(), client: item.client, amount: item.amount ?? 0, currency: item.currency ?? null, dueDate: item.dueDate, dueDateProvided: item.dueDateProvided !== false, status: 'pending' as const })), ...current]))
-        } else if (paymentTask && paymentAmount > 0) {
-          setPayments(current => [{
-            id: crypto.randomUUID(),
-            client: paymentTask.client,
-            amount: paymentAmount,
-            currency: 'USD',
-            dueDate: paymentTask.dueDate,
-            status: 'pending',
-          }, ...current])
+          const newPayments = savablePayments.filter(item => !existingPaymentKeys.has(paymentKey({
+            client: item.client,
+            amount: item.amount as number,
+            dueDate: item.dueDate,
+          })))
+          setPayments(current => uniquePayments([
+            ...newPayments.map(item => ({
+              id: crypto.randomUUID(),
+              client: item.client,
+              amount: item.amount as number,
+              currency: item.currency as string,
+              dueDate: item.dueDate,
+              dueDateProvided: item.dueDateProvided !== false,
+              status: 'pending' as const,
+            })),
+            ...current,
+          ]))
         }
       }
       clearAuthDraft()
