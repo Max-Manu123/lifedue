@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail, X } from 'lucide-r
 import { supabase } from '../lib/supabase'
 
 type Language = 'en' | 'pt'
-type Mode = 'login' | 'signup' | 'reset'
+type Mode = 'login' | 'signup' | 'forgot' | 'reset'
 
 export function AuthModal({
   language,
@@ -54,10 +54,10 @@ export function AuthModal({
 
   const title = mode === 'login' ? (pt ? 'Entrar no LifeDue' : 'Sign in to LifeDue')
     : mode === 'signup' ? (pt ? 'Criar sua conta' : 'Create your account')
-    : (pt ? 'Redefinir senha' : 'Reset your password')
+    : mode === 'forgot' ? (pt ? 'Esqueci minha senha' : 'Forgot your password?') : (pt ? 'Redefinir senha' : 'Reset your password')
   const submitLabel = mode === 'login' ? (pt ? 'Entrar' : 'Sign in')
     : mode === 'signup' ? (pt ? 'Criar conta' : 'Create account')
-    : (pt ? 'Enviar link' : 'Send reset link')
+    : mode === 'forgot' ? (pt ? 'Enviar link' : 'Send reset link') : (pt ? 'Guardar nova senha' : 'Save new password')
 
   const friendlyAuthError = (authError: unknown) => {
     const message = authError instanceof Error ? authError.message.toLowerCase() : ''
@@ -112,11 +112,26 @@ export function AuthModal({
         return
       }
 
-      const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: window.location.origin,
-      })
+      if (mode === 'forgot') {
+        const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: window.location.origin,
+        })
+        if (authError) throw authError
+        setSuccess(pt ? 'Enviamos um link seguro para redefinir sua senha. Verifique também a pasta de spam.' : 'We sent a secure password reset link. Check your spam folder too.')
+        return
+      }
+
+      const cleanPassword = password.trim()
+      if (cleanPassword.length < 8) {
+        setError(pt ? 'A nova senha precisa ter pelo menos 8 caracteres.' : 'Your new password must have at least 8 characters.')
+        return
+      }
+      const { error: authError } = await supabase.auth.updateUser({ password: cleanPassword })
       if (authError) throw authError
-      setSuccess(pt ? 'Enviamos um link de redefinição para seu email.' : 'We sent a password reset link to your email.')
+      setSuccess(pt ? 'Senha redefinida com sucesso. Sua conta está pronta.' : 'Password reset successfully. Your account is ready.')
+      setMode('login')
+      setPassword('')
+      return
     } catch (authError) {
       console.error('LifeDue authentication failed:', authError)
       setError(friendlyAuthError(authError))
@@ -171,12 +186,14 @@ export function AuthModal({
         <div className="auth-brand"><span className="brand-mark">L</span><span>LifeDue</span></div>
 
         <div className="auth-head">
-          <div className="auth-icon">{mode === 'reset' ? <Mail size={20} /> : <CheckCircle2 size={20} />}</div>
+          <div className="auth-icon">{mode === 'forgot' || mode === 'reset' ? <Mail size={20} /> : <CheckCircle2 size={20} />}</div>
           <div>
             <h2 id="auth-title">{title}</h2>
             <p>
-              {mode === 'reset'
-                ? (pt ? 'Receba um link seguro para criar uma nova senha.' : 'Get a secure link to create a new password.')
+              {mode === 'forgot'
+                ? (pt ? 'Receba um link seguro para redefinir sua senha.' : 'Get a secure link to reset your password.')
+                : mode === 'reset'
+                ? (pt ? 'Escolha uma nova senha para sua conta.' : 'Choose a new password for your account.')
                 : (pt ? 'Seu espaço de trabalho, sincronizado com segurança.' : 'Your workspace, securely synced.')}
             </p>
           </div>
@@ -266,15 +283,20 @@ export function AuthModal({
         </form>
 
         <div className="auth-links">
-          {mode === 'reset' && (
-            <button onClick={() => { setMode('login'); setError(''); setSuccess('') }}>
+          {(mode === 'reset' || mode === 'forgot') && (
+            <button onClick={() => { setMode('login'); setPassword(''); setError(''); setSuccess('') }}>
               <ArrowLeft size={14} /> {pt ? 'Voltar para entrar' : 'Back to sign in'}
             </button>
           )}
           {mode === 'login' && (
-            <button onClick={() => { setMode('signup'); setError(''); setSuccess('') }}>
-              {pt ? 'Criar uma conta' : 'Create an account'}
-            </button>
+            <>
+              <button onClick={() => { setMode('forgot'); setPassword(''); setError(''); setSuccess('') }}>
+                {pt ? 'Esqueci minha senha' : 'Forgot my password'}
+              </button>
+              <button onClick={() => { setMode('signup'); setError(''); setSuccess('') }}>
+                {pt ? 'Criar uma conta' : 'Create an account'}
+              </button>
+            </>
           )}
           {mode === 'signup' && (
             <button onClick={() => { setMode('login'); setError(''); setSuccess('') }}>
