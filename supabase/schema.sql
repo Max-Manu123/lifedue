@@ -21,6 +21,7 @@ create table if not exists public.tasks (
   client_id uuid references public.clients(id) on delete set null,
   title text not null,
   due_date date not null,
+  due_date_is_explicit boolean not null default true,
   priority text not null default 'medium' check (priority in ('low', 'medium', 'high')),
   status text not null default 'open' check (status in ('open', 'completed')),
   created_at timestamptz not null default now()
@@ -31,8 +32,9 @@ create table if not exists public.payments (
   user_id uuid not null references auth.users(id) on delete cascade,
   client_id uuid references public.clients(id) on delete set null,
   amount numeric(12,2) not null default 0,
-  currency text not null default 'USD',
+  currency text,
   due_date date not null,
+  due_date_is_explicit boolean not null default true,
   status text not null default 'pending' check (status in ('pending', 'paid')),
   created_at timestamptz not null default now()
 );
