@@ -21,7 +21,6 @@ export function AuthModal({
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [resetCompleted, setResetCompleted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -87,6 +86,11 @@ export function AuthModal({
       return
     }
 
+    if ((mode === 'signup' || mode === 'reset') && (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password) || !/[^A-Za-z0-9]/.test(password))) {
+      setError(pt ? 'Escolha uma senha forte: use 8+ caracteres, maiúsculas, minúsculas, número e símbolo.' : 'Choose a strong password: use 8+ characters, upper/lowercase letters, a number, and a symbol.')
+      return
+    }
+
     if (mode === 'signup' && (password.length < 8 || passwordStrength.tone === 'weak')) {
       setError(pt ? 'Escolha uma senha mais forte: use 8+ caracteres, maiúsculas, minúsculas, número e símbolo.' : 'Choose a stronger password: use 8+ characters, upper/lowercase letters, a number, and a symbol.')
       return
@@ -144,7 +148,6 @@ export function AuthModal({
       await supabase.auth.signOut()
       setPassword('')
       setConfirmPassword('')
-      setResetCompleted(true)
       setMode('login')
       setSuccess(pt ? 'Senha redefinida com sucesso. Agora entre com a nova senha.' : 'Password reset successfully. Now sign in with your new password.')
       return
@@ -258,7 +261,7 @@ export function AuthModal({
 
           {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
             <label>
-              {pt ? 'Senha' : 'Password'}
+              {pt ? (mode === 'reset' ? 'Nova senha' : 'Senha') : (mode === 'reset' ? 'New password' : 'Password')}
               <span className="auth-password">
                 <input
                   type={showPassword ? 'text' : 'password'}
