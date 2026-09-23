@@ -896,7 +896,7 @@ function App() {
                 plannerSource={plannerSource}
                 onGenerate={async () => {
                   const candidates = [...openTasks]
-                    .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || ({ high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority]))
+                    .sort((a, b) => (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate) || ({ high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority]))
                     .slice(0, 12)
 
                   setPlannerError('')
@@ -1360,12 +1360,12 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
   const openTasks = tasks.filter(t => t.status === 'open')
   const upcomingTasks = openTasks
     .filter(t => t.dueDateProvided !== false && t.dueDate > todayKey)
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .sort((a, b) => (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate))
     .slice(0, 4)
   const urgentCount = overdue.length + todayTasks.filter(t => t.priority === 'high').length
   const paymentAttention = pendingPayments
     .filter(payment => payment.dueDateProvided !== false && payment.dueDate <= todayKey)
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .sort((a, b) => (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate))
   const totalPending = pendingMoneyLabel(pendingPayments)
   const hasAttention = overdue.length > 0 || todayTasks.length > 0 || paymentAttention.length > 0
 
@@ -1520,7 +1520,7 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
     })
     .sort((a, b) => {
       if (a.status !== b.status) return a.status === 'open' ? -1 : 1
-      if (a.dueDate !== b.dueDate) return a.dueDate.localeCompare(b.dueDate)
+      if (a.dueDate !== b.dueDate) return (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate)
       const rank = { high: 0, medium: 1, low: 2 }
       return rank[a.priority] - rank[b.priority]
     })
@@ -1690,7 +1690,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
     const aOverdue = a.status === 'pending' && a.dueDate < todayKey
     const bOverdue = b.status === 'pending' && b.dueDate < todayKey
     if (aOverdue !== bOverdue) return aOverdue ? -1 : 1
-    if (a.dueDate !== b.dueDate) return a.dueDate.localeCompare(b.dueDate)
+    if (a.dueDate !== b.dueDate) return (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate)
     return a.client.localeCompare(b.client)
   })
 
