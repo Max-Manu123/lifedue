@@ -899,7 +899,7 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
 
     <section className="settings-card">
       <div className="settings-section-head"><div className="settings-icon"><Globe2 size={19} /></div><div><h3>{tr('preferences')}</h3><p>{tr('languageDesc')}</p></div></div>
-      <div className="settings-row"><div><strong>{tr('language')}</strong><span>{tr('languageChoiceDesc')}</span></div><div className="segmented-control"><button className={language === 'en' ? 'active' : ''} onClick={() => setLanguage('en')}>English</button><button className={language === 'pt' ? 'active' : ''} onClick={() => setLanguage('pt')}>Português</button></div></div>
+      <div className="settings-row"><div><strong>{tr('language')}</strong><span>{tr('languageDesc')}</span></div><div className="segmented-control"><button className={language === 'en' ? 'active' : ''} onClick={() => setLanguage('en')}>English</button><button className={language === 'pt' ? 'active' : ''} onClick={() => setLanguage('pt')}>Português</button></div></div>
       <div className="settings-row"><div><strong>{tr('theme')}</strong><span>{tr('themeDesc')}</span></div><div className="theme-options">
         <button className={theme === 'system' ? 'active' : ''} onClick={() => setTheme('system')}><Monitor size={15} />{tr('themeSystem')}</button>
         <button className={theme === 'light' ? 'active' : ''} onClick={() => setTheme('light')}><Sun size={15} />{tr('themeLight')}</button>
