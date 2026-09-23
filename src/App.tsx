@@ -774,8 +774,8 @@ function App() {
       )}
 
       {showAddClient && user && <AddClientModal onClose={() => setShowAddClient(false)} onAdd={async name => { if (!supabase || !user) return; const created = await createClient(user, name); setClients(current => current.some(client => client.name.trim().toLowerCase() === created.name.trim().toLowerCase()) ? current : [...current, created].sort((a,b) => a.name.localeCompare(b.name))) }} />}
-      {showAdd && <AddTaskModal onClose={() => setShowAdd(false)} onAdd={addTask} />}
-      {showAddPayment && <AddPaymentModal onClose={() => setShowAddPayment(false)} onAdd={addPayment} />}
+      {showAdd && <AddTaskModal onClose={() => setShowAdd(false)} onAdd={addTask} clients={clients} />}
+      {showAddPayment && <AddPaymentModal onClose={() => setShowAddPayment(false)} onAdd={addPayment} clients={clients} />}
       {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
     </div>
   )
@@ -1430,7 +1430,7 @@ function PlannerView({ plan, openTasks, aiLoading, isAuthenticated, onGenerate, 
   </div>
 }
 
-function AddPaymentModal({ onClose, onAdd }: { onClose: () => void; onAdd: (payment: Omit<Payment, 'id' | 'status'>) => void }) {
+function AddPaymentModal({ onClose, onAdd, clients }: { onClose: () => void; onAdd: (payment: Omit<Payment, 'id' | 'status'>) => void; clients: Client[] }) {
   const [client, setClient] = useState('')
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState('USD')
@@ -1438,14 +1438,16 @@ function AddPaymentModal({ onClose, onAdd }: { onClose: () => void; onAdd: (paym
   const [error, setError] = useState('')
   const submit = () => {
     const value = Number(amount)
+    const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === client.trim().toLocaleLowerCase())
+    const clientName = matchedClient?.name ?? client.trim()
     if (!client.trim()) return setError(currentLanguage === 'pt' ? 'Digite o cliente.' : 'Enter the client.')
     if (!Number.isFinite(value) || value <= 0) return setError(currentLanguage === 'pt' ? 'Digite um valor válido.' : 'Enter a valid amount.')
     if (!dueDate) return setError(currentLanguage === 'pt' ? 'Escolha uma data.' : 'Choose a date.')
-    onAdd({ client: client.trim(), amount: value, currency, dueDate })
+    onAdd({ client: clientName, amount: value, currency, dueDate })
   }
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}>
     <div className="modal-head"><div><p className="section-kicker">{tr('newPayment')}</p><h2>{tr('addPaymentTitle')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div>
-    <label>{tr('client')}<input value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={currentLanguage==='pt'?'ex.: Maria':'e.g. Maria'} autoFocus /></label>
+    <label>{tr('client')}<input list="lifedue-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={currentLanguage==='pt'?'ex.: Maria':'e.g. Maria'} autoFocus /><datalist id="lifedue-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
     <div className="form-grid"><label>{tr('amount')}<input type="number" min="0.01" step="0.01" value={amount} onChange={e => { setAmount(e.target.value); setError('') }} placeholder="e.g. 200" /></label><label>{tr('currency')}<select value={currency} onChange={e => setCurrency(e.target.value)}><option value="USD">{tr('usd')}</option><option value="EUR">{tr('eur')}</option><option value="AOA">{tr('aoa')}</option></select></label></div>
     <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} /></label>
     {error && <div className="auth-error">{error}</div>}
@@ -1453,7 +1455,7 @@ function AddPaymentModal({ onClose, onAdd }: { onClose: () => void; onAdd: (paym
   </div></div>
 }
 
-function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: Omit<Task, 'id' | 'status'>) => Promise<void> | void }) {
+function AddTaskModal({ onClose, onAdd, clients }: { onClose: () => void; onAdd: (task: Omit<Task, 'id' | 'status'>) => Promise<void> | void; clients: Client[] }) {
   const [title, setTitle] = useState('')
   const [client, setClient] = useState('')
   const [dueDate, setDueDate] = useState(addDays(0))
@@ -1464,6 +1466,8 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
   const submit = async () => {
     const cleanTitle = title.trim()
     const cleanClient = client.trim()
+    const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === cleanClient.toLocaleLowerCase())
+    const canonicalClient = matchedClient?.name ?? cleanClient
     if (!cleanTitle) {
       setError(currentLanguage === 'pt' ? 'Digite o que precisa ser feito.' : 'Enter the task you need to complete.')
       return
@@ -1481,7 +1485,7 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
     setError('')
     setSaving(true)
     try {
-      await onAdd({ title: cleanTitle, client: cleanClient, dueDate, priority })
+      await onAdd({ title: cleanTitle, client: canonicalClient, dueDate, priority })
     } catch (error) {
       console.error('LifeDue add task modal failed:', error)
       setError(currentLanguage === 'pt' ? 'Não foi possível adicionar a tarefa. Tente novamente.' : 'Could not add the task. Please try again.')
@@ -1497,7 +1501,7 @@ function AddTaskModal({ onClose, onAdd }: { onClose: () => void; onAdd: (task: O
         <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={currentLanguage === 'pt' ? 'Fechar' : 'Close'}><X size={20} /></button>
       </div>
       <label>{tr('task')}<input value={title} onChange={e => { setTitle(e.target.value); setError('') }} placeholder={tr('finishHomepage')} autoFocus disabled={saving} /></label>
-      <label>{tr('client')}<input value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={tr('john')} disabled={saving} /></label>
+      <label>{tr('client')}<input list="lifedue-task-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={tr('john')} disabled={saving} /><datalist id="lifedue-task-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
       <div className="form-grid">
         <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={currentTodayKey()} disabled={saving} /></label>
         <label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)} disabled={saving}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label>
