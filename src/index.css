@@ -964,3 +964,32 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 
 
 .field-help{display:block;margin-top:6px;color:#94a3b8;font-size:11px;line-height:1.4}.form-error{margin-top:12px;padding:10px 12px;border:1px solid rgba(239,68,68,.2);border-radius:10px;background:rgba(239,68,68,.06);color:#dc2626;font-size:12px;font-weight:600}.theme-dark .field-help{color:#94a3b8}.theme-dark .form-error{color:#fca5a5;background:rgba(239,68,68,.1);border-color:rgba(248,113,113,.2)}
+
+.upgrade-button { margin-left:auto; display:inline-flex; align-items:center; gap:6px; border:1px solid #c7d2fe; background:#eef2ff; color:#4338ca; border-radius:9px; padding:7px 10px; font-size:11px; font-weight:800; cursor:pointer; }
+.upgrade-button:hover { background:#e0e7ff; }
+.upgrade-modal-backdrop { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; background:rgba(15,23,42,.5); backdrop-filter:blur(4px); }
+.upgrade-modal { position:relative; width:min(460px,100%); max-height:calc(100vh - 40px); overflow:auto; padding:28px; border:1px solid #e2e8f0; border-radius:18px; background:#fff; box-shadow:0 24px 70px rgba(15,23,42,.2); }
+.upgrade-close { position:absolute; top:12px; right:12px; width:32px; height:32px; border:0; border-radius:8px; background:#f1f5f9; color:#64748b; font-size:20px; cursor:pointer; }
+.upgrade-icon { width:44px; height:44px; display:grid; place-items:center; border-radius:12px; background:#eef2ff; color:#4f46e5; margin-bottom:14px; }
+.upgrade-modal h2 { margin:4px 0 8px; font-size:24px; }
+.upgrade-description { margin:0 0 18px; color:#64748b; line-height:1.55; }
+.upgrade-benefits { padding:14px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; margin-bottom:18px; }
+.upgrade-benefits strong { font-size:12px; }
+.upgrade-benefits ul { margin:8px 0 0; padding-left:18px; color:#475569; font-size:12px; line-height:1.7; }
+.upgrade-form { display:grid; gap:8px; }
+.upgrade-form label { font-size:11px; font-weight:800; color:#334155; }
+.upgrade-form input { width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:10px; padding:11px 12px; background:#fff; color:#0f172a; }
+.upgrade-note { margin:0 0 4px; font-size:10px; color:#64748b; }
+.upgrade-form .primary-button { width:100%; justify-content:center; }
+.upgrade-success { display:flex; align-items:flex-start; gap:9px; padding:13px; border-radius:11px; background:#f0fdf4; color:#166534; font-size:12px; line-height:1.5; }
+.theme-dark .upgrade-button { background:#1e1b4b; border-color:#4338ca; color:#c7d2fe; }
+.theme-dark .upgrade-modal { background:#0f172a; border-color:#334155; }
+.theme-dark .upgrade-close { background:#1e293b; color:#cbd5e1; }
+.theme-dark .upgrade-icon { background:#1e1b4b; }
+.theme-dark .upgrade-description,.theme-dark .upgrade-note { color:#94a3b8; }
+.theme-dark .upgrade-benefits { background:#111827; border-color:#334155; }
+.theme-dark .upgrade-benefits ul { color:#cbd5e1; }
+.theme-dark .upgrade-form label { color:#e2e8f0; }
+.theme-dark .upgrade-form input { background:#111827; border-color:#475569; color:#f8fafc; }
+.theme-dark .upgrade-success { background:#052e16; color:#bbf7d0; }
+@media (max-width:560px) { .upgrade-modal-backdrop { padding:12px; align-items:end; } .upgrade-modal { padding:22px 18px; border-radius:18px 18px 12px 12px; } .upgrade-button { margin-left:0; margin-top:8px; } .account-summary { flex-wrap:wrap; } }
