@@ -1140,6 +1140,27 @@ button, input, textarea, select { transition: background-color .2s ease, border-
 }
 
 .onboarding-header-actions { display: flex; align-items: center; gap: 6px; }
+.onboarding-details-card { margin-top: 16px; padding: 16px; border: 1px solid var(--border-color); border-radius: 14px; background: var(--surface-soft); }
+.onboarding-details-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.onboarding-details-head strong, .onboarding-details-head span { display: block; }
+.onboarding-details-head strong { font-size: 13px; }
+.onboarding-details-head span { margin-top: 4px; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.onboarding-details-list { margin-top: 12px; border-top: 1px solid var(--border-color); }
+.onboarding-detail-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+.onboarding-detail-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.onboarding-detail-copy { min-width: 0; }
+.onboarding-detail-copy strong, .onboarding-detail-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.onboarding-detail-copy strong { font-size: 12px; }
+.onboarding-detail-copy span { margin-top: 3px; color: var(--text-muted); font-size: 11px; }
+.onboarding-detail-control, .onboarding-detail-payment-control { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+.onboarding-detail-control input, .onboarding-detail-payment-control input, .onboarding-detail-payment-control select { min-height: 34px; border: 1px solid var(--border-color); border-radius: 9px; background: var(--bg-elevated); color: var(--text-primary); padding: 7px 9px; font-size: 12px; }
+.compact-button { min-height: 34px; padding: 7px 11px; white-space: nowrap; }
+@media (max-width: 640px) {
+  .onboarding-details-head, .onboarding-detail-row { align-items: stretch; flex-direction: column; }
+  .onboarding-detail-control, .onboarding-detail-payment-control { width: 100%; flex-wrap: wrap; }
+  .onboarding-detail-control input, .onboarding-detail-payment-control input, .onboarding-detail-payment-control select { flex: 1; min-width: 0; }
+  .onboarding-detail-row .compact-button { align-self: flex-start; }
+}
 .onboarding-payment-option { margin-top: 16px; padding: 16px; border: 1px solid var(--border-color); border-radius: 14px; background: var(--surface-soft); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .onboarding-payment-copy { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .onboarding-payment-icon { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; border-radius: 10px; color: var(--primary); background: var(--brand-soft); }
