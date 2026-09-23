@@ -142,6 +142,7 @@ function App() {
   const [payments, setPayments] = useState<Payment[]>(() => uniquePayments(load('lifedue-payments', [])))
   const [quickText, setQuickText] = useState('')
   const [plan, setPlan] = useState<Task[]>([])
+  const [planSource, setPlanSource] = useState<'quick-add' | 'planner' | null>(null)
   const [planPayments, setPlanPayments] = useState<QuickAddItem[]>([])
   const [plannerError, setPlannerError] = useState('')
   const [plannerSource, setPlannerSource] = useState<'ai' | 'local' | null>(null)
@@ -326,6 +327,7 @@ function App() {
 
     const requestId = ++quickAddRequestId.current
     setPlan([])
+    setPlanSource(null)
     setPlanPayments([])
     setAiLoading(true)
     setAiError('')
@@ -668,6 +670,7 @@ function App() {
                 onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }}
                 onToggle={toggleTask}
                 plan={plan}
+                planSource={planSource}
                 onCreatePlan={createPlan}
                 onAddPlan={addPlan}
                 onPlanner={() => navigate('planner')}
@@ -732,6 +735,7 @@ function App() {
 
                   if (!user || !supabase) {
                     setPlan(candidates)
+      setPlanSource('planner')
                     setPlanPayments([])
                     setPlannerSource('local')
                     setView('planner')
@@ -758,6 +762,7 @@ function App() {
                     const ordered = orderedIds.map(id => byId.get(id)).filter((task): task is Task => Boolean(task))
                     if (requestId === quickAddRequestId.current && ordered.length === candidates.length) {
                       setPlan(ordered)
+      setPlanSource('planner')
                       setPlanPayments([])
                       setPlannerSource('ai')
                       setView('planner')
@@ -1044,7 +1049,7 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiError, onQuickTextChange, onToggle, plan, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user }: {
+function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiError, onQuickTextChange, onToggle, plan, planSource, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
@@ -1054,6 +1059,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
   onQuickTextChange: (value: string) => void
   onToggle: (id: string) => void
   plan: Task[]
+  planSource: 'quick-add' | 'planner' | null
   onCreatePlan: () => void
   onAddPlan: () => void
   onPlanner: () => void
@@ -1139,7 +1145,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
               </div>
             ))}
           </div>
-          <button className="primary-button" onClick={onAddPlan}>{user ? tr('addAll') : tr('saveToLifeDue')} <ArrowRight size={17} /></button>
+          <button className="primary-button" onClick={planSource === 'planner' ? onViewTasks : onAddPlan}>{planSource === 'planner' ? tr('viewTasks') : user ? tr('addAll') : tr('saveToLifeDue')} <ArrowRight size={17} /></button>
         </section>
       )}
 
