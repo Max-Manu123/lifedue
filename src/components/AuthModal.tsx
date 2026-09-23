@@ -214,7 +214,7 @@ export function AuthModal({
         {success && <div className="auth-success">{success}</div>}
         {error && <div className="auth-error">{error}</div>}
 
-        {mode !== 'reset' && (
+        {(mode === 'login' || mode === 'signup') && (
           <>
             <button
               type="button"
@@ -229,6 +229,11 @@ export function AuthModal({
             </button>
             <div className="auth-divider"><span>{pt ? 'ou use email e senha' : 'or use email and password'}</span></div>
           </>
+        )}
+        {mode === 'forgot' && (
+          <div className="auth-email-only-note">
+            {pt ? 'Introduza o email associado à sua conta. Enviaremos o link de redefinição para esse endereço.' : 'Enter the email associated with your account. We will send the reset link to that address.'}
+          </div>
         )}
 
         <form onSubmit={submit} className="auth-form">
@@ -245,7 +250,7 @@ export function AuthModal({
             />
           </label>
 
-          {mode !== 'reset' && (
+          {(mode === 'login' || mode === 'signup') && (
             <label>
               {pt ? 'Senha' : 'Password'}
               <span className="auth-password">
