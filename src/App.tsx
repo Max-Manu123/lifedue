@@ -1386,8 +1386,8 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
     </div>
 
     <section className="payments-overview">
-      <div className="payment-overview-main"><span>{tr('paymentPendingAmount')}</span><strong>{pendingByCurrency.length ? pendingByCurrency.map(item => formatMoney(item.amount, item.currency)).join(' · ') : formatMoney(0, 'USD')}</strong><small>{pending.length} {tr('paymentPendingCount').toLowerCase()}</small></div>
-      <div><span>{tr('paymentPendingCount')}</span><strong>{pending.length}</strong><small>{currentLanguage === 'pt' ? 'pagamentos em aberto' : 'open payments'}</small></div>
+      <div className="payment-overview-main"><span>{tr('paymentPendingAmount')}</span><strong>{pendingByCurrency.length ? pendingByCurrency.map(item => formatMoney(item.amount, item.currency)).join(' · ') : formatMoney(0, 'USD')}</strong><small>{pending.length} {currentLanguage === 'pt' ? (pending.length === 1 ? 'pendente' : 'pendentes') : (pending.length === 1 ? 'pending' : 'pending')}</small></div>
+      <div><span>{tr('paymentPendingCount')}</span><strong>{pending.length}</strong><small>{currentLanguage === 'pt' ? (pending.length === 1 ? 'pagamento em aberto' : 'pagamentos em aberto') : (pending.length === 1 ? 'open payment' : 'open payments')}</small></div>
       <div className={overdue.length ? 'danger' : ''}><span>{tr('paymentOverdueCount')}</span><strong>{overdue.length}</strong><small>{currentLanguage === 'pt' ? 'precisam de atenção' : 'need attention'}</small></div>
       <div><span>{tr('paymentPaidCount')}</span><strong>{paid.length}</strong><small>{currentLanguage === 'pt' ? 'já recebidos' : 'already received'}</small></div>
     </section>
@@ -1401,7 +1401,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
     {filtered.length ? <div className="payment-list">{filtered.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div> : <div className="empty-card payment-empty"><CheckCircle2 size={23} /><div><strong>{payments.length ? tr('paymentNoResults') : tr('clear')}</strong><p>{payments.length ? tr('paymentNoResultsDesc') : tr('noPending')}</p>{!payments.length && <button className="secondary-button" onClick={onAdd}><Plus size={15} /> {tr('addPayment')}</button>}</div></div>}
 
     {payments.length > 0 && <section className="payment-currency-summary">
-      <div><strong>{tr('paymentTotal')}</strong>{pendingByCurrency.map(item => <span key={item.currency}>{tr('paymentPendingCount')}: {formatMoney(item.amount, item.currency)}</span>)}{paidByCurrency.map(item => <span key={'paid-'+item.currency}>{tr('paymentPaidCount')}: {formatMoney(item.amount, item.currency)}</span>)}</div>
+      <div><strong>{currentLanguage === 'pt' ? 'Resumo financeiro' : 'Financial summary'}</strong>{pendingByCurrency.map(item => <span key={item.currency}>{currentLanguage === 'pt' ? 'A receber' : 'To collect'}: {formatMoney(item.amount, item.currency)}</span>)}{paidByCurrency.map(item => <span key={'paid-'+item.currency}>{currentLanguage === 'pt' ? 'Já recebidos' : 'Already received'}: {formatMoney(item.amount, item.currency)}</span>)}</div>
     </section>}
   </div>
 }
@@ -1442,14 +1442,14 @@ function AddPaymentModal({ onClose, onAdd, clients }: { onClose: () => void; onA
     const clientName = matchedClient?.name ?? client.trim()
     if (!client.trim()) return setError(currentLanguage === 'pt' ? 'Digite o cliente.' : 'Enter the client.')
     if (!Number.isFinite(value) || value <= 0) return setError(currentLanguage === 'pt' ? 'Digite um valor válido.' : 'Enter a valid amount.')
-    if (!dueDate) return setError(currentLanguage === 'pt' ? 'Escolha uma data.' : 'Choose a date.')
+    if (!dueDate || dueDate < currentTodayKey()) return setError(currentLanguage === 'pt' ? 'Escolha uma data de vencimento de hoje em diante.' : 'Choose a payment due date from today onward.')
     onAdd({ client: clientName, amount: value, currency, dueDate })
   }
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}>
     <div className="modal-head"><div><p className="section-kicker">{tr('newPayment')}</p><h2>{tr('addPaymentTitle')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div>
     <label>{tr('client')}<input list="lifedue-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={currentLanguage==='pt'?'ex.: Maria':'e.g. Maria'} autoFocus /><datalist id="lifedue-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
     <div className="form-grid"><label>{tr('amount')}<input type="number" min="0.01" step="0.01" value={amount} onChange={e => { setAmount(e.target.value); setError('') }} placeholder="e.g. 200" /></label><label>{tr('currency')}<select value={currency} onChange={e => setCurrency(e.target.value)}><option value="USD">{tr('usd')}</option><option value="EUR">{tr('eur')}</option><option value="AOA">{tr('aoa')}</option></select></label></div>
-    <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} /></label>
+    <label>{tr('dueDate')}<input type="date" value={dueDate} min={currentTodayKey()} onChange={e => { setDueDate(e.target.value); setError('') }} /></label>
     {error && <div className="auth-error">{error}</div>}
     <div className="modal-actions"><button className="secondary-button" onClick={onClose}>{tr('cancel')}</button><button className="primary-button" onClick={submit} disabled={!client.trim() || !amount}>{tr('addPayment')}</button></div>
   </div></div>
