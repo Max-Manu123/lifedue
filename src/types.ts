@@ -18,6 +18,7 @@ export interface Task {
   title: string
   client: string
   dueDate: string
+  dueDateProvided?: boolean
   priority: Priority
   status: TaskStatus
 }
@@ -33,5 +34,6 @@ export interface Payment {
   amount: number
   currency: string | null
   dueDate: string
+  dueDateProvided?: boolean
   status: 'pending' | 'paid'
 }
