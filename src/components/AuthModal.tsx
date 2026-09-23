@@ -66,6 +66,8 @@ export function AuthModal({
     if (message.includes('email not confirmed')) return pt ? 'Confirme seu email antes de entrar. Verifique também a pasta de spam.' : 'Confirm your email before signing in. Check your spam folder too.'
     if (message.includes('user already registered')) return pt ? 'Este email já tem uma conta. Entre em vez de criar outra.' : 'This email already has an account. Sign in instead of creating another one.'
     if (message.includes('password should be at least')) return pt ? 'A senha precisa ter pelo menos 8 caracteres.' : 'Your password must be at least 8 characters.'
+    if (message.includes('rate limit') || message.includes('too many requests')) return pt ? 'Foram feitas muitas tentativas. Aguarde alguns minutos e tente novamente.' : 'Too many attempts. Wait a few minutes and try again.'
+    if (message.includes('expired') || message.includes('invalid') && message.includes('token')) return pt ? 'Este link de redefinição expirou ou já foi usado. Solicite um novo link.' : 'This reset link has expired or was already used. Request a new link.'
     return pt ? 'Não foi possível concluir agora. Verifique os dados e tente novamente.' : 'We could not complete this right now. Check your details and try again.'
   }
 
@@ -280,19 +282,6 @@ export function AuthModal({
                   {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </span>
-              {mode === 'reset' && (
-                <span className="auth-password">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={event => setConfirmPassword(event.target.value)}
-                    minLength={8}
-                    autoComplete="new-password"
-                    placeholder={pt ? 'Confirme a nova senha' : 'Confirm new password'}
-                    required
-                  />
-                </span>
-              )}
               {mode === 'signup' && (
                 <>
                   <div className={`password-strength ${passwordStrength.tone}`} aria-live="polite">
@@ -312,6 +301,22 @@ export function AuthModal({
                   </button>
                 </>
               )}
+            </label>
+          )}
+
+          {mode === 'reset' && (
+            <label>
+              {pt ? 'Confirmar nova senha' : 'Confirm new password'}
+              <span className="auth-password">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={event => setConfirmPassword(event.target.value)}
+                  minLength={8}
+                  autoComplete="new-password"
+                  required
+                />
+              </span>
             </label>
           )}
 
