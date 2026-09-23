@@ -118,7 +118,7 @@ async function callGeminiPlan(apiKey: string, prompt: string, model: string, all
                 'Reorder the supplied open tasks into a practical execution order for the next few days.',
                 'Never create, delete, rename, merge, or duplicate tasks.',
                 'Return only task IDs from the supplied list, exactly once each.',
-                'Prioritize overdue work first, then today, then earlier due dates. Within the same date, prefer high priority, then medium, then low.',
+                'Prioritize dated overdue work first, then dated today, then earlier dated work. Tasks without an explicit deadline come after dated work. Within the same date, prefer high priority, then medium, then low.',
                 'Use client/task context only to break ties. Do not invent dependencies.',
                 'OUTPUT FORMAT: {"orderedIds":["id1","id2"]}',
               ].join('\\n'),
@@ -242,7 +242,7 @@ Deno.serve(async (req) => {
         if (!validDate(value.dueDate) || !['low', 'medium', 'high'].includes(String(value.priority))) {
           throw new Error('Invalid planner task values.')
         }
-        return { id: value.id, title: value.title.trim(), client: value.client.trim(), dueDate: value.dueDate, priority: value.priority }
+        return { id: value.id, title: value.title.trim(), client: value.client.trim(), dueDate: value.dueDate, dueDateProvided: value.dueDateProvided !== false, priority: value.priority }
       })
 
       const apiKey = Deno.env.get('GEMINI_API_KEY')
