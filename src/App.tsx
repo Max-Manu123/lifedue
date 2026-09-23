@@ -1291,7 +1291,7 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
               <CheckCircle2 size={22} />
             </div>
             <div className="ai-plan-list">
-              {plan.map((task, index) => <div className="ai-plan-item" key={task.id + index}><div className="ai-plan-icon">{/payment|pagamento|cobrar|receber/i.test(task.title) ? '💰' : '✓'}</div><div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div></div>)}
+              {plan.map((task, index) => <div className="ai-plan-item" key={task.id + index}><div className="ai-plan-icon">{/payment|pagamento|cobrar|receber/i.test(task.title) ? '💰' : '✓'}</div><div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate, task.dueDateProvided !== false)}</span></div></div>)}
             </div>
             <button className="primary-button onboarding-submit" onClick={onAddPlan}>
               {user ? (pt ? 'Guardar no LifeDue' : 'Save to LifeDue') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
@@ -1427,7 +1427,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
             {plan.map((task, index) => (
               <div className="ai-plan-item" key={`ai-plan-${task.id}-${index}`}>
                 <div className="ai-plan-icon">{/payment|pagamento|cobrar|receber/i.test(task.title) ? '💰' : /proposal|proposta/i.test(task.title) ? '📄' : '💻'}</div>
-                <div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
+                <div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate, task.dueDateProvided !== false)}</span></div>
               </div>
             ))}
           </div>
@@ -1495,7 +1495,7 @@ function TaskRow({ task, onToggle, disabled }: { task: Task; onToggle: (id: stri
       <button type="button" disabled={disabled} className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={task.status === 'completed' ? (currentLanguage === 'pt' ? 'Reabrir tarefa' : 'Reopen task') : (currentLanguage === 'pt' ? 'Concluir tarefa' : 'Complete task')} aria-busy={disabled}>
         {task.status === 'completed' && <Check size={14} />}
       </button>
-      <div className="task-info"><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate)}</span></div>
+      <div className="task-info"><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate, task.dueDateProvided !== false)}</span></div>
       <PriorityBadge priority={task.priority} />
     </div>
   )
@@ -1735,7 +1735,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
 
 function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id: string) => void }) {
   const isOverdue = payment.status === 'pending' && payment.dueDate < currentTodayKey()
-  return <div className={isOverdue ? 'payment-row overdue-row' : 'payment-row'}><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{formatMoney(payment.amount, payment.currency)} · {payment.client}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? tr('paymentOverdueLabel') + ' · ' + tr('paymentDue').toLowerCase() + ' ' + formatDate(payment.dueDate) : tr('paymentDue') + ' ' + formatDate(payment.dueDate)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>{tr('markPaid')}</button> : <span className="paid-label"><Check size={15} /> {tr('paid')}</span>}</div>
+  return <div className={isOverdue ? 'payment-row overdue-row' : 'payment-row'}><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{formatMoney(payment.amount, payment.currency)} · {payment.client}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? tr('paymentOverdueLabel') + ' · ' + tr('paymentDue').toLowerCase() + ' ' + formatDate(payment.dueDate, payment.dueDateProvided !== false) : tr('paymentDue') + ' ' + formatDate(payment.dueDate, payment.dueDateProvided !== false)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>{tr('markPaid')}</button> : <span className="paid-label"><Check size={15} /> {tr('paid')}</span>}</div>
 }
 
 
@@ -1753,7 +1753,7 @@ function PlannerView({ plan, openTasks, aiLoading, isAuthenticated, plannerError
     {plannerError && <div className="planner-error" role="alert"><Bot size={16} /><span>{plannerError}</span></div>}
     <div className="planner-card">
       <div className="planner-hero"><div className="planner-bot"><Bot size={26} /></div><div><strong>{plan.length ? readyTitle : tr('openItems')}</strong><p>{plan.length ? readyDesc : tr('generateOrder')}</p></div></div>
-      {!plan.length ? <div className="planner-empty"><Sparkles size={22} /><div><strong>{tr('plannerEmptyTitle')}</strong><p>{tr('plannerEmptyDesc')}</p><button className="secondary-button" onClick={onAddTask}><Plus size={15} /> {tr('addTaskToPlan')}</button></div></div> : <div className="plan-list">{plan.map((task,index) => <div className="plan-item" key={task.id}><span className="plan-number">{index + 1}</span><div className="plan-date">{formatDate(task.dueDate)}</div><div className="plan-main"><strong>{task.title}</strong><small>{task.client}</small></div><span className={task.priority === 'high' ? 'plan-priority high' : task.priority === 'medium' ? 'plan-priority medium' : 'plan-priority low'}>{task.priority}</span></div>)}</div>}
+      {!plan.length ? <div className="planner-empty"><Sparkles size={22} /><div><strong>{tr('plannerEmptyTitle')}</strong><p>{tr('plannerEmptyDesc')}</p><button className="secondary-button" onClick={onAddTask}><Plus size={15} /> {tr('addTaskToPlan')}</button></div></div> : <div className="plan-list">{plan.map((task,index) => <div className="plan-item" key={task.id}><span className="plan-number">{index + 1}</span><div className="plan-date">{formatDate(task.dueDate, task.dueDateProvided !== false)}</div><div className="plan-main"><strong>{task.title}</strong><small>{task.client}</small></div><span className={task.priority === 'high' ? 'plan-priority high' : task.priority === 'medium' ? 'plan-priority medium' : 'plan-priority low'}>{task.priority}</span></div>)}</div>}
       {plan.length > 0 && <div className="planner-actions"><button className="secondary-button" onClick={onViewTasks}><ListTodo size={16} /> {tr('viewTasks')}</button></div>}
       {!isAuthenticated && plan.length > 0 && <div className="planner-note"><Bot size={14} /> {tr('plannerFallback')}</div>}
     </div>
@@ -1916,7 +1916,8 @@ function isValidDueDate(value: string) {
   return value >= currentTodayKey()
 }
 
-function formatDate(value: string) {
+function formatDate(value: string, provided = true) {
+  if (!provided) return tr('noDueDate')
   const date = new Date(value + 'T00:00:00')
   if (value === currentTodayKey()) return tr('today')
   if (value === addDays(1)) return tr('tomorrow')
