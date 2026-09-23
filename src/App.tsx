@@ -571,6 +571,7 @@ function App() {
           const newPayments = savablePayments.filter(item => !existingPaymentKeys.has(paymentKey({
             client: item.client,
             amount: item.amount as number,
+            currency: item.currency as string,
             dueDate: item.dueDate,
           })))
           const createdPayments = await Promise.all(newPayments.map(item => createPayment(user, {
