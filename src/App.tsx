@@ -780,7 +780,7 @@ function App() {
       {view === 'home' ? (
         <Landing onStart={() => navigate('onboarding')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} language={language} setLanguage={setLanguage} user={user} />
       ) : view === 'onboarding' ? (
-        <OnboardingView quickText={quickText} onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }} onCreatePlan={() => void createPlan()} plan={plan} planSource={planSource} planPayments={planPayments} onAddPlan={() => void addPlan()} onAddPayment={addOnboardingPayment} onSkip={skipOnboarding} aiLoading={aiLoading} aiError={aiError} user={user} onBack={() => navigate('home')} language={language} />
+        <OnboardingView quickText={quickText} onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }} onCreatePlan={() => void createPlan()} plan={plan} planSource={planSource} planPayments={planPayments} onAddPlan={() => void addPlan()} onAddPayment={addOnboardingPayment} onUpdatePlanTask={(id, patch) => setPlan(current => current.map(task => task.id === id ? { ...task, ...patch } : task))} onUpdatePlanPayment={(index, patch) => setPlanPayments(current => current.map((payment, itemIndex) => itemIndex === index ? { ...payment, ...patch } : payment))} onSkip={skipOnboarding} aiLoading={aiLoading} aiError={aiError} user={user} onBack={() => navigate('home')} language={language} />
       ) : (
         <div className="workspace">
           <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
@@ -1232,6 +1232,8 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
   planPayments: QuickAddItem[]
   onAddPlan: () => void
   onAddPayment: () => void
+  onUpdatePlanTask: (id: string, patch: Partial<Pick<Task, 'dueDate' | 'dueDateProvided' | 'priority'>>) => void
+  onUpdatePlanPayment: (index: number, patch: Partial<Pick<QuickAddItem, 'amount' | 'currency' | 'dueDate' | 'dueDateProvided'>>) => void
   onSkip: () => void
   aiLoading: boolean
   aiError: string
@@ -1242,6 +1244,10 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
   const pt = language === 'pt'
   const resultRef = useRef<HTMLElement>(null)
   const [showPaymentSuggestion, setShowPaymentSuggestion] = useState(true)
+  const [showDetails, setShowDetails] = useState(true)
+  const [editingTaskDate, setEditingTaskDate] = useState<string | null>(null)
+  const [editingPayment, setEditingPayment] = useState<number | null>(null)
+  const [paymentAmountDraft, setPaymentAmountDraft] = useState('')
 
   useEffect(() => {
     if (plan.length > 0 && !aiLoading) {
@@ -1294,6 +1300,44 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
             <button className="primary-button onboarding-submit" onClick={onAddPlan}>
               {user ? (pt ? 'Guardar no LifeDue' : 'Save to LifeDue') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
             </button>
+            {showDetails && (() => {
+              const undatedTasks = plan.filter(task => task.dueDateProvided === false)
+              const incompletePayments = planPayments.map((payment, index) => ({ payment, index })).filter(({ payment }) => payment.amount == null || payment.currency == null)
+              if (!undatedTasks.length && !incompletePayments.length) return null
+              return <div className="onboarding-details-card">
+                <div className="onboarding-details-head">
+                  <div>
+                    <strong>{pt ? 'Completar detalhes (opcional)' : 'Complete details (optional)'}</strong>
+                    <span>{pt ? 'O plano já está pronto. Você pode preencher o que faltou agora ou deixar para depois.' : 'Your plan is already ready. Complete anything missing now or leave it for later.'}</span>
+                  </div>
+                  <button type="button" className="text-button" onClick={() => setShowDetails(false)}>{pt ? 'Agora não' : 'Not now'}</button>
+                </div>
+                <div className="onboarding-details-list">
+                  {undatedTasks.map(task => <div className="onboarding-detail-row" key={task.id}>
+                    <div className="onboarding-detail-copy"><strong>{task.title}</strong><span>{pt ? 'Prazo ainda não definido' : 'No deadline set yet'}</span></div>
+                    {editingTaskDate === task.id ? <div className="onboarding-detail-control">
+                      <input type="date" min={currentTodayKey()} onChange={e => { if (!e.target.value) return; onUpdatePlanTask(task.id, { dueDate: e.target.value, dueDateProvided: true }); setEditingTaskDate(null) }} autoFocus />
+                      <button type="button" className="text-button" onClick={() => setEditingTaskDate(null)}>{pt ? 'Cancelar' : 'Cancel'}</button>
+                    </div> : <button type="button" className="secondary-button compact-button" onClick={() => setEditingTaskDate(task.id)}>{pt ? 'Definir prazo' : 'Set deadline'}</button>}
+                  </div>)}
+                  {incompletePayments.map(({ payment, index }) => <div className="onboarding-detail-row" key={index}>
+                    <div className="onboarding-detail-copy">
+                      <strong>{payment.client ? (pt ? 'Pagamento de ' : 'Payment from ') + payment.client : (pt ? 'Pagamento' : 'Payment')}</strong>
+                      <span>{payment.amount == null ? (pt ? 'Valor ainda não definido' : 'Amount not set yet') : (pt ? 'Moeda ainda não definida' : 'Currency not set yet')}</span>
+                    </div>
+                    {editingPayment === index ? <div className="onboarding-detail-payment-control">
+                      {payment.amount == null && <input type="text" inputMode="decimal" placeholder={pt ? 'Valor' : 'Amount'} value={paymentAmountDraft} onChange={e => setPaymentAmountDraft(e.target.value)} />}
+                      {((payment.amount != null) || paymentAmountDraft.trim()) && <select value={payment.currency ?? ''} onChange={e => { const value = e.target.value as QuickAddItem['currency']; onUpdatePlanPayment(index, { currency: value || undefined }); if (payment.amount != null) setEditingPayment(null) }}>
+                        <option value="">{pt ? 'Escolher moeda' : 'Choose currency'}</option><option value="AOA">AOA · Kz</option><option value="USD">USD · US$</option><option value="EUR">EUR · €</option><option value="BRL">BRL · R$</option><option value="GBP">GBP · £</option><option value="Other">{pt ? 'Outra' : 'Other'}</option>
+                      </select>}
+                      {payment.amount == null && <button type="button" className="text-button" onClick={() => { const value = Number(paymentAmountDraft.replace(',', '.')); if (!Number.isFinite(value) || value <= 0) return; onUpdatePlanPayment(index, { amount: value }); setPaymentAmountDraft(''); setEditingPayment(null) }}>{pt ? 'Guardar' : 'Save'}</button>}
+                      <button type="button" className="text-button" onClick={() => { setEditingPayment(null); setPaymentAmountDraft('') }}>{pt ? 'Cancelar' : 'Cancel'}</button>
+                    </div> : <button type="button" className="secondary-button compact-button" onClick={() => { setEditingPayment(index); setPaymentAmountDraft(payment.amount == null ? '' : String(payment.amount)) }}>{payment.amount == null ? (pt ? 'Adicionar valor' : 'Add amount') : (pt ? 'Definir moeda' : 'Set currency')}</button>}
+                  </div>)}
+                </div>
+              </div>
+            })()}
+
             {!user && <p className="onboarding-save-note">{pt ? 'Você só cria uma conta quando quiser guardar seu trabalho. Google ou email — sem cartão.' : 'You only create an account when you want to save your work. Google or email — no card.'}</p>}
             {planPayments.length === 0 && showPaymentSuggestion && (
               <div className="onboarding-payment-option">
