@@ -288,8 +288,8 @@ function App() {
   useEffect(() => localStorage.setItem('lifedue-payments', JSON.stringify(payments)), [payments])
 
   const openTasks = tasks.filter(t => t.status === 'open')
-  const overdue = openTasks.filter(t => t.dueDate < currentTodayKey())
-  const todayTasks = openTasks.filter(t => t.dueDate === currentTodayKey())
+  const overdue = openTasks.filter(t => t.dueDateProvided !== false && t.dueDate < currentTodayKey())
+  const todayTasks = openTasks.filter(t => t.dueDateProvided !== false && t.dueDate === currentTodayKey())
   const pendingPayments = payments.filter(p => p.status === 'pending')
   const pendingAmount = pendingPayments.reduce((sum, p) => sum + p.amount, 0)
 
@@ -1361,12 +1361,12 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
   const todayKey = iso(new Date())
   const openTasks = tasks.filter(t => t.status === 'open')
   const upcomingTasks = openTasks
-    .filter(t => t.dueDate > todayKey)
+    .filter(t => t.dueDateProvided !== false && t.dueDateProvided !== false && t.dueDate > todayKey)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 4)
   const urgentCount = overdue.length + todayTasks.filter(t => t.priority === 'high').length
   const paymentAttention = pendingPayments
-    .filter(payment => payment.dueDate <= todayKey)
+    .filter(payment => payment.dueDateProvided !== false && payment.dueDate <= todayKey)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
   const totalPending = pendingMoneyLabel(pendingPayments)
   const hasAttention = overdue.length > 0 || todayTasks.length > 0 || paymentAttention.length > 0
@@ -1456,8 +1456,8 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
           {paymentAttention.length > 0 ? <div className="today-payment-list">
             {paymentAttention.slice(0, 4).map(payment => (
               <div className="today-payment-row" key={payment.id}>
-                <div className={payment.dueDate < todayKey ? 'today-payment-icon overdue' : 'today-payment-icon'}><CircleDollarSign size={17} /></div>
-                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDate < currentTodayKey() ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
+                <div className={payment.dueDateProvided !== false && t.dueDate < todayKey ? 'today-payment-icon overdue' : 'today-payment-icon'}><CircleDollarSign size={17} /></div>
+                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDateProvided !== false && t.dueDate < currentTodayKey() ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
                 <button className="secondary-button compact" onClick={() => onMarkPaid(payment.id)}>{tr('markPaidToday')}</button>
               </div>
             ))}
@@ -1508,8 +1508,8 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
   const todayKey = currentTodayKey()
   const openTasks = tasks.filter(t => t.status === 'open')
   const completedTasks = tasks.filter(t => t.status === 'completed')
-  const overdueCount = openTasks.filter(t => t.dueDate < todayKey).length
-  const todayCount = openTasks.filter(t => t.dueDate === todayKey).length
+  const overdueCount = openTasks.filter(t => t.dueDateProvided !== false && t.dueDate < todayKey).length
+  const todayCount = openTasks.filter(t => t.dueDateProvided !== false && t.dueDate === todayKey).length
   const completionRate = tasks.length ? Math.round((completedTasks.length / tasks.length) * 100) : 0
   const progressLabel = tasks.length ? `${completedTasks.length} ${currentLanguage === 'pt' ? 'de' : 'of'} ${tasks.length} ${currentLanguage === 'pt' ? 'tarefas concluídas' : 'tasks completed'}` : (currentLanguage === 'pt' ? 'Nenhuma tarefa criada ainda' : 'No tasks created yet')
 
@@ -1528,9 +1528,9 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
     })
 
   const groups = [
-    { key: 'overdue', label: tr('overdueTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDate < todayKey), tone: 'danger' as const },
-    { key: 'today', label: tr('todayTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDate === todayKey), tone: 'today' as const },
-    { key: 'upcoming', label: tr('upcomingTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDate > todayKey), tone: 'upcoming' as const },
+    { key: 'overdue', label: tr('overdueTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDate < todayKey), tone: 'danger' as const },
+    { key: 'today', label: tr('todayTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDate === todayKey), tone: 'today' as const },
+    { key: 'upcoming', label: tr('upcomingTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDateProvided !== false && t.dueDate > todayKey), tone: 'upcoming' as const },
     { key: 'completed', label: tr('completedTasks'), items: filtered.filter(t => t.status === 'completed'), tone: 'completed' as const },
   ].filter(group => group.items.length)
 
@@ -1578,7 +1578,7 @@ function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: T
     const name = client.name.trim().toLowerCase()
     const clientTasks = tasks.filter(task => task.client.trim().toLowerCase() === name)
     const openTasks = clientTasks.filter(task => task.status === 'open')
-    const overdueTasks = openTasks.filter(task => task.dueDate < todayKey)
+    const overdueTasks = openTasks.filter(task => task.dueDateProvided !== false && task.dueDate < todayKey)
     const paidTasks = clientTasks.filter(task => task.status === 'completed')
     const pendingPayments = payments.filter(payment => payment.client.trim().toLowerCase() === name && payment.status === 'pending')
     const pendingByCurrency = [...new Set(pendingPayments.map(payment => payment.currency))].map(currency => ({
@@ -1598,7 +1598,7 @@ function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: T
     .sort((a, b) => b.overdueTasks.length - a.overdueTasks.length || b.pendingPayments.length - a.pendingPayments.length || a.client.name.localeCompare(b.client.name))
 
   const totalOpen = clients.reduce((sum, client) => sum + tasks.filter(t => t.client.trim().toLowerCase() === client.name.trim().toLowerCase() && t.status === 'open').length, 0)
-  const totalOverdue = clients.reduce((sum, client) => sum + tasks.filter(t => t.client.trim().toLowerCase() === client.name.trim().toLowerCase() && t.status === 'open' && t.dueDate < todayKey).length, 0)
+  const totalOverdue = clients.reduce((sum, client) => sum + tasks.filter(t => t.client.trim().toLowerCase() === client.name.trim().toLowerCase() && t.status === 'open' && t.dueDateProvided !== false && t.dueDate < todayKey).length, 0)
   const clientsWithMoney = clients.filter(client => payments.some(p => p.client.trim().toLowerCase() === client.name.trim().toLowerCase() && p.status === 'pending')).length
 
   return <div className="content-stack clients-page">
@@ -1684,7 +1684,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
   const overdue = pending.filter(p => p.dueDate < todayKey)
   const query = search.trim().toLowerCase()
   const filtered = payments.filter(payment => {
-    const isOverdue = payment.status === 'pending' && payment.dueDate < todayKey
+    const isOverdue = payment.status === 'pending' && payment.dueDateProvided !== false && t.dueDate < todayKey
     const matchesFilter = filter === 'all' ? true : filter === 'paid' ? payment.status === 'paid' : filter === 'overdue' ? isOverdue : payment.status === 'pending'
     const matchesSearch = !query || payment.client.toLowerCase().includes(query)
     return matchesFilter && matchesSearch
@@ -1734,16 +1734,16 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
 
 
 function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id: string) => void }) {
-  const isOverdue = payment.status === 'pending' && payment.dueDate < currentTodayKey()
+  const isOverdue = payment.status === 'pending' && payment.dueDateProvided !== false && t.dueDate < currentTodayKey()
   return <div className={isOverdue ? 'payment-row overdue-row' : 'payment-row'}><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{formatMoney(payment.amount, payment.currency)} · {payment.client}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? tr('paymentOverdueLabel') + ' · ' + tr('paymentDue').toLowerCase() + ' ' + formatDate(payment.dueDate, payment.dueDateProvided !== false) : tr('paymentDue') + ' ' + formatDate(payment.dueDate, payment.dueDateProvided !== false)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>{tr('markPaid')}</button> : <span className="paid-label"><Check size={15} /> {tr('paid')}</span>}</div>
 }
 
 
 function PlannerView({ plan, openTasks, aiLoading, isAuthenticated, plannerError, plannerSource, onGenerate, onAddTask, onViewTasks }: { plan: Task[]; openTasks: Task[]; aiLoading: boolean; isAuthenticated: boolean; plannerError: string; plannerSource: 'ai' | 'local' | null; onGenerate: () => void; onAddTask: () => void; onViewTasks: () => void }) {
   const todayKey = currentTodayKey()
-  const overdueCount = openTasks.filter(task => task.dueDate < todayKey).length
-  const todayCount = openTasks.filter(task => task.dueDate === todayKey).length
-  const upcomingCount = openTasks.filter(task => task.dueDate > todayKey).length
+  const overdueCount = openTasks.filter(task => task.dueDateProvided !== false && task.dueDate < todayKey).length
+  const todayCount = openTasks.filter(task => task.dueDateProvided !== false && task.dueDate === todayKey).length
+  const upcomingCount = openTasks.filter(task => task.dueDateProvided !== false && task.dueDate > todayKey).length
   const readyTitle = plannerSource === 'ai' ? tr('plannerAiReady') : tr('plannerLocalReady')
   const readyDesc = plannerSource === 'ai' ? tr('plannerAiDesc') : tr('plannerLocalDesc')
 
