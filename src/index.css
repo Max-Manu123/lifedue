@@ -1,9 +1,27 @@
 :root {
+  --brand: #4f46e5;
+  --brand-strong: #4338ca;
+  --brand-soft: #eef2ff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --radius-sm: 9px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 4px 16px rgba(15,23,42,.05);
+  --shadow-md: 0 12px 34px rgba(15,23,42,.08);
+  --ease: cubic-bezier(.2,.8,.2,1);
+
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #0f172a;
   background: #f8fafc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -993,3 +1011,30 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .theme-dark .upgrade-form input { background:#111827; border-color:#475569; color:#f8fafc; }
 .theme-dark .upgrade-success { background:#052e16; color:#bbf7d0; }
 @media (max-width:560px) { .upgrade-modal-backdrop { padding:12px; align-items:end; } .upgrade-modal { padding:22px 18px; border-radius:18px 18px 12px 12px; } .upgrade-button { margin-left:0; margin-top:8px; } .account-summary { flex-wrap:wrap; } }
+
+html { scroll-behavior: smooth; }
+body { color: var(--ink); }
+button, input, textarea, select { transition: border-color .18s var(--ease), box-shadow .18s var(--ease), background-color .18s var(--ease), color .18s var(--ease), transform .18s var(--ease), opacity .18s var(--ease); }
+button:disabled { cursor: not-allowed; opacity: .58; }
+.primary-button:hover:not(:disabled), .hero-cta:hover:not(:disabled), .nav-cta:hover:not(:disabled) { transform: translateY(-1px); }
+.primary-button:active:not(:disabled), .hero-cta:active:not(:disabled), .nav-cta:active:not(:disabled) { transform: translateY(0); }
+.brand-mark { background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); }
+.hero-preview, .quick-card, .ai-result-card, .stat-card, .empty-card, .settings-card, .feedback-card, .planner-card, .payment-row, .client-card, .task-summary, .today-planner-cta { box-shadow: var(--shadow-sm); }
+.hero-preview { animation: lifedue-float 7s ease-in-out infinite; }
+.preview-glow { animation: lifedue-glow 7s ease-in-out infinite; }
+.nav-item { transition: transform .18s var(--ease), background-color .18s var(--ease), color .18s var(--ease); }
+.nav-item:hover { transform: translateX(2px); }
+.nav-item.active { box-shadow: inset 3px 0 0 var(--brand); }
+.content-stack > * { animation: lifedue-enter .35s var(--ease) both; }
+.content-stack > *:nth-child(2) { animation-delay: .035s; }
+.content-stack > *:nth-child(3) { animation-delay: .07s; }
+.content-stack > *:nth-child(4) { animation-delay: .105s; }
+.quick-card:hover, .settings-card:hover, .feedback-card:hover, .planner-card:hover { border-color: #cbd5e1; box-shadow: var(--shadow-md); }
+.field-help { color:#94a3b8; font-size:10px; line-height:1.45; margin-top:5px; }
+@keyframes lifedue-enter { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+@keyframes lifedue-float { 0%,100% { transform:rotate(1deg) translateY(0); } 50% { transform:rotate(1deg) translateY(-6px); } }
+@keyframes lifedue-glow { 0%,100% { transform:scale(1); opacity:.72; } 50% { transform:scale(1.08); opacity:1; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
