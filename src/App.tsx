@@ -148,6 +148,9 @@ function App() {
   const quickAddRequestId = useRef(0)
   const [showAdd, setShowAdd] = useState(false)
   const [showAddPayment, setShowAddPayment] = useState(false)
+  const [taskDraftClient, setTaskDraftClient] = useState('')
+  const [paymentDraftClient, setPaymentDraftClient] = useState('')
+  const [nextStep, setNextStep] = useState<{ type: 'payment' | 'task'; client: string } | null>(null)
   const [showAddClient, setShowAddClient] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -529,6 +532,7 @@ function App() {
         }
       }
       setShowAdd(false)
+      setNextStep({ type: 'payment', client: task.client })
     } catch (error) {
       console.error('LifeDue task creation failed:', error)
       setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar a tarefa.' : 'Could not save the task.')
@@ -555,6 +559,7 @@ function App() {
         const created = await createPayment(user, payment)
         setPayments(current => [created, ...current])
         setShowAddPayment(false)
+        setNextStep({ type: 'task', client: payment.client })
       } catch (error) {
         console.error('LifeDue payment creation failed:', error)
         setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível adicionar o pagamento.' : 'Could not add the payment.')
@@ -562,6 +567,7 @@ function App() {
     } else {
       setPayments(current => [{ ...payment, id: crypto.randomUUID(), status: 'pending' }, ...current])
       setShowAddPayment(false)
+      setNextStep({ type: 'task', client: payment.client })
     }
   }
 
@@ -774,8 +780,9 @@ function App() {
       )}
 
       {showAddClient && user && <AddClientModal onClose={() => setShowAddClient(false)} onAdd={async name => { if (!supabase || !user) return; const created = await createClient(user, name); setClients(current => current.some(client => client.name.trim().toLowerCase() === created.name.trim().toLowerCase()) ? current : [...current, created].sort((a,b) => a.name.localeCompare(b.name))) }} />}
-      {showAdd && <AddTaskModal onClose={() => setShowAdd(false)} onAdd={addTask} clients={clients} />}
-      {showAddPayment && <AddPaymentModal onClose={() => setShowAddPayment(false)} onAdd={addPayment} clients={clients} />}
+      {nextStep && <NextStepCard type={nextStep.type} client={nextStep.client} onAction={() => { if (nextStep.type === 'payment') { setPaymentDraftClient(nextStep.client); setShowAddPayment(true) } else { setTaskDraftClient(nextStep.client); setShowAdd(true) }; setNextStep(null) }} onDismiss={() => setNextStep(null)} />}
+      {showAdd && <AddTaskModal initialClient={taskDraftClient} onClose={() => { setShowAdd(false); setTaskDraftClient('') }} onAdd={addTask} clients={clients} />}
+      {showAddPayment && <AddPaymentModal initialClient={paymentDraftClient} onClose={() => { setShowAddPayment(false); setPaymentDraftClient('') }} onAdd={addPayment} clients={clients} />}
       {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
     </div>
   )
@@ -1430,8 +1437,19 @@ function PlannerView({ plan, openTasks, aiLoading, isAuthenticated, onGenerate, 
   </div>
 }
 
-function AddPaymentModal({ onClose, onAdd, clients }: { onClose: () => void; onAdd: (payment: Omit<Payment, 'id' | 'status'>) => void; clients: Client[] }) {
-  const [client, setClient] = useState('')
+function NextStepCard({ type, client, onAction, onDismiss }: { type: 'payment' | 'task'; client: string; onAction: () => void; onDismiss: () => void }) {
+  const isPayment = type === 'payment'
+  const title = isPayment ? (currentLanguage === 'pt' ? 'Próximo passo para esta cliente' : 'A useful next step for this client') : (currentLanguage === 'pt' ? 'Continue a organizar esta cliente' : 'Keep this client organized')
+  const message = isPayment ? (currentLanguage === 'pt' ? `Resta adicionar um pagamento para ${client}?` : `Does ${client} also have a payment to track?`) : (currentLanguage === 'pt' ? `Quer adicionar uma tarefa para ${client}?` : `Would you like to add a task for ${client}?`)
+  return <div className="next-step-card" role="status">
+    <div className="next-step-icon">{isPayment ? <CircleDollarSign size={18} /> : <ListTodo size={18} />}</div>
+    <div className="next-step-copy"><strong>{title}</strong><span>{message}</span></div>
+    <div className="next-step-actions"><button className="primary-button" onClick={onAction}>{isPayment ? (currentLanguage === 'pt' ? 'Adicionar pagamento' : 'Add payment') : (currentLanguage === 'pt' ? 'Adicionar tarefa' : 'Add task')}</button><button className="text-button" onClick={onDismiss}>{currentLanguage === 'pt' ? 'Agora não' : 'Not now'}</button></div>
+    <button className="icon-button next-step-close" onClick={onDismiss} aria-label={currentLanguage === 'pt' ? 'Fechar sugestão' : 'Dismiss suggestion'}><X size={16} /></button>
+  </div>
+}
+function AddPaymentModal({ onClose, onAdd, clients, initialClient = '' }: { onClose: () => void; onAdd: (payment: Omit<Payment, 'id' | 'status'>) => void; clients: Client[]; initialClient?: string }) {
+  const [client, setClient] = useState(initialClient)
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState('USD')
   const [dueDate, setDueDate] = useState(addDays(0))
@@ -1455,9 +1473,9 @@ function AddPaymentModal({ onClose, onAdd, clients }: { onClose: () => void; onA
   </div></div>
 }
 
-function AddTaskModal({ onClose, onAdd, clients }: { onClose: () => void; onAdd: (task: Omit<Task, 'id' | 'status'>) => Promise<void> | void; clients: Client[] }) {
+function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose: () => void; onAdd: (task: Omit<Task, 'id' | 'status'>) => Promise<void> | void; clients: Client[]; initialClient?: string }) {
   const [title, setTitle] = useState('')
-  const [client, setClient] = useState('')
+  const [client, setClient] = useState(initialClient)
   const [dueDate, setDueDate] = useState(addDays(0))
   const [priority, setPriority] = useState<Priority>('medium')
   const [error, setError] = useState('')
