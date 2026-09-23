@@ -934,7 +934,7 @@ function FeedbackView({ type, rating, message, sent, saving, error, canSubmit, o
   </div>
 }
 
-function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut, onFeedback }: {
+function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut, onFeedback, onUpgrade }: {
   user: User | null
   language: Language
   setLanguage: (value: Language) => void
