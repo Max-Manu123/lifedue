@@ -619,6 +619,49 @@ function App() {
     }
   }
 
+  const joinProWaitlist = async () => {
+    const email = (waitlistEmail || user?.email || '').trim().toLowerCase()
+    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+      setWaitlistError(tr('waitlistInvalidEmail'))
+      return
+    }
+    if (!user || !supabase || waitlistSaving) {
+      if (!user || !supabase) setWaitlistError(currentLanguage === 'pt' ? 'Entre na sua conta para entrar na lista.' : 'Sign in to join the waitlist.')
+      return
+    }
+
+    setWaitlistSaving(true)
+    setWaitlistError('')
+    try {
+      const { data: existing, error: lookupError } = await supabase
+        .from('pro_waitlist')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (lookupError) throw lookupError
+      if (existing) {
+        setWaitlistSent(true)
+        return
+      }
+
+      const { error } = await supabase.from('pro_waitlist').insert({ user_id: user.id, email })
+      if (error) {
+        if (error.code === '23505') {
+          setWaitlistSent(true)
+          return
+        }
+        throw error
+      }
+      setWaitlistEmail(email)
+      setWaitlistSent(true)
+    } catch (error) {
+      console.error('LifeDue Pro waitlist failed:', error)
+      setWaitlistError(tr('waitlistError'))
+    } finally {
+      setWaitlistSaving(false)
+    }
+  }
+
   const resolvedTheme = theme === 'system' ? 'system' : theme
 
   return (
