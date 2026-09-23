@@ -1456,25 +1456,58 @@ function AddPaymentModal({ onClose, onAdd, clients, initialClient = '' }: { onCl
   const [client, setClient] = useState(initialClient)
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState('USD')
-  const [dueDate, setDueDate] = useState(addDays(0))
+  const [dueDate, setDueDate] = useState(currentTodayKey())
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
   const submit = () => {
-    const value = Number(amount)
-    const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === client.trim().toLocaleLowerCase())
-    const clientName = matchedClient?.name ?? client.trim()
-    if (!client.trim()) return setError(currentLanguage === 'pt' ? 'Digite o cliente.' : 'Enter the client.')
-    if (!Number.isFinite(value) || value <= 0) return setError(currentLanguage === 'pt' ? 'Digite um valor válido.' : 'Enter a valid amount.')
-    if (!dueDate || dueDate < currentTodayKey()) return setError(currentLanguage === 'pt' ? 'Escolha uma data de vencimento de hoje em diante.' : 'Choose a payment due date from today onward.')
-    onAdd({ client: clientName, amount: value, currency, dueDate })
+    if (saving) return
+    const cleanClient = client.trim()
+    const normalizedAmount = amount.trim().replace(',', '.')
+    const value = Number(normalizedAmount)
+    const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === cleanClient.toLocaleLowerCase())
+    const clientName = matchedClient?.name ?? cleanClient
+
+    if (!cleanClient) return setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
+    if (!normalizedAmount || !Number.isFinite(value) || value <= 0 || !/^\d+(?:\.\d{1,2})?$/.test(normalizedAmount)) {
+      return setError(currentLanguage === 'pt' ? 'Digite um valor positivo com no máximo 2 casas decimais.' : 'Enter a positive amount with up to 2 decimal places.')
+    }
+    if (value > 999999999) return setError(currentLanguage === 'pt' ? 'O valor é demasiado alto.' : 'The amount is too large.')
+    if (!isValidDueDate(dueDate)) {
+      return setError(currentLanguage === 'pt' ? 'Escolha uma data de vencimento válida a partir de hoje.' : 'Choose a valid payment due date from today onward.')
+    }
+
+    setError('')
+    setSaving(true)
+    try {
+      onAdd({ client: clientName, amount: value, currency, dueDate })
+    } catch (submitError) {
+      console.error('LifeDue add payment modal failed:', submitError)
+      setError(currentLanguage === 'pt' ? 'Não foi possível adicionar o pagamento. Tente novamente.' : 'Could not add the payment. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
-  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e => e.stopPropagation()}>
-    <div className="modal-head"><div><p className="section-kicker">{tr('newPayment')}</p><h2>{tr('addPaymentTitle')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div>
-    <label>{tr('client')}<input list="lifedue-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={currentLanguage==='pt'?'ex.: Maria':'e.g. Maria'} autoFocus /><datalist id="lifedue-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
-    <div className="form-grid"><label>{tr('amount')}<input type="number" min="0.01" step="0.01" value={amount} onChange={e => { setAmount(e.target.value); setError('') }} placeholder="e.g. 200" /></label><label>{tr('currency')}<select value={currency} onChange={e => setCurrency(e.target.value)}><option value="USD">{tr('usd')}</option><option value="EUR">{tr('eur')}</option><option value="AOA">{tr('aoa')}</option></select></label></div>
-    <label>{tr('dueDate')}<input type="date" value={dueDate} min={currentTodayKey()} onChange={e => { setDueDate(e.target.value); setError('') }} /></label>
-    {error && <div className="auth-error">{error}</div>}
-    <div className="modal-actions"><button className="secondary-button" onClick={onClose}>{tr('cancel')}</button><button className="primary-button" onClick={submit} disabled={!client.trim() || !amount}>{tr('addPayment')}</button></div>
-  </div></div>
+
+  return <div className="modal-backdrop" onMouseDown={onClose}>
+    <div className="modal" onMouseDown={e => e.stopPropagation()}>
+      <div className="modal-head">
+        <div><p className="section-kicker">{tr('newPayment')}</p><h2>{tr('addPaymentTitle')}</h2></div>
+        <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={currentLanguage === 'pt' ? 'Fechar' : 'Close'}><X size={20} /></button>
+      </div>
+      <label>{tr('client')}<input list="lifedue-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={currentLanguage==='pt'?'ex.: Maria':'e.g. Maria'} autoFocus disabled={saving} /><datalist id="lifedue-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
+      <div className="form-grid">
+        <label>{tr('amount')}<input type="text" inputMode="decimal" value={amount} onChange={e => { setAmount(e.target.value); setError('') }} placeholder={currentLanguage === 'pt' ? 'ex.: 200,00' : 'e.g. 200.00'} disabled={saving} aria-describedby="lifedue-payment-amount-help" /><small id="lifedue-payment-amount-help" className="field-help">{currentLanguage === 'pt' ? 'Use um valor positivo, até 2 casas decimais.' : 'Use a positive amount, up to 2 decimal places.'}</small></label>
+        <label>{tr('currency')}<select value={currency} onChange={e => setCurrency(e.target.value)} disabled={saving}><option value="USD">{tr('usd')} · US$</option><option value="EUR">{tr('eur')} · €</option><option value="AOA">{tr('aoa')} · Kz</option></select></label>
+      </div>
+      <label>{tr('dueDate')}<input type="date" value={dueDate} min={currentTodayKey()} onChange={e => { setDueDate(e.target.value); setError('') }} disabled={saving} aria-describedby="lifedue-payment-date-help" /><small id="lifedue-payment-date-help" className="field-help">{currentLanguage === 'pt' ? 'Hoje ou uma data futura.' : 'Today or a future date.'}</small></label>
+      {error && <div className="form-error" role="alert">{error}</div>}
+      <div className="modal-actions">
+        <button type="button" className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button>
+        <button type="button" className="primary-button" onClick={submit} disabled={saving || !client.trim() || !amount.trim()}>{saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addPayment')}</button>
+      </div>
+    </div>
+  </div>
 }
 
 function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose: () => void; onAdd: (task: Omit<Task, 'id' | 'status'>) => Promise<void> | void; clients: Client[]; initialClient?: string }) {
