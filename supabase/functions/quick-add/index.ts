@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const MAX_INPUT_LENGTH = 4000
 const MAX_ITEMS = 12
-const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'] as const
+const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'] as const
 
 const currencies = ['USD', 'EUR', 'BRL', 'AOA', 'GBP', 'Other'] as const
 type Currency = typeof currencies[number]
@@ -96,7 +96,7 @@ function cleanItems(value: unknown) {
 
 async function callGeminiPlan(apiKey: string, prompt: string, model: string, allowedIds: string[]) {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 20000)
+  const timeout = setTimeout(() => controller.abort(), 12000)
 
   try {
     const response = await fetch(
@@ -255,19 +255,12 @@ Deno.serve(async (req) => {
       let orderedIds: string[] | null = null
       let lastError: unknown = null
       for (const model of MODELS) {
-        for (let attempt = 1; attempt <= 2; attempt++) {
-          try {
-            orderedIds = await callGeminiPlan(apiKey, prompt, model, tasks.map(task => task.id))
-            break
-          } catch (error) {
-            lastError = error
-            const status = typeof (error as { status?: unknown }).status === 'number' ? (error as { status: number }).status : 0
-            const retryable = Boolean((error as { retryable?: boolean }).retryable) || status === 503 || status === 429 || status >= 500 || error instanceof DOMException
-            if (!retryable || attempt === 2) break
-            await new Promise(resolve => setTimeout(resolve, 600 * attempt))
-          }
+        try {
+          orderedIds = await callGeminiPlan(apiKey, prompt, model, tasks.map(task => task.id))
+          break
+        } catch (error) {
+          lastError = error
         }
-        if (orderedIds) break
       }
       if (!orderedIds) throw lastError ?? new Error('No planner result.')
       return Response.json({ orderedIds }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
