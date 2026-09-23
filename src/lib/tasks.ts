@@ -44,7 +44,7 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
   requireSupabaseUser(user)
   const { data, error } = await supabase!
     .from('payments')
-    .select('id, amount, currency, due_date, status, client_id, clients(name)')
+    .select('id, amount, currency, due_date, due_date_is_explicit, status, client_id, clients(name)')
     .eq('user_id', user.id)
     .order('due_date', { ascending: true })
   if (error) throw error
@@ -191,7 +191,7 @@ export async function fetchTasks(user: User): Promise<Task[]> {
   requireSupabaseUser(user)
   const { data, error } = await supabase!
     .from('tasks')
-    .select('id, title, due_date, priority, status, client_id, clients(name)')
+    .select('id, title, due_date, due_date_is_explicit, priority, status, client_id, clients(name)')
     .eq('user_id', user.id)
     .order('due_date', { ascending: true })
     .order('created_at', { ascending: true })
