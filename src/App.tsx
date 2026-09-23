@@ -1159,6 +1159,21 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
   language: Language
 }) {
   const pt = language === 'pt'
+  const resultRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (plan.length > 0 && !aiLoading) {
+      const timer = window.setTimeout(() => {
+        resultRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }, 100)
+
+      return () => window.clearTimeout(timer)
+    }
+  }, [plan.length, aiLoading])
+
   return (
     <div className="onboarding">
       <header className="onboarding-header">
@@ -1187,7 +1202,7 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
           {aiError && <div className="quick-error" role="alert">{aiError}</div>}
         </section>
         {plan.length > 0 && (
-          <section className="onboarding-result">
+          <section ref={resultRef} className="onboarding-result">
             <div className="onboarding-result-head">
               <div><p className="section-kicker">{pt ? 'SEU PRIMEIRO PLANO' : 'YOUR FIRST PLAN'}</p><h2>{pt ? 'Isto é o que encontramos.' : 'Here’s what we found.'}</h2></div>
               <CheckCircle2 size={22} />
