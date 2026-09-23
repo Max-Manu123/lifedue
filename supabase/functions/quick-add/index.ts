@@ -35,11 +35,11 @@ const systemInstruction = [
   '14. Do not create reminders or recurring schedules unless the note explicitly states the recurrence; when explicit, represent the immediate actionable occurrence rather than inventing a recurrence model.',
   '15. Ignore greetings, explanations, opinions, and non-actionable text.',
   '16. If the entire note is profanity, an insult, random characters, a greeting with no task, an unrelated question, or otherwise contains no actionable client-work intent, return an empty items array. Do not manufacture a task from it.',
-  '17. If the note is ambiguous but contains a plausible action, extract only what is safe and never invent a client or specific action.'
+  '17. If the note is ambiguous but contains a plausible action, extract only what is safe and never invent a client or specific action.',
   '',
   'OUTPUT QUALITY:',
   '- Return only valid JSON matching this exact shape: {"items":[{"kind":"task"|"payment","title":"string","client":"string","dueDate":"YYYY-MM-DD","priority":"low"|"medium"|"high","amount":number|null,"currency":"USD"|"EUR"|"BRL"|"AOA"|"GBP"|"Other"|null}]}',
-  '- Every returned date must be a real calendar date in YYYY-MM-DD.',
+  '- Every returned date must be a real calendar date in YYYY-MM-DD when provided. If the user did not provide a deadline, return dueDate as null; the server will use the current planning date as the temporary Today bucket.',
   '- Every payment amount must be finite and greater than or equal to zero.',
   '- Do not return duplicate items.',
   '- For empty or non-actionable input, return exactly {"items":[]} rather than inventing content.',
@@ -49,7 +49,7 @@ function validDate(value: unknown): value is string {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + 'T00:00:00Z'))
 }
 
-function cleanItems(value: unknown) {
+function cleanItems(value: unknown, fallbackDate: string) {
   if (!value || typeof value !== 'object') throw new Error('Invalid structured output.')
   const items = (value as { items?: unknown }).items
   if (!Array.isArray(items)) throw new Error('Invalid items output.')
@@ -72,7 +72,8 @@ function cleanItems(value: unknown) {
     if (kind !== 'task' && kind !== 'payment') throw new Error('Invalid item kind.')
     if (!title || title.length > 240) throw new Error('Invalid item title.')
     if (client.length > 160) throw new Error('Invalid client name.')
-    if (!validDate(dueDate)) throw new Error('Invalid due date.')
+    const normalizedDueDate = dueDate === null || dueDate === undefined || dueDate === '' ? fallbackDate : dueDate
+    if (!validDate(normalizedDueDate)) throw new Error('Invalid due date.')
     if (priority !== 'low' && priority !== 'medium' && priority !== 'high') throw new Error('Invalid priority.')
 
     if (kind === 'payment') {
@@ -88,10 +89,10 @@ function cleanItems(value: unknown) {
       }
     }
 
-    const key = JSON.stringify([kind, title.toLowerCase(), client.toLowerCase(), dueDate, amount, currency])
+    const key = JSON.stringify([kind, title.toLowerCase(), client.toLowerCase(), normalizedDueDate, amount, currency])
     if (seen.has(key)) continue
     seen.add(key)
-    cleaned.push({ kind, title, client, dueDate, priority, amount, currency })
+    cleaned.push({ kind, title, client, dueDate: normalizedDueDate, priority, amount, currency })
   }
 
   return { items: cleaned }
@@ -156,7 +157,7 @@ async function callGeminiPlan(apiKey: string, prompt: string, model: string, all
   }
 }
 
-async function callGemini(apiKey: string, prompt: string, model: string) {
+async function callGemini(apiKey: string, prompt: string, model: string, fallbackDate: string) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 25000)
 
@@ -194,7 +195,7 @@ async function callGemini(apiKey: string, prompt: string, model: string) {
     const raw = (result as { candidates?: Array<{ content?: { parts?: Array<{ text?: unknown }> } }> })?.candidates?.[0]?.content?.parts?.[0]?.text
     if (typeof raw !== 'string') throw new Error('Gemini returned no structured output.')
 
-    return cleanItems(JSON.parse(raw))
+    return cleanItems(JSON.parse(raw), fallbackDate)
   } finally {
     clearTimeout(timeout)
   }
@@ -291,7 +292,7 @@ Deno.serve(async (req) => {
     for (const model of MODELS) {
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          result = await callGemini(apiKey, prompt, model)
+          result = await callGemini(apiKey, prompt, model, today)
           break
         } catch (error) {
           lastError = error
