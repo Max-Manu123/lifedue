@@ -288,6 +288,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
     title: task.title,
     client: clientName(task.clients, 'No client'),
     dueDate: task.due_date,
+    dueDateProvided: task.due_date_is_explicit,
     priority: task.priority,
     status: task.status,
   }))
