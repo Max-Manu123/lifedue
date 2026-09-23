@@ -280,7 +280,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
   const { data, error } = await supabase!
     .from('tasks')
     .insert(rows)
-    .select('id, title, due_date, priority, status, client_id, clients(name)')
+    .select('id, title, due_date, due_date_is_explicit, priority, status, client_id, clients(name)')
   if (error) throw error
 
   return (data as RemoteTask[]).map(task => ({
