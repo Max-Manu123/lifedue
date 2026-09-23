@@ -1679,7 +1679,7 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
   const todayKey = currentTodayKey()
   const pending = payments.filter(p => p.status === 'pending')
   const paid = payments.filter(p => p.status === 'paid')
-  const overdue = pending.filter(p => p.dueDate < todayKey)
+  const overdue = pending.filter(p => p.dueDateProvided !== false && p.dueDate < todayKey)
   const query = search.trim().toLowerCase()
   const filtered = payments.filter(payment => {
     const isOverdue = payment.status === 'pending' && payment.dueDateProvided !== false && payment.dueDate < todayKey
