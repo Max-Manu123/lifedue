@@ -389,6 +389,7 @@ function App() {
         title: currentLanguage === 'pt' ? localizeAiTitle(item.title, item.kind) : item.title,
       }))
 
+      setPlanSource('quick-add')
       setPlan(normalizedItems.map(item => ({
         id: crypto.randomUUID(),
         title: item.kind === 'payment'
