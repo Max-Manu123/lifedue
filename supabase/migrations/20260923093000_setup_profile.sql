@@ -13,6 +13,17 @@ where created_at is null;
 alter table if exists public.profile
   alter column created_at set default timezone('utc', now());
 
+do $
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'profile' and column_name = 'create_at'
+  ) then
+    execute 'update public.profile set create_at = coalesce(create_at, timezone(''utc'', now())) where create_at is null';
+    execute 'alter table public.profile alter column create_at set default timezone(''utc'', now())';
+  end if;
+end $;
+
 -- One profile per authenticated user.
 do $$
 begin
