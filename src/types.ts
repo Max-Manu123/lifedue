@@ -7,6 +7,7 @@ export interface QuickAddItem {
   title: string
   client: string
   dueDate: string
+  dueDateProvided?: boolean
   priority: Priority
   amount?: number
   currency?: PaymentCurrency
