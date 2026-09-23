@@ -20,6 +20,7 @@ export function AuthModal({
   const [mode, setMode] = useState<Mode>(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -74,6 +75,17 @@ export function AuthModal({
     setError('')
     setSuccess('')
 
+    const cleanEmail = email.trim()
+    if (mode !== 'reset' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setError(pt ? 'Digite um email válido.' : 'Enter a valid email address.')
+      return
+    }
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setError(pt ? 'As senhas não coincidem.' : 'Passwords do not match.')
+      return
+    }
+
     if (mode === 'signup' && (password.length < 8 || passwordStrength.tone === 'weak')) {
       setError(pt ? 'Escolha uma senha mais forte: use 8+ caracteres, maiúsculas, minúsculas, número e símbolo.' : 'Choose a stronger password: use 8+ characters, upper/lowercase letters, a number, and a symbol.')
       return
@@ -88,7 +100,7 @@ export function AuthModal({
     try {
       if (mode === 'login') {
         const { error: authError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: cleanEmail,
           password,
         })
         if (authError) throw authError
@@ -98,7 +110,7 @@ export function AuthModal({
 
       if (mode === 'signup') {
         const { data, error: authError } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: cleanEmail,
           password,
         })
         if (authError) throw authError
@@ -113,7 +125,7 @@ export function AuthModal({
       }
 
       if (mode === 'forgot') {
-        const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        const { error: authError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
           redirectTo: window.location.origin,
         })
         if (authError) throw authError
@@ -273,6 +285,22 @@ export function AuthModal({
                   </button>
                 </>
               )}
+            </label>
+          )}
+
+          {mode === 'signup' && (
+            <label>
+              {pt ? 'Confirmar senha' : 'Confirm password'}
+              <span className="auth-password">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={event => setConfirmPassword(event.target.value)}
+                  minLength={8}
+                  autoComplete="new-password"
+                  required
+                />
+              </span>
             </label>
           )}
 
