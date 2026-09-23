@@ -1459,7 +1459,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
             {paymentAttention.slice(0, 4).map(payment => (
               <div className="today-payment-row" key={payment.id}>
                 <div className={payment.dueDateProvided !== false && t.dueDate < todayKey ? 'today-payment-icon overdue' : 'today-payment-icon'}><CircleDollarSign size={17} /></div>
-                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDateProvided !== false && t.dueDate < currentTodayKey() ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
+                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDateProvided !== false && payment.dueDate < currentTodayKey() ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
                 <button className="secondary-button compact" onClick={() => onMarkPaid(payment.id)}>{tr('markPaidToday')}</button>
               </div>
             ))}
