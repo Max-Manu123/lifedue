@@ -6,6 +6,7 @@ type RemoteTask = {
   id: string
   title: string
   due_date: string
+  due_date_is_explicit: boolean
   priority: Task['priority']
   status: Task['status']
   client_id: string | null
@@ -53,6 +54,7 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
     amount: number
     currency: string
     due_date: string
+    due_date_is_explicit: boolean
     status: Payment['status']
     clients: { name: string } | { name: string }[] | null
   }>).map(payment => ({
@@ -61,6 +63,7 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
     amount: Number(payment.amount),
     currency: payment.currency,
     dueDate: payment.due_date,
+    dueDateProvided: payment.due_date_is_explicit,
     status: payment.status,
   })).filter(payment => {
     const key = `${payment.client.trim().toLowerCase()}|${payment.amount}|${payment.currency}|${payment.dueDate}|${payment.status}`
@@ -91,6 +94,7 @@ export async function createPayment(user: User, payment: Omit<Payment, 'id' | 's
     amount: number
     currency: string
     due_date: string
+    due_date_is_explicit: boolean
     status: Payment['status']
     clients: { name: string } | { name: string }[] | null
   }
@@ -100,6 +104,7 @@ export async function createPayment(user: User, payment: Omit<Payment, 'id' | 's
     amount: Number(row.amount),
     currency: row.currency,
     dueDate: row.due_date,
+    dueDateProvided: row.due_date_is_explicit,
     status: row.status,
   }
 }
@@ -197,6 +202,7 @@ export async function fetchTasks(user: User): Promise<Task[]> {
     title: task.title,
     client: clientName(task.clients, 'No client'),
     dueDate: task.due_date,
+    dueDateProvided: task.due_date_is_explicit,
     priority: task.priority,
     status: task.status,
   })).filter(task => {
@@ -263,6 +269,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
       client_id: clientId,
       title: task.title.trim(),
       due_date: task.dueDate,
+      due_date_is_explicit: task.dueDateProvided !== false,
       priority: task.priority,
       status: task.status,
     })
