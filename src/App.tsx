@@ -166,6 +166,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'reset'>('login')
+  const passwordRecoveryRef = useRef(false)
   const [tasksLoading, setTasksLoading] = useState(false)
   const [tasksError, setTasksError] = useState('')
   const [clientsLoading, setClientsLoading] = useState(false)
@@ -186,11 +187,13 @@ function App() {
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
       if (event === 'PASSWORD_RECOVERY') {
+        passwordRecoveryRef.current = true
         setAuthMode('reset')
         setAuthOpen(true)
         return
       }
       if (session?.user) {
+        if (passwordRecoveryRef.current) return
         setAuthOpen(false)
         setView('quick-add')
       }
