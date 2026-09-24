@@ -256,12 +256,11 @@ function App() {
     const periodStart = currentTodayKey().slice(0, 7) + '-01'
 
     Promise.all([
-      supabase
-        .from('ai_usage')
-        .select('used')
-        .eq('user_id', user.id)
-        .eq('period_start', periodStart)
-        .maybeSingle(),
+      supabase.rpc('get_ai_usage', {
+        p_user_id: user.id,
+        p_period_start: periodStart,
+        p_limit: 20,
+      }),
       supabase
         .from('pro_waitlist')
         .select('email')
@@ -270,9 +269,14 @@ function App() {
     ]).then(([usageResult, waitlistResult]) => {
       if (cancelled) return
       if (!usageResult.error) {
-        const rawUsed = Number(usageResult.data?.used ?? 0)
+        const usageRow = Array.isArray(usageResult.data) ? usageResult.data[0] : usageResult.data
+        const rawUsed = Number(usageRow?.used ?? 0)
         const used = Math.min(Math.max(Number.isFinite(rawUsed) ? rawUsed : 0, 0), 20)
-        setAiUsage({ used, limit: 20, remaining: Math.max(20 - used, 0) })
+        setAiUsage({
+          used,
+          limit: 20,
+          remaining: Math.max(20 - used, 0),
+        })
       }
       if (!waitlistResult.error) {
         const email = typeof waitlistResult.data?.email === 'string' ? waitlistResult.data.email : ''
