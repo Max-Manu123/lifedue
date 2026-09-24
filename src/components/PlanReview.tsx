@@ -73,7 +73,7 @@ export function PlanReview({ language, items, onConfirm, onCancel }: {
 
         <div className="plan-review-list">
           {items.map(item => {
-            const decision = decisions[item.originalName]
+            const decision = decisions[item.key]
             const hasExisting = Boolean(item.existingName)
             const useExisting = decision?.mode === 'existing'
             return (
@@ -91,7 +91,7 @@ export function PlanReview({ language, items, onConfirm, onCancel }: {
                     <button type="button" className={useExisting ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => update(item.key, { mode: 'existing', name: item.existingName! })}>
                       <Check size={15} /> {pt ? 'Usar cliente existente' : 'Use existing client'}
                     </button>
-                    <button type="button" className={!useExisting ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => update(item.originalName, { mode: 'new', name: decision?.name === item.existingName ? '' : decision?.name ?? '' })}>
+                    <button type="button" className={!useExisting ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => update(item.key, { mode: 'new', name: decision?.name === item.existingName ? '' : decision?.name ?? '' })}>
                       {pt ? 'Outro nome' : 'Use another name'}
                     </button>
                   </div>
@@ -99,7 +99,7 @@ export function PlanReview({ language, items, onConfirm, onCancel }: {
                 {(!hasExisting || !useExisting) && (
                   <input
                     value={decision?.name ?? ''}
-                    onChange={event => update(item.originalName, { mode: 'new', name: event.target.value })}
+                    onChange={event => update(item.key, { mode: 'new', name: event.target.value })}
                     placeholder={pt ? 'Nome do cliente' : 'Client name'}
                     autoComplete="off"
                   />
