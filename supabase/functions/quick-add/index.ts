@@ -26,7 +26,7 @@ const systemInstruction = [
   '3. Never invent a client, amount, currency, date, deadline, task, or priority.',
   '4. If a task has no explicit client, use an empty client string only if absolutely necessary; otherwise preserve the missing information. Do not guess.',
   '5. Preserve every client/person name literally. Copy it exactly as written, including accents, punctuation, capitalization, and spelling. Never translate, anglicize, autocorrect, normalize, or replace a name. João must remain João; Maria must remain Maria.',
-  '6. Preserve the user\'s intended action. Do not silently change deliver -> send, collect -> pay, or similar meanings.',
+  '6. Preserve the user\'s intended action exactly. Do not silently change one work verb into another: criar must stay criar, entregar must stay entregar, enviar must stay enviar, publicar must stay publicar, cobrar must stay cobrar, etc. Do not rewrite the action into a different verb just because it sounds more natural.',
   '7. Resolve relative dates from the supplied current date and timezone. "tomorrow", "next Monday", "Friday", etc. must become an ISO YYYY-MM-DD date. A weekday means the next occurrence unless the wording clearly says this/past/next occurrence.',
   '8. Keep dates in the user\'s timezone. Do not shift a date because of UTC conversion.',
   '9. If a money amount is present, extract the numeric amount exactly. Recognize common symbols/codes such as $, US$, €, EUR, R$, BRL, Kz/AOA, £/GBP. If the user did not provide a currency or it is genuinely unclear, return currency as null. Never guess a currency.',
