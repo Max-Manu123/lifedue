@@ -1263,7 +1263,6 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
       </div>
       <div className={aiUsage.remaining === 0 ? 'settings-usage-notice exhausted' : 'settings-usage-notice'}>
         <span>{aiUsage.remaining === 0 ? tr('aiUsageExhausted') : tr('aiUsageReset')}</span>
-        <small>{tr('aiUsageReset')}</small>
       </div>
     </section>
 
