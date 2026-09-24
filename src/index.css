@@ -1186,3 +1186,10 @@ button, input, textarea, select { transition: background-color .2s ease, border-
   .onboarding-payment-option { align-items: stretch; flex-direction: column; }
   .onboarding-payment-actions { justify-content: flex-start; }
 }
+
+.settings-usage-notice { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--surface-soft); display: grid; gap: 3px; }
+.settings-usage-notice span { color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.settings-usage-notice small { color: var(--text-muted); font-size: 11px; line-height: 1.45; }
+.settings-usage-notice.exhausted { border-color: rgba(220,38,38,.22); background: rgba(220,38,38,.05); }
+.settings-usage-notice.exhausted span { color: var(--text-primary); font-weight: 700; }
+.theme-dark .settings-usage-notice.exhausted { border-color: rgba(248,113,113,.28); background: rgba(127,29,29,.18); }
