@@ -550,6 +550,7 @@ function App() {
   const addPlan = async () => {
     if (!plan.length) return
     setTasksError('')
+    setPaymentsError('')
 
     if (!user) {
       saveAuthDraft()
@@ -559,46 +560,63 @@ function App() {
       return
     }
 
-    try {
-      const savablePayments = planPayments.filter(item =>
-        item.amount !== null &&
-        item.amount !== undefined
-      )
-      const incompletePaymentItems = planPayments.filter(item =>
-        item.amount === null ||
-        item.amount === undefined
-      )
-      const taskPlan = [
-        ...plan.filter(task => !planPayments.some(payment =>
-          payment.client.trim().toLowerCase() === task.client.trim().toLowerCase() &&
-          payment.dueDate === task.dueDate &&
-          /payment|pagamento|collect|cobrar|receber/i.test(task.title)
-        )),
-        ...incompletePaymentItems.map(item => ({
-          id: crypto.randomUUID(),
-          title: currentLanguage === 'pt' ? 'Cobrar pagamento' : 'Follow up payment',
-          client: item.client,
-          dueDate: item.dueDate,
-          dueDateProvided: item.dueDateProvided !== false,
-          priority: item.priority,
-          status: 'open' as const,
-        })),
-      ]
+    const savablePayments = planPayments.filter(item =>
+      item.amount !== null &&
+      item.amount !== undefined
+    )
+    const incompletePaymentItems = planPayments.filter(item =>
+      item.amount === null ||
+      item.amount === undefined
+    )
+    const taskPlan = [
+      ...plan.filter(task => !planPayments.some(payment =>
+        payment.client.trim().toLowerCase() === task.client.trim().toLowerCase() &&
+        payment.dueDate === task.dueDate &&
+        /payment|pagamento|collect|cobrar|receber/i.test(task.title)
+      )),
+      ...incompletePaymentItems.map(item => ({
+        id: crypto.randomUUID(),
+        title: currentLanguage === 'pt' ? 'Cobrar pagamento' : 'Follow up payment',
+        client: item.client,
+        dueDate: item.dueDate,
+        dueDateProvided: item.dueDateProvided !== false,
+        priority: item.priority,
+        status: 'open' as const,
+      })),
+    ]
 
-      if (user && supabase) {
+    let tasksSaved = false
+    let paymentsSaved = false
+
+    if (taskPlan.length > 0) {
+      try {
         const existingTaskKeys = new Set(tasks.map(taskKey))
         const newTaskPlan = taskPlan.filter(task => !existingTaskKeys.has(taskKey(task)))
-        const created = newTaskPlan.length ? await createTasks(user, newTaskPlan) : []
-        setTasks(current => uniqueTasks([...created, ...current]))
+        if (newTaskPlan.length) {
+          const created = await createTasks(user, newTaskPlan)
+          setTasks(current => uniqueTasks([...created, ...current]))
+          tasksSaved = created.length > 0
+        } else {
+          tasksSaved = true
+        }
+      } catch (error) {
+        console.error('LifeDue AI task save failed:', error)
+        setTasksError(currentLanguage === 'pt'
+          ? 'A tarefa não foi guardada. Abra o console para ver o erro técnico.'
+          : 'The task was not saved. Open the console to see the technical error.')
+      }
+    }
 
-        if (savablePayments.length > 0) {
-          const existingPaymentKeys = new Set(payments.map(paymentKey))
-          const newPayments = savablePayments.filter(item => !existingPaymentKeys.has(paymentKey({
-            client: item.client,
-            amount: item.amount as number,
-            currency: item.currency as string,
-            dueDate: item.dueDate,
-          })))
+    if (savablePayments.length > 0) {
+      try {
+        const existingPaymentKeys = new Set(payments.map(paymentKey))
+        const newPayments = savablePayments.filter(item => !existingPaymentKeys.has(paymentKey({
+          client: item.client,
+          amount: item.amount as number,
+          currency: item.currency as string,
+          dueDate: item.dueDate,
+        })))
+        if (newPayments.length) {
           const createdPayments = await Promise.all(newPayments.map(item => createPayment(user, {
             client: item.client,
             amount: item.amount as number,
@@ -607,45 +625,41 @@ function App() {
             dueDateProvided: item.dueDateProvided !== false,
           })))
           setPayments(current => uniquePayments([...createdPayments, ...current]))
+          paymentsSaved = createdPayments.length > 0
+        } else {
+          paymentsSaved = true
         }
-
-        // Re-read the persisted data so the UI always reflects what Supabase accepted.
-        const [freshTasks, freshPayments, freshClients] = await Promise.all([
-          fetchTasks(user),
-          fetchPayments(user),
-          fetchClients(user),
-        ])
-        setTasks(freshTasks)
-        setPayments(freshPayments)
-        setClients(freshClients)
-      } else {
-        const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
-        const newClients = taskPlan
-          .filter(task => task.client.trim() && !clientNames.has(task.client.toLowerCase()))
-          .map(task => ({ id: crypto.randomUUID(), name: task.client }))
-        if (newClients.length) setClients(current => [...current, ...newClients])
-        setTasks(current => uniqueTasks([...taskPlan, ...current]))
-        if (savablePayments.length > 0) {
-          const existingPaymentKeys = new Set(payments.map(paymentKey))
-          const newPayments = savablePayments.filter(item => !existingPaymentKeys.has(paymentKey({
-            client: item.client,
-            amount: item.amount as number,
-            dueDate: item.dueDate,
-          })))
-          setPayments(current => uniquePayments([
-            ...newPayments.map(item => ({
-              id: crypto.randomUUID(),
-              client: item.client,
-              amount: item.amount as number,
-              currency: item.currency as string,
-              dueDate: item.dueDate,
-              dueDateProvided: item.dueDateProvided !== false,
-              status: 'pending' as const,
-            })),
-            ...current,
-          ]))
-        }
+      } catch (error) {
+        console.error('LifeDue AI payment save failed:', error)
+        setPaymentsError(currentLanguage === 'pt'
+          ? 'O pagamento não foi guardado. Abra o console para ver o erro técnico.'
+          : 'The payment was not saved. Open the console to see the technical error.')
       }
+    }
+
+    // Refresh each resource independently. A failure loading one section must
+    // never hide data that was already saved in another section.
+    if (tasksSaved) {
+      try {
+        setTasks(await fetchTasks(user))
+      } catch (error) {
+        console.error('LifeDue task refresh failed:', error)
+      }
+    }
+    if (paymentsSaved) {
+      try {
+        setPayments(await fetchPayments(user))
+      } catch (error) {
+        console.error('LifeDue payment refresh failed:', error)
+      }
+    }
+    try {
+      setClients(await fetchClients(user))
+    } catch (error) {
+      console.error('LifeDue client refresh failed:', error)
+    }
+
+    if (tasksSaved || paymentsSaved) {
       clearAuthDraft()
       setPlan([])
       setPlanPayments([])
@@ -657,9 +671,10 @@ function App() {
         setShowAddPayment(true)
       }
       setView('tasks')
-    } catch (error) {
-      console.error('LifeDue plan save failed:', error)
-      setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar o plano.' : 'Could not save the plan.')
+    } else {
+      setTasksError(currentLanguage === 'pt'
+        ? 'Nada foi guardado. Verifique o console do navegador para o erro técnico.'
+        : 'Nothing was saved. Check the browser console for the technical error.')
     }
   }
 
