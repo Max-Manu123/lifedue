@@ -269,6 +269,13 @@ Deno.serve(async (req) => {
     if (mode === 'plan') {
       const rawTasks = Array.isArray(body.tasks) ? body.tasks : []
       if (!rawTasks.length || rawTasks.length > 12) {
+        if (quotaReserved && quotaUserId && quotaAdmin && quotaPeriodStart) {
+          await quotaAdmin.rpc('refund_ai_credit', {
+            p_user_id: quotaUserId,
+            p_period_start: quotaPeriodStart,
+          })
+          quotaReserved = false
+        }
         return Response.json({ message: 'Invalid planner tasks.' }, { status: 400, headers: corsHeaders })
       }
 
@@ -285,7 +292,7 @@ Deno.serve(async (req) => {
       })
 
       const apiKey = Deno.env.get('GEMINI_API_KEY')
-      if (!apiKey) return Response.json({ message: 'GEMINI_API_KEY is not configured.' }, { status: 500, headers: corsHeaders })
+      if (!apiKey) throw new Error('GEMINI_API_KEY is not configured.')
 
       const prompt = [
         'CURRENT DATE: ' + today,
@@ -312,9 +319,7 @@ Deno.serve(async (req) => {
     }
 
     const apiKey = Deno.env.get('GEMINI_API_KEY')
-    if (!apiKey) {
-      return Response.json({ message: 'GEMINI_API_KEY is not configured.' }, { status: 500, headers: corsHeaders })
-    }
+    if (!apiKey) throw new Error('GEMINI_API_KEY is not configured.')
 
     const prompt = [
       'CURRENT DATE: ' + today,
