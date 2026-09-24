@@ -33,7 +33,8 @@ import { AuthModal } from './components/AuthModal'
 
 type View = 'home' | 'onboarding' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner' | 'feedback' | 'settings'
 type Language='en'|'pt'
-const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',saveToLifeDue:'Save to LifeDue',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',openPlanner:'Open AI Planner',addPlanToLifeDue:'Add to LifeDue',currencySummary:'By currency',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',addClient:'Add client',addClientTitle:'Add a client',clientName:'Client name',clientNamePlaceholder:'e.g. Maria',noClientName:'Enter a client name.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',savePlan:'Save plan',plannerReady:'Plan ready',plannerOpen:'open tasks',plannerOverdue:'overdue',plannerToday:'due today',plannerUpcoming:'upcoming',plannerEmptyTitle:'No open work to plan',plannerEmptyDesc:'Add a task first and LifeDue will organize it into a practical order.',plannerFallback:'Showing a local order based on due date and priority. Sign in to use AI prioritization.',plannerAiReady:'AI suggested order ready.',plannerLocalReady:'Suggested order ready.',plannerAiDesc:'Order based on due dates, priority, and task context.',plannerLocalDesc:'Order based on due dates and priority. Sign in to use AI prioritization.',plannerHowItWorks:'How it works',plannerHowItWorksDesc:'LifeDue organizes open tasks by due date and priority. With AI, task context helps break ties.',plannerPlannerInfo:'The Planner only suggests an order. It does not change your tasks.',addTaskToPlan:'Add a task',viewTasks:'View tasks',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',noDueDate:'No deadline',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.',todayFocus:'Here is what needs your attention.',todayGreetingMorning:'Good morning. Let\'s handle what matters.',todayGreetingAfternoon:'Good afternoon. Let\'s handle what matters.',todayGreetingEvening:'Good evening. Let\'s handle what matters.',focusTitle:'Today\'s focus',openWork:'Open work',dueToday:'Due today',urgent:'Urgent',toCollect:'To collect',allClearToday:'You\'re clear for today',allClearDesc:'No overdue work or payments need attention right now.',paymentAttention:'Payment follow-ups',paymentAttentionDesc:'Money that still needs to move.',noPaymentAttention:'No payment follow-ups due.',upcomingWork:'Coming up next',upcomingDesc:'Work due after today, ordered by delivery date.',noUpcoming:'Nothing else is scheduled yet.',viewAllTasks:'View all tasks',viewPayments:'View payments',addTaskToday:'Add a task',addPaymentToday:'Add payment',markPaidToday:'Mark paid',tasksHeadline:'Everything you need to deliver.',tasksDescription:'Keep work visible, prioritize what matters, and close tasks as you finish them.',taskSearch:'Search tasks or clients',taskSummary:'taskSummary',taskProgress:'complete',noTasks:'No tasks here',noTasksDesc:'Add a task or change the filter to see more work.',clearSearch:'Clear search',dueSoon:'Due soon',overdueTasks:'Overdue',todayTasks:'Today',upcomingTasks:'Upcoming',completedTasks:'Completed',priorityFilter:'Priority',allPriorities:'All priorities',clientsHeadline:'A clear view of your client work.',clientsDescription:'See who you work with, how much work is open, and what is still pending.',paymentsHeadline:'Keep every payment moving.',paymentsDescription:'Track money due by client, spot overdue payments, and mark payments as settled.',paymentOverview:'Payment overview',paymentPendingCount:'Pending',paymentOverdueCount:'Overdue',paymentPaidCount:'Paid',paymentPendingAmount:'Outstanding',paymentSearch:'Search by client',paymentFilter:'Filter',paymentAll:'All payments',paymentPending:'Pending',paymentOverdue:'Overdue',paymentPaid:'Paid',paymentDue:'Due',paymentOverdueLabel:'Overdue',paymentNoResults:'No payments match this filter.',paymentNoResultsDesc:'Try another filter or add a payment.',paymentHistory:'Payment history',paymentTotal:'Total',currency:'Currency',noCurrency:'Currency not set',usd:'USD',eur:'EUR',aoa:'AOA',newPayment:'New payment',addPaymentTitle:'Add a payment',amount:'Amount',addPayment:'Add payment',addTaskTitle:'Add a task',settings:'Settings',feedback:'Feedback',account:'Account',preferences:'Preferences',appearance:'Appearance',theme:'Theme',themeSystem:'Default',themeLight:'Light',themeDark:'Dark',language:'Language',languageChoiceDesc:'Choose the language used throughout LifeDue.',upgrade:'Upgrade to Pro',upgradeTitle:'LifeDue Pro',upgradeDesc:'Get more room to manage client work and unlock the next level of LifeDue.',proBenefits:'What you get',proBenefit1:'Higher limits for tasks and AI usage',proBenefit2:'More powerful planning and client-work workflows',proBenefit3:'Priority access to upcoming Pro features',notifyMe:'Notify me when Pro is ready',notifyEmail:'Email for Pro updates',notifyEmailPlaceholder:'you@example.com',joinWaitlist:'Join the waitlist',waitlistSuccess:'You’re on the list. We’ll notify you when Pro is ready.',waitlistError:'We could not save your email. Please try again.',waitlistInvalidEmail:'Enter a valid email address.',waitlistAlready:'This email is already on the list.',close:'Close',languageDesc:'Choose how LifeDue is displayed.' ,themeDesc:'Choose the appearance that feels right for you.',accountDesc:'Your LifeDue account and plan.',email:'Email',plan:'Plan',freePlanDesc:'Free plan · no payment required',security:'Security',securityDesc:'Sign out of this account securely.',password:'Password',changePassword:'Change password',installApp:'Install LifeDue',installAppDesc:'Use LifeDue like an app on your phone or desktop.',openOnboarding:'Review onboarding',signOut:'Sign out',settingsDesc:'Keep your account and preferences under control.',feedbackTitle:'Help us improve LifeDue',feedbackDesc:'Tell us what is working, what is confusing, or what you want next.',feedbackType:'What is this about?',feedbackTypeBug:'Bug or problem',feedbackTypeIdea:'Feature idea',feedbackTypeGeneral:'General feedback',feedbackTypeOther:'Other',feedbackMessage:'Your feedback',feedbackPlaceholder:'Tell us what happened or what you would like to see…',feedbackRating:'How is LifeDue feeling so far?',feedbackRatingGreat:'Great',feedbackRatingOkay:'Could be better',feedbackRatingPoor:'I am struggling',sendFeedback:'Send feedback',feedbackSent:'Thanks — your feedback was saved.',feedbackHint:'Your feedback helps us decide what to improve next.',feedbackFormHint:'Choose a topic, rate your experience, and tell us what would make LifeDue better.',feedbackSignIn:'Sign in to send feedback.',feedbackError:'We could not send your feedback. Please try again.',backToWork:'Back to work'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',saveToLifeDue:'Guardar no LifeDue',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',openPlanner:'Abrir Planejador IA',addPlanToLifeDue:'Adicionar ao LifeDue',currencySummary:'Resumo por moeda',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',addClient:'Adicionar cliente',addClientTitle:'Adicionar cliente',clientName:'Nome do cliente',clientNamePlaceholder:'ex.: Maria',noClientName:'Digite o nome de um cliente.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',savePlan:'Guardar plano',plannerReady:'Plano pronto',plannerOpen:'tarefas abertas',plannerOverdue:'atrasadas',plannerToday:'vencem hoje',plannerUpcoming:'a seguir',plannerEmptyTitle:'Nenhum trabalho aberto para organizar',plannerEmptyDesc:'Adicione uma tarefa primeiro e o LifeDue vai organizá-la numa ordem prática.',plannerFallback:'A mostrar uma ordem local por data e prioridade. Entre na conta para usar a priorização por IA.',plannerAiReady:'Ordem sugerida pela IA pronta.',plannerLocalReady:'Ordem sugerida pronta.',plannerAiDesc:'Ordem baseada em prazos, prioridade e contexto das tarefas.',plannerLocalDesc:'Ordem baseada em prazos e prioridade. Entre na conta para usar a priorização por IA.',plannerHowItWorks:'Como funciona',plannerHowItWorksDesc:'O LifeDue organiza as tarefas abertas por prazo e prioridade. Com IA, o contexto da tarefa ajuda a desempatar.',plannerPlannerInfo:'O Planner apenas sugere uma ordem. Ele não altera suas tarefas.',addTaskToPlan:'Adicionar tarefa',viewTasks:'Ver tarefas',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',noDueDate:'Sem prazo',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.',todayFocus:'Veja o que precisa da sua atenção.',todayGreetingMorning:'Bom dia. Vamos cuidar do que importa.',todayGreetingAfternoon:'Boa tarde. Vamos cuidar do que importa.',todayGreetingEvening:'Boa noite. Vamos cuidar do que importa.',focusTitle:'Foco de hoje',openWork:'Trabalho aberto',dueToday:'Vence hoje',urgent:'Urgente',toCollect:'A receber',allClearToday:'Tudo tranquilo por hoje',allClearDesc:'Nenhum trabalho atrasado ou pagamento precisa de atenção agora.',paymentAttention:'Cobranças a acompanhar',paymentAttentionDesc:'Dinheiro que ainda precisa entrar.',noPaymentAttention:'Nenhuma cobrança pendente para acompanhar.',upcomingWork:'Próximos trabalhos',upcomingDesc:'Trabalho depois de hoje, ordenado pela data de entrega.',noUpcoming:'Ainda não há nada agendado.',viewAllTasks:'Ver todas as tarefas',viewPayments:'Ver pagamentos',addTaskToday:'Adicionar tarefa',addPaymentToday:'Adicionar pagamento',markPaidToday:'Marcar como pago',tasksHeadline:'Tudo o que você precisa entregar.',tasksDescription:'Mantenha o trabalho visível, priorize o que importa e conclua tarefas à medida que avança.',taskSearch:'Pesquisar tarefas ou clientes',taskSummary:'taskSummary',taskProgress:'concluída',noTasks:'Nenhuma tarefa aqui',noTasksDesc:'Adicione uma tarefa ou altere o filtro para ver mais trabalho.',clearSearch:'Limpar pesquisa',dueSoon:'Próximas',overdueTasks:'Atrasadas',todayTasks:'Hoje',upcomingTasks:'A seguir',completedTasks:'Concluídas',priorityFilter:'Prioridade',allPriorities:'Todas as prioridades',clientsHeadline:'Uma visão clara do seu trabalho com clientes.',clientsDescription:'Veja com quem trabalha, quanto trabalho está aberto e o que ainda está pendente.',paymentsHeadline:'Mantenha cada pagamento em andamento.',paymentsDescription:'Acompanhe o dinheiro a receber por cliente, veja atrasados e marque pagamentos como concluídos.',paymentOverview:'Resumo dos pagamentos',paymentPendingCount:'Pendentes',paymentOverdueCount:'Atrasados',paymentPaidCount:'Pagos',paymentPendingAmount:'A receber',paymentSearch:'Pesquisar por cliente',paymentFilter:'Filtro',paymentAll:'Todos',paymentPending:'Pendentes',paymentOverdue:'Atrasados',paymentPaid:'Pagos',paymentDue:'Vence',paymentOverdueLabel:'Atrasado',paymentNoResults:'Nenhum pagamento corresponde a este filtro.',paymentNoResultsDesc:'Tente outro filtro ou adicione um pagamento.',paymentHistory:'Histórico de pagamentos',paymentTotal:'Total',currency:'Moeda',noCurrency:'Moeda não definida',usd:'USD',eur:'EUR',aoa:'AOA',newPayment:'Novo pagamento',addPaymentTitle:'Adicionar pagamento',amount:'Valor',addPayment:'Adicionar pagamento',addTaskTitle:'Adicionar tarefa',settings:'Definições',feedback:'Feedback',account:'Conta',preferences:'Preferências',appearance:'Aparência',theme:'Tema',themeSystem:'Padrão',themeLight:'Claro',themeDark:'Escuro',language:'Idioma',languageDesc:'Escolha o idioma usado em todo o LifeDue.',languageChoiceDesc:'Mude entre inglês e português.',upgrade:'Passar para Pro',upgradeTitle:'LifeDue Pro',upgradeDesc:'Tenha mais espaço para gerir trabalho com clientes e desbloqueie a próxima evolução do LifeDue.',proBenefits:'O que inclui',proBenefit1:'Limites maiores para tarefas e uso de IA',proBenefit2:'Planeamento e fluxos de trabalho com clientes mais avançados',proBenefit3:'Acesso prioritário às próximas funcionalidades Pro',notifyMe:'Avise-me quando o Pro estiver disponível',notifyEmail:'Email para novidades do Pro',notifyEmailPlaceholder:'voce@exemplo.com',joinWaitlist:'Entrar na lista',waitlistSuccess:'Está na lista. Vamos avisar quando o Pro estiver disponível.',waitlistError:'Não foi possível guardar o seu email. Tente novamente.',waitlistInvalidEmail:'Introduza um email válido.',waitlistAlready:'Este email já está na lista.',close:'Fechar',themeDesc:'Escolha a aparência ideal para si.',accountDesc:'A sua conta e o seu plano LifeDue.',email:'Email',plan:'Plano',freePlanDesc:'Plano grátis · sem pagamento necessário',security:'Segurança',securityDesc:'Saia desta conta de forma segura.',password:'Palavra-passe',changePassword:'Alterar palavra-passe',installApp:'Baixar LifeDue',installAppDesc:'Use o LifeDue como uma aplicação no telemóvel ou computador.',openOnboarding:'Ver onboarding novamente',signOut:'Sair',settingsDesc:'Mantenha a sua conta e preferências sob controlo.',feedbackTitle:'Ajude-nos a melhorar o LifeDue',feedbackDesc:'Diga-nos o que funciona, o que está confuso ou o que gostaria de ver a seguir.',feedbackType:'Sobre o quê?',feedbackTypeBug:'Bug ou problema',feedbackTypeIdea:'Sugestão de funcionalidade',feedbackTypeGeneral:'Feedback geral',feedbackTypeOther:'Outro',feedbackMessage:'O seu feedback',feedbackPlaceholder:'Conte-nos o que aconteceu ou o que gostaria de ver…',feedbackRating:'Como está a ser usar o LifeDue?',feedbackRatingGreat:'Muito bom',feedbackRatingOkay:'Pode melhorar',feedbackRatingPoor:'Estou com dificuldades',sendFeedback:'Enviar feedback',feedbackSent:'Obrigado — o seu feedback foi guardado.',feedbackHint:'O seu feedback ajuda-nos a decidir o que melhorar a seguir.',feedbackFormHint:'Escolha um tema, avalie a sua experiência e diga-nos como podemos melhorar o LifeDue.',feedbackSignIn:'Entre na conta para enviar feedback.',feedbackError:'Não foi possível enviar o seu feedback. Tente novamente.',backToWork:'Voltar ao trabalho'}}
+type AiUsage = { used: number; limit: number; remaining: number }
+const trMap={en:{today:'Today',tasks:'Tasks',clients:'Clients',payments:'Payments',planner:'AI Planner',addTask:'Add task',freePlan:'Free plan',aiUsageLabel:'AI usage',aiUsesRemaining:'{n} AI uses remaining this month',aiLimitReachedTitle:'You\'ve reached your free AI limit',aiLimitReachedDesc:'Your 20 AI actions for this month are used. Join the Pro waitlist and we\'ll let you know when Pro is available.',proComingSoon:'LifeDue Pro is coming soon',proComingSoonDesc:'You\'re already on the Pro list. We\'ll notify you when Pro is ready.',proLimitWaitlist:'Join the Pro waitlist',proLimitEmail:'Email for Pro updates',proLimitSaved:'You\'re on the Pro list. Pro is coming soon.',workspace:'CLIENT WORKSPACE',openApp:'Open app',builtFor:'Built for client work',heroText:'Turn your client work into a simple daily plan. Add tasks in plain language and see what needs your attention today.',tryFree:'Try it free',noCard:'No credit card required',quickAdd:'Quick Add',todayFirst:'Today first',paymentsText:'Keep pending client money visible.',quickAddText:'Describe several client tasks at once.',todayText:'See overdue and due-now work immediately.',pending:'pending',aiQuick:'AI QUICK ADD',quickQuestion:'What do you need to get done?',createPlan:'Create plan',plain:'Plain language · no setup',yourPlan:'YOUR PLAN',addAll:'Add all',saveToLifeDue:'Save to LifeDue',overdue:'OVERDUE',upNext:'Up next',organize:'Organize my plan',openPlanner:'Open AI Planner',addPlanToLifeDue:'Add to LifeDue',currencySummary:'By currency',nothing:'Nothing due today',breathing:'Enjoy the breathing room or add a task.',workQueue:'WORK QUEUE',everything:'Everything you need to deliver.',completed:'Completed',all:'All',open:'Open',clientsIntro:'Keep the people behind the work visible.',addClient:'Add client',addClientTitle:'Add a client',clientName:'Client name',clientNamePlaceholder:'e.g. Maria',noClientName:'Enter a client name.',moneyDue:'MONEY DUE',unpaid:'Don’t let finished work stay unpaid.',clear:'All payments are clear',noPending:'No pending client payments.',paid:'Paid',markPaid:'Mark paid',aiPlanner:'AI PLANNER',calmer:'Turn your backlog into a calmer day.',plannerDesc:'LifeDue groups open work into a simple plan instead of making you manage a giant list.',openItems:'open items competing for attention.',generateOrder:'Generate a suggested order for your next few days.',generatePlan:'Generate plan',savePlan:'Save plan',plannerReady:'Plan ready',plannerOpen:'open tasks',plannerOverdue:'overdue',plannerToday:'due today',plannerUpcoming:'upcoming',plannerEmptyTitle:'No open work to plan',plannerEmptyDesc:'Add a task first and LifeDue will organize it into a practical order.',plannerFallback:'Showing a local order based on due date and priority. Sign in to use AI prioritization.',plannerAiReady:'AI suggested order ready.',plannerLocalReady:'Suggested order ready.',plannerAiDesc:'Order based on due dates, priority, and task context.',plannerLocalDesc:'Order based on due dates and priority. Sign in to use AI prioritization.',plannerHowItWorks:'How it works',plannerHowItWorksDesc:'LifeDue organizes open tasks by due date and priority. With AI, task context helps break ties.',plannerPlannerInfo:'The Planner only suggests an order. It does not change your tasks.',addTaskToPlan:'Add a task',viewTasks:'View tasks',planEmpty:'Your plan will appear here.',newTask:'NEW TASK',task:'Task',client:'Client',dueDate:'Due date',noDueDate:'No deadline',priority:'Priority',cancel:'Cancel',low:'Low',medium:'Medium',high:'High',finishHomepage:'e.g. Finish homepage',john:'e.g. John',complete:'Complete task',tomorrow:'Tomorrow',due:'Due',overdueDue:'Overdue · due',menu:'Open menu',foundItems:'LifeDue found {n} items.',todayFocus:'Here is what needs your attention.',todayGreetingMorning:'Good morning. Let\'s handle what matters.',todayGreetingAfternoon:'Good afternoon. Let\'s handle what matters.',todayGreetingEvening:'Good evening. Let\'s handle what matters.',focusTitle:'Today\'s focus',openWork:'Open work',dueToday:'Due today',urgent:'Urgent',toCollect:'To collect',allClearToday:'You\'re clear for today',allClearDesc:'No overdue work or payments need attention right now.',paymentAttention:'Payment follow-ups',paymentAttentionDesc:'Money that still needs to move.',noPaymentAttention:'No payment follow-ups due.',upcomingWork:'Coming up next',upcomingDesc:'Work due after today, ordered by delivery date.',noUpcoming:'Nothing else is scheduled yet.',viewAllTasks:'View all tasks',viewPayments:'View payments',addTaskToday:'Add a task',addPaymentToday:'Add payment',markPaidToday:'Mark paid',tasksHeadline:'Everything you need to deliver.',tasksDescription:'Keep work visible, prioritize what matters, and close tasks as you finish them.',taskSearch:'Search tasks or clients',taskSummary:'taskSummary',taskProgress:'complete',noTasks:'No tasks here',noTasksDesc:'Add a task or change the filter to see more work.',clearSearch:'Clear search',dueSoon:'Due soon',overdueTasks:'Overdue',todayTasks:'Today',upcomingTasks:'Upcoming',completedTasks:'Completed',priorityFilter:'Priority',allPriorities:'All priorities',clientsHeadline:'A clear view of your client work.',clientsDescription:'See who you work with, how much work is open, and what is still pending.',paymentsHeadline:'Keep every payment moving.',paymentsDescription:'Track money due by client, spot overdue payments, and mark payments as settled.',paymentOverview:'Payment overview',paymentPendingCount:'Pending',paymentOverdueCount:'Overdue',paymentPaidCount:'Paid',paymentPendingAmount:'Outstanding',paymentSearch:'Search by client',paymentFilter:'Filter',paymentAll:'All payments',paymentPending:'Pending',paymentOverdue:'Overdue',paymentPaid:'Paid',paymentDue:'Due',paymentOverdueLabel:'Overdue',paymentNoResults:'No payments match this filter.',paymentNoResultsDesc:'Try another filter or add a payment.',paymentHistory:'Payment history',paymentTotal:'Total',currency:'Currency',noCurrency:'Currency not set',usd:'USD',eur:'EUR',aoa:'AOA',newPayment:'New payment',addPaymentTitle:'Add a payment',amount:'Amount',addPayment:'Add payment',addTaskTitle:'Add a task',settings:'Settings',feedback:'Feedback',account:'Account',preferences:'Preferences',appearance:'Appearance',theme:'Theme',themeSystem:'Default',themeLight:'Light',themeDark:'Dark',language:'Language',languageChoiceDesc:'Choose the language used throughout LifeDue.',upgrade:'Upgrade to Pro',upgradeTitle:'LifeDue Pro',upgradeDesc:'Get more room to manage client work and unlock the next level of LifeDue.',proBenefits:'What you get',proBenefit1:'Higher limits for tasks and AI usage',proBenefit2:'More powerful planning and client-work workflows',proBenefit3:'Priority access to upcoming Pro features',notifyMe:'Notify me when Pro is ready',notifyEmail:'Email for Pro updates',notifyEmailPlaceholder:'you@example.com',joinWaitlist:'Join the waitlist',waitlistSuccess:'You’re on the list. We’ll notify you when Pro is ready.',waitlistError:'We could not save your email. Please try again.',waitlistInvalidEmail:'Enter a valid email address.',waitlistAlready:'This email is already on the list.',close:'Close',languageDesc:'Choose how LifeDue is displayed.' ,themeDesc:'Choose the appearance that feels right for you.',accountDesc:'Your LifeDue account and plan.',email:'Email',plan:'Plan',freePlanDesc:'Free plan · no payment required',security:'Security',securityDesc:'Sign out of this account securely.',password:'Password',changePassword:'Change password',installApp:'Install LifeDue',installAppDesc:'Use LifeDue like an app on your phone or desktop.',openOnboarding:'Review onboarding',signOut:'Sign out',settingsDesc:'Keep your account and preferences under control.',feedbackTitle:'Help us improve LifeDue',feedbackDesc:'Tell us what is working, what is confusing, or what you want next.',feedbackType:'What is this about?',feedbackTypeBug:'Bug or problem',feedbackTypeIdea:'Feature idea',feedbackTypeGeneral:'General feedback',feedbackTypeOther:'Other',feedbackMessage:'Your feedback',feedbackPlaceholder:'Tell us what happened or what you would like to see…',feedbackRating:'How is LifeDue feeling so far?',feedbackRatingGreat:'Great',feedbackRatingOkay:'Could be better',feedbackRatingPoor:'I am struggling',sendFeedback:'Send feedback',feedbackSent:'Thanks — your feedback was saved.',feedbackHint:'Your feedback helps us decide what to improve next.',feedbackFormHint:'Choose a topic, rate your experience, and tell us what would make LifeDue better.',feedbackSignIn:'Sign in to send feedback.',feedbackError:'We could not send your feedback. Please try again.',backToWork:'Back to work'},pt:{today:'Hoje',tasks:'Tarefas',clients:'Clientes',payments:'Pagamentos',planner:'Planejador IA',addTask:'Adicionar tarefa',freePlan:'Plano grátis',aiUsageLabel:'Uso da IA',aiUsesRemaining:'{n} usos de IA restantes este mês',aiLimitReachedTitle:'Você atingiu o limite gratuito de IA',aiLimitReachedDesc:'Você usou os 20 usos de IA deste mês. Entre na lista do Pro e avisaremos quando o Pro estiver disponível.',proComingSoon:'O LifeDue Pro está a caminho',proComingSoonDesc:'Você já está na lista do Pro. Vamos avisar quando o Pro estiver disponível.',proLimitWaitlist:'Entrar na lista do Pro',proLimitEmail:'Email para novidades do Pro',proLimitSaved:'Você já está na lista do Pro. O Pro está a caminho.',workspace:'ÁREA DE CLIENTES',openApp:'Abrir app',builtFor:'Feito para trabalho com clientes',heroText:'Transforme seu trabalho com clientes em um plano diário simples. Adicione tarefas em linguagem natural e veja o que precisa da sua atenção hoje.',tryFree:'Experimentar grátis',noCard:'Sem cartão de crédito',quickAdd:'Adicionar rápido',todayFirst:'Hoje primeiro',paymentsText:'Mantenha os pagamentos pendentes visíveis.',quickAddText:'Descreva várias tarefas de clientes de uma vez.',todayText:'Veja imediatamente o que está atrasado e vence hoje.',pending:'pendente',aiQuick:'ADICIONAR COM IA',quickQuestion:'O que você precisa fazer?',createPlan:'Criar plano',plain:'Linguagem natural · sem configuração',yourPlan:'SEU PLANO',addAll:'Adicionar tudo',saveToLifeDue:'Guardar no LifeDue',overdue:'ATRASADO',upNext:'A seguir',organize:'Organizar meu plano',openPlanner:'Abrir Planejador IA',addPlanToLifeDue:'Adicionar ao LifeDue',currencySummary:'Resumo por moeda',nothing:'Nada vence hoje',breathing:'Aproveite o tempo livre ou adicione uma tarefa.',workQueue:'FILA DE TRABALHO',everything:'Tudo o que você precisa entregar.',completed:'Concluídas',all:'Todas',open:'Abertas',clientsIntro:'Mantenha visíveis as pessoas por trás do trabalho.',addClient:'Adicionar cliente',addClientTitle:'Adicionar cliente',clientName:'Nome do cliente',clientNamePlaceholder:'ex.: Maria',noClientName:'Digite o nome de um cliente.',moneyDue:'DINHEIRO A RECEBER',unpaid:'Não deixe trabalho concluído ficar sem pagamento.',clear:'Todos os pagamentos estão em dia',noPending:'Não há pagamentos de clientes pendentes.',paid:'Pago',markPaid:'Marcar como pago',aiPlanner:'PLANEJADOR IA',calmer:'Transforme sua lista em um dia mais tranquilo.',plannerDesc:'O LifeDue agrupa o trabalho aberto em um plano simples em vez de fazer você gerenciar uma lista enorme.',openItems:'itens abertos disputando sua atenção.',generateOrder:'Gere uma ordem sugerida para os próximos dias.',generatePlan:'Gerar plano',savePlan:'Guardar plano',plannerReady:'Plano pronto',plannerOpen:'tarefas abertas',plannerOverdue:'atrasadas',plannerToday:'vencem hoje',plannerUpcoming:'a seguir',plannerEmptyTitle:'Nenhum trabalho aberto para organizar',plannerEmptyDesc:'Adicione uma tarefa primeiro e o LifeDue vai organizá-la numa ordem prática.',plannerFallback:'A mostrar uma ordem local por data e prioridade. Entre na conta para usar a priorização por IA.',plannerAiReady:'Ordem sugerida pela IA pronta.',plannerLocalReady:'Ordem sugerida pronta.',plannerAiDesc:'Ordem baseada em prazos, prioridade e contexto das tarefas.',plannerLocalDesc:'Ordem baseada em prazos e prioridade. Entre na conta para usar a priorização por IA.',plannerHowItWorks:'Como funciona',plannerHowItWorksDesc:'O LifeDue organiza as tarefas abertas por prazo e prioridade. Com IA, o contexto da tarefa ajuda a desempatar.',plannerPlannerInfo:'O Planner apenas sugere uma ordem. Ele não altera suas tarefas.',addTaskToPlan:'Adicionar tarefa',viewTasks:'Ver tarefas',planEmpty:'Seu plano aparecerá aqui.',newTask:'NOVA TAREFA',task:'Tarefa',client:'Cliente',dueDate:'Data de entrega',noDueDate:'Sem prazo',priority:'Prioridade',cancel:'Cancelar',low:'Baixa',medium:'Média',high:'Alta',finishHomepage:'ex.: Finalizar página inicial',john:'ex.: João',complete:'Concluir tarefa',tomorrow:'Amanhã',due:'Vence',overdueDue:'Atrasado · vence',menu:'Abrir menu',foundItems:'O LifeDue encontrou {n} itens.',todayFocus:'Veja o que precisa da sua atenção.',todayGreetingMorning:'Bom dia. Vamos cuidar do que importa.',todayGreetingAfternoon:'Boa tarde. Vamos cuidar do que importa.',todayGreetingEvening:'Boa noite. Vamos cuidar do que importa.',focusTitle:'Foco de hoje',openWork:'Trabalho aberto',dueToday:'Vence hoje',urgent:'Urgente',toCollect:'A receber',allClearToday:'Tudo tranquilo por hoje',allClearDesc:'Nenhum trabalho atrasado ou pagamento precisa de atenção agora.',paymentAttention:'Cobranças a acompanhar',paymentAttentionDesc:'Dinheiro que ainda precisa entrar.',noPaymentAttention:'Nenhuma cobrança pendente para acompanhar.',upcomingWork:'Próximos trabalhos',upcomingDesc:'Trabalho depois de hoje, ordenado pela data de entrega.',noUpcoming:'Ainda não há nada agendado.',viewAllTasks:'Ver todas as tarefas',viewPayments:'Ver pagamentos',addTaskToday:'Adicionar tarefa',addPaymentToday:'Adicionar pagamento',markPaidToday:'Marcar como pago',tasksHeadline:'Tudo o que você precisa entregar.',tasksDescription:'Mantenha o trabalho visível, priorize o que importa e conclua tarefas à medida que avança.',taskSearch:'Pesquisar tarefas ou clientes',taskSummary:'taskSummary',taskProgress:'concluída',noTasks:'Nenhuma tarefa aqui',noTasksDesc:'Adicione uma tarefa ou altere o filtro para ver mais trabalho.',clearSearch:'Limpar pesquisa',dueSoon:'Próximas',overdueTasks:'Atrasadas',todayTasks:'Hoje',upcomingTasks:'A seguir',completedTasks:'Concluídas',priorityFilter:'Prioridade',allPriorities:'Todas as prioridades',clientsHeadline:'Uma visão clara do seu trabalho com clientes.',clientsDescription:'Veja com quem trabalha, quanto trabalho está aberto e o que ainda está pendente.',paymentsHeadline:'Mantenha cada pagamento em andamento.',paymentsDescription:'Acompanhe o dinheiro a receber por cliente, veja atrasados e marque pagamentos como concluídos.',paymentOverview:'Resumo dos pagamentos',paymentPendingCount:'Pendentes',paymentOverdueCount:'Atrasados',paymentPaidCount:'Pagos',paymentPendingAmount:'A receber',paymentSearch:'Pesquisar por cliente',paymentFilter:'Filtro',paymentAll:'Todos',paymentPending:'Pendentes',paymentOverdue:'Atrasados',paymentPaid:'Pagos',paymentDue:'Vence',paymentOverdueLabel:'Atrasado',paymentNoResults:'Nenhum pagamento corresponde a este filtro.',paymentNoResultsDesc:'Tente outro filtro ou adicione um pagamento.',paymentHistory:'Histórico de pagamentos',paymentTotal:'Total',currency:'Moeda',noCurrency:'Moeda não definida',usd:'USD',eur:'EUR',aoa:'AOA',newPayment:'Novo pagamento',addPaymentTitle:'Adicionar pagamento',amount:'Valor',addPayment:'Adicionar pagamento',addTaskTitle:'Adicionar tarefa',settings:'Definições',feedback:'Feedback',account:'Conta',preferences:'Preferências',appearance:'Aparência',theme:'Tema',themeSystem:'Padrão',themeLight:'Claro',themeDark:'Escuro',language:'Idioma',languageDesc:'Escolha o idioma usado em todo o LifeDue.',languageChoiceDesc:'Mude entre inglês e português.',upgrade:'Passar para Pro',upgradeTitle:'LifeDue Pro',upgradeDesc:'Tenha mais espaço para gerir trabalho com clientes e desbloqueie a próxima evolução do LifeDue.',proBenefits:'O que inclui',proBenefit1:'Limites maiores para tarefas e uso de IA',proBenefit2:'Planeamento e fluxos de trabalho com clientes mais avançados',proBenefit3:'Acesso prioritário às próximas funcionalidades Pro',notifyMe:'Avise-me quando o Pro estiver disponível',notifyEmail:'Email para novidades do Pro',notifyEmailPlaceholder:'voce@exemplo.com',joinWaitlist:'Entrar na lista',waitlistSuccess:'Está na lista. Vamos avisar quando o Pro estiver disponível.',waitlistError:'Não foi possível guardar o seu email. Tente novamente.',waitlistInvalidEmail:'Introduza um email válido.',waitlistAlready:'Este email já está na lista.',close:'Fechar',themeDesc:'Escolha a aparência ideal para si.',accountDesc:'A sua conta e o seu plano LifeDue.',email:'Email',plan:'Plano',freePlanDesc:'Plano grátis · sem pagamento necessário',security:'Segurança',securityDesc:'Saia desta conta de forma segura.',password:'Palavra-passe',changePassword:'Alterar palavra-passe',installApp:'Baixar LifeDue',installAppDesc:'Use o LifeDue como uma aplicação no telemóvel ou computador.',openOnboarding:'Ver onboarding novamente',signOut:'Sair',settingsDesc:'Mantenha a sua conta e preferências sob controlo.',feedbackTitle:'Ajude-nos a melhorar o LifeDue',feedbackDesc:'Diga-nos o que funciona, o que está confuso ou o que gostaria de ver a seguir.',feedbackType:'Sobre o quê?',feedbackTypeBug:'Bug ou problema',feedbackTypeIdea:'Sugestão de funcionalidade',feedbackTypeGeneral:'Feedback geral',feedbackTypeOther:'Outro',feedbackMessage:'O seu feedback',feedbackPlaceholder:'Conte-nos o que aconteceu ou o que gostaria de ver…',feedbackRating:'Como está a ser usar o LifeDue?',feedbackRatingGreat:'Muito bom',feedbackRatingOkay:'Pode melhorar',feedbackRatingPoor:'Estou com dificuldades',sendFeedback:'Enviar feedback',feedbackSent:'Obrigado — o seu feedback foi guardado.',feedbackHint:'O seu feedback ajuda-nos a decidir o que melhorar a seguir.',feedbackFormHint:'Escolha um tema, avalie a sua experiência e diga-nos como podemos melhorar o LifeDue.',feedbackSignIn:'Entre na conta para enviar feedback.',feedbackError:'Não foi possível enviar o seu feedback. Tente novamente.',backToWork:'Voltar ao trabalho'}}
 let currentLanguage:Language='en'
 const tr=(key:keyof typeof trMap.en)=>trMap[currentLanguage][key]
 
@@ -150,6 +151,7 @@ function App() {
   const [waitlistSaving, setWaitlistSaving] = useState(false)
   const [waitlistSent, setWaitlistSent] = useState(false)
   const [waitlistError, setWaitlistError] = useState('')
+  const [aiUsage, setAiUsage] = useState<AiUsage>({ used: 0, limit: 20, remaining: 20 })
   useEffect(() => {
     localStorage.setItem('lifedue-theme', theme)
     const media = window.matchMedia('(prefers-color-scheme: dark)')
@@ -239,6 +241,47 @@ function App() {
     })
     return () => listener.subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!user || !supabase) {
+      setAiUsage({ used: 0, limit: 20, remaining: 20 })
+      setWaitlistEmail('')
+      setWaitlistSent(false)
+      return
+    }
+
+    let cancelled = false
+    const periodStart = currentTodayKey().slice(0, 7) + '-01'
+
+    Promise.all([
+      supabase
+        .from('ai_usage')
+        .select('used')
+        .eq('user_id', user.id)
+        .eq('period_start', periodStart)
+        .maybeSingle(),
+      supabase
+        .from('pro_waitlist')
+        .select('email')
+        .eq('user_id', user.id)
+        .maybeSingle(),
+    ]).then(([usageResult, waitlistResult]) => {
+      if (cancelled) return
+      if (!usageResult.error) {
+        const used = Math.max(0, Number(usageResult.data?.used ?? 0))
+        setAiUsage({ used, limit: 20, remaining: Math.max(20 - used, 0) })
+      }
+      if (!waitlistResult.error) {
+        const email = typeof waitlistResult.data?.email === 'string' ? waitlistResult.data.email : ''
+        setWaitlistEmail(email)
+        setWaitlistSent(Boolean(email))
+      }
+    }).catch(error => {
+      console.error('LifeDue account limits load failed:', error)
+    })
+
+    return () => { cancelled = true }
+  }, [user])
 
   useEffect(() => {
     if (!user || !supabase) return
@@ -403,19 +446,41 @@ function App() {
 
       if (error) {
         let detail = ''
+        let code = ''
         try {
           const response = (error as FunctionsHttpError & { context?: Response }).context
           if (response) {
             const body = await response.clone().json()
+            code = typeof body?.code === 'string' ? body.code : ''
             detail = typeof body?.detail === 'string'
               ? body.detail
               : typeof body?.message === 'string'
                 ? body.message
                 : ''
+            if (body?.aiUsage && typeof body.aiUsage === 'object') {
+              setAiUsage({
+                used: Number(body.aiUsage.used ?? 20),
+                limit: Number(body.aiUsage.limit ?? 20),
+                remaining: Number(body.aiUsage.remaining ?? 0),
+              })
+            }
           }
         } catch {}
+        if (code === 'AI_LIMIT_REACHED') {
+          setAiError('')
+          setUpgradeOpen(true)
+          return
+        }
         console.error('LifeDue AI Quick Add failed:', error, detail)
         throw new Error(detail || error.message)
+      }
+
+      if (data?.aiUsage) {
+        setAiUsage({
+          used: Number(data.aiUsage.used ?? aiUsage.used),
+          limit: Number(data.aiUsage.limit ?? 20),
+          remaining: Number(data.aiUsage.remaining ?? aiUsage.remaining),
+        })
       }
 
       const items = Array.isArray(data?.items) ? data.items as QuickAddItem[] : []
@@ -849,7 +914,7 @@ function App() {
               <h2 id="upgrade-title">{tr('upgradeTitle')}</h2>
               <p className="upgrade-description">{tr('upgradeDesc')}</p>
               <div className="upgrade-benefits"><strong>{tr('proBenefits')}</strong><ul><li>{tr('proBenefit1')}</li><li>{tr('proBenefit2')}</li><li>{tr('proBenefit3')}</li></ul></div>
-              {!waitlistSent ? <div className="upgrade-form"><label htmlFor="pro-waitlist-email">{tr('notifyEmail')}</label><input id="pro-waitlist-email" type="email" value={waitlistEmail || user?.email || ''} onChange={event => { setWaitlistEmail(event.target.value); setWaitlistError('') }} placeholder={tr('notifyEmailPlaceholder')} autoComplete="email" /><p className="upgrade-note">{tr('notifyMe')}</p>{waitlistError && <div className="form-error" role="alert">{waitlistError}</div>}<button className="primary-button" type="button" onClick={joinProWaitlist} disabled={waitlistSaving}>{waitlistSaving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('joinWaitlist')}</button></div> : <div className="upgrade-success"><CheckCircle size={18} /> {tr('waitlistSuccess')}</div>}
+              {!waitlistSent ? <div className="upgrade-form"><label htmlFor="pro-waitlist-email">{tr('notifyEmail')}</label><input id="pro-waitlist-email" type="email" value={waitlistEmail || user?.email || ''} onChange={event => { setWaitlistEmail(event.target.value); setWaitlistError('') }} placeholder={tr('notifyEmailPlaceholder')} autoComplete="email" /><p className="upgrade-note">{tr('notifyMe')}</p>{waitlistError && <div className="form-error" role="alert">{waitlistError}</div>}<button className="primary-button" type="button" onClick={joinProWaitlist} disabled={waitlistSaving}>{waitlistSaving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('joinWaitlist')}</button></div> : <div className="upgrade-success"><CheckCircle size={18} /><div><strong>{tr('proComingSoon')}</strong><span>{tr('proComingSoonDesc')}</span></div></div>}
             </section>
           </div>}
           <main className="main-content">
@@ -892,6 +957,7 @@ function App() {
                 busyTaskId={updatingTaskId}
                 aiLoading={aiLoading}
                 user={user}
+                aiUsage={aiUsage}
               />
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
@@ -921,6 +987,11 @@ function App() {
               onSignOut={handleSignOut}
               onFeedback={() => navigate('feedback')}
               onUpgrade={() => setUpgradeOpen(true)}
+              waitlistEmail={waitlistEmail}
+              waitlistSent={waitlistSent}
+              waitlistSaving={waitlistSaving}
+              waitlistError={waitlistError}
+              onJoinWaitlist={() => void joinProWaitlist()}
             />}
             {view === 'planner' && (
               <PlannerView
@@ -969,7 +1040,41 @@ function App() {
                     })
                     const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Planner request timed out.')), 30000))
                     const { data, error } = await Promise.race([plannerPromise, timeoutPromise])
-                    if (error) throw error
+                    if (error) {
+                      let code = ''
+                      let detail = ''
+                      try {
+                        const response = (error as FunctionsHttpError & { context?: Response }).context
+                        if (response) {
+                          const body = await response.clone().json()
+                          code = typeof body?.code === 'string' ? body.code : ''
+                          detail = typeof body?.message === 'string' ? body.message : ''
+                          if (body?.aiUsage && typeof body.aiUsage === 'object') {
+                            setAiUsage({
+                              used: Number(body.aiUsage.used ?? 20),
+                              limit: Number(body.aiUsage.limit ?? 20),
+                              remaining: Number(body.aiUsage.remaining ?? 0),
+                            })
+                          }
+                        }
+                      } catch {}
+                      if (code === 'AI_LIMIT_REACHED') {
+                        setUpgradeOpen(true)
+                        setPlannerError('')
+                        setPlan(candidates)
+                        setPlannerSource('local')
+                        setView('planner')
+                        return
+                      }
+                      throw new Error(detail || error.message)
+                    }
+                    if (data?.aiUsage) {
+                      setAiUsage({
+                        used: Number(data.aiUsage.used ?? aiUsage.used),
+                        limit: Number(data.aiUsage.limit ?? 20),
+                        remaining: Number(data.aiUsage.remaining ?? aiUsage.remaining),
+                      })
+                    }
                     const orderedIds = Array.isArray(data?.orderedIds) ? data.orderedIds as string[] : []
                     const byId = new Map(candidates.map(task => [task.id, task]))
                     const ordered = orderedIds.map(id => byId.get(id)).filter((task): task is Task => Boolean(task))
@@ -1083,7 +1188,7 @@ function FeedbackView({ type, rating, message, sent, saving, error, canSubmit, o
   </div>
 }
 
-function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut, onFeedback, onUpgrade }: {
+function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut, onFeedback, onUpgrade, waitlistEmail, waitlistSent, waitlistSaving, waitlistError, onJoinWaitlist }: {
   user: User | null
   language: Language
   setLanguage: (value: Language) => void
@@ -1092,6 +1197,11 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
   onSignOut: () => void
   onFeedback: () => void
   onUpgrade: () => void
+  waitlistEmail: string
+  waitlistSent: boolean
+  waitlistSaving: boolean
+  waitlistError: string
+  onJoinWaitlist: () => void
 }) {
   return <div className="content-stack settings-page">
     <div className="page-intro">
@@ -1105,6 +1215,27 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
         <div className="account-details"><strong>{user?.email || (currentLanguage === 'pt' ? 'Conta local' : 'Local account')}</strong><span>{tr('plan')} · {tr('freePlanDesc')}</span></div>
         <span className="settings-plan-badge">{tr('freePlan')}</span><button className="upgrade-button" type="button" onClick={onUpgrade}><Sparkles size={14} /> {tr('upgrade')}</button>
       </div>
+    </section>
+
+    <section className="settings-card">
+      <div className="settings-section-head"><div className="settings-icon"><Sparkles size={19} /></div><div><h3>{tr('aiUsageLabel')}</h3><p>{tr('aiUsesRemaining').replace('{n}', String(aiUsage.remaining))}</p></div></div>
+      <div className="settings-action-row"><div><strong>{aiUsage.used}/{aiUsage.limit}</strong><span>{currentLanguage === 'pt' ? 'usos de IA utilizados neste mês' : 'AI uses used this month'}</span></div><span className="settings-plan-badge">{tr('freePlan')}</span></div>
+    </section>
+
+    <section className="settings-card">
+      <div className="settings-section-head"><div className="settings-icon"><Sparkles size={19} /></div><div><h3>{tr('upgradeTitle')}</h3><p>{tr('upgradeDesc')}</p></div></div>
+      {waitlistSent ? (
+        <div className="settings-action-row"><div><strong>{tr('proComingSoon')}</strong><span>{tr('proComingSoonDesc')}</span></div><span className="settings-plan-badge">{currentLanguage === 'pt' ? 'Na lista' : 'On the list'}</span></div>
+      ) : (
+        <div className="settings-waitlist">
+          <div><strong>{tr('notifyMe')}</strong><span>{tr('proLimitEmail')}</span></div>
+          <div className="settings-waitlist-form">
+            <input type="email" value={waitlistEmail || user?.email || ''} onChange={event => setWaitlistEmail(event.target.value)} placeholder={tr('notifyEmailPlaceholder')} autoComplete="email" />
+            <button className="primary-button" type="button" onClick={onJoinWaitlist} disabled={waitlistSaving}>{waitlistSaving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('joinWaitlist')}</button>
+          </div>
+          {waitlistError && <div className="form-error" role="alert">{waitlistError}</div>}
+        </div>
+      )}
     </section>
 
     <section className="settings-card">
@@ -1413,7 +1544,7 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiError, onQuickTextChange, onToggle, plan, planSource, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user }: {
+function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiError, onQuickTextChange, onToggle, plan, planSource, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user, aiUsage }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
@@ -1435,6 +1566,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
   busyTaskId: string | null
   aiLoading: boolean
   user: User | null
+  aiUsage: AiUsage
 }) {
   const resultRef = useRef<HTMLElement>(null)
   const todayKey = iso(new Date())
@@ -1493,8 +1625,8 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
           <h3>{tr('quickQuestion')}</h3>
           <textarea value={quickText} onChange={e => onQuickTextChange(e.target.value)} placeholder={currentLanguage === 'pt' ? 'ex.: Entregar o site da Maria sexta, cobrar 200 USD amanhã e enviar a proposta ao Carlos segunda.' : "e.g. Deliver Maria's website Friday, collect $200 tomorrow, and send Carlos the proposal Monday."} />
           <div className="quick-actions">
-            <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
-            <span>{tr('plain')}</span>
+            <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading || aiUsage.remaining === 0}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
+            <span>{aiUsage.remaining > 0 ? tr('aiUsesRemaining').replace('{n}', String(aiUsage.remaining)) : tr('proComingSoon')}</span>
           </div>
           {aiError && <div className="quick-error" role="alert">{aiError}</div>}
         </div>
