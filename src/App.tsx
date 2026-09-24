@@ -110,14 +110,11 @@ const extractCompanionTask = (input: string, payment: QuickAddItem): (QuickAddIt
   return { kind: 'task', title, client: payment.client, dueDate: payment.dueDate, dueDateProvided: payment.dueDateProvided !== false, priority: payment.priority }
 }
 
-function localizeAiTitle(title: string, kind: QuickAddItem['kind']) {
-  if (currentLanguage !== 'pt') return title
-  const normalized = title.trim().toLowerCase()
-  if (kind === 'payment' || /follow up payment|payment follow-up|collect payment|receive payment/.test(normalized)) return 'Cobrar pagamento'
-  if (/send proposal|proposal/.test(normalized)) return 'Enviar proposta'
-  if (/deliver website|deliver site|website/.test(normalized)) return 'Entregar site'
-  if (/send invoice|invoice/.test(normalized)) return 'Enviar fatura'
-  return title
+function localizeAiTitle(title: string, _kind: QuickAddItem['kind']) {
+  // The AI is already instructed to return titles in the user's language.
+  // Do not rewrite task titles from keywords: that can silently change the user's action
+  // (for example, "Criar website" must never become "Entregar site").
+  return title.trim()
 }
 
 function formatMoney(amount: number, currency: string | null, locale = currentLanguage === 'pt' ? 'pt-PT' : 'en-US') {
