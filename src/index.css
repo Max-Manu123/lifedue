@@ -907,6 +907,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .settings-page { max-width:900px; }
 .feedback-card,.settings-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:18px; box-shadow:0 6px 24px rgba(15,23,42,.035); }
 .feedback-card { max-width:760px; }
+.settings-waitlist { margin-top:18px; display:grid; gap:10px; }
+.settings-waitlist > div:first-child strong,.settings-waitlist > div:first-child span { display:block; }
+.settings-waitlist > div:first-child strong { font-size:12px; color:#0f172a; }
+.settings-waitlist > div:first-child span { margin-top:3px; color:#64748b; font-size:11px; }
+.settings-waitlist-form { display:flex; gap:8px; align-items:center; }
+.settings-waitlist-form input { min-width:0; flex:1; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:10px; padding:10px 11px; background:#fff; color:#0f172a; font:inherit; font-size:11px; outline:none; }
+.settings-waitlist-form input:focus { border-color:#a5b4fc; box-shadow:0 0 0 3px rgba(99,102,241,.08); }
 .feedback-card-header,.settings-section-head { display:flex; align-items:flex-start; gap:11px; }
 .feedback-icon,.settings-icon { width:38px; height:38px; flex:0 0 auto; display:grid; place-items:center; border-radius:10px; background:#eef2ff; color:#4f46e5; }
 .feedback-card-header strong,.settings-section-head h3 { display:block; margin:2px 0 3px; font-size:14px; color:#0f172a; }
@@ -1012,6 +1019,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .upgrade-note { margin:0 0 4px; font-size:10px; color:#64748b; }
 .upgrade-form .primary-button { width:100%; justify-content:center; }
 .upgrade-success { display:flex; align-items:flex-start; gap:9px; padding:13px; border-radius:11px; background:#f0fdf4; color:#166534; font-size:12px; line-height:1.5; }
+.theme-dark .settings-waitlist > div:first-child strong { color:#f8fafc; }
+.theme-dark .settings-waitlist-form input { background:#0f172a; border-color:#334155; color:#f8fafc; }
 .theme-dark .upgrade-button { background:#1e1b4b; border-color:#4338ca; color:#c7d2fe; }
 .theme-dark .upgrade-modal { background:#0f172a; border-color:#334155; }
 .theme-dark .upgrade-close { background:#1e293b; color:#cbd5e1; }
@@ -1167,6 +1176,10 @@ button, input, textarea, select { transition: background-color .2s ease, border-
 .onboarding-payment-copy strong { display: block; font-size: 13px; }
 .onboarding-payment-copy span { display: block; margin-top: 3px; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
 .onboarding-payment-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+@media (max-width:640px) {
+  .settings-waitlist-form { flex-direction:column; align-items:stretch; }
+  .settings-waitlist-form .primary-button { width:100%; justify-content:center; }
+}
 @media (max-width: 640px) {
   .onboarding-header-actions { gap: 2px; }
   .onboarding-header-actions .ghost-button { padding: 8px 7px; font-size: 12px; }
