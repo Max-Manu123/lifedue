@@ -1223,3 +1223,32 @@ button, input, textarea, select { transition: background-color .2s ease, border-
 .plan-review-item input:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 12%,transparent)}
 .plan-review-footer{display:flex;justify-content:flex-end;gap:9px;padding-top:4px}
 @media (max-width:600px){.plan-review-backdrop{padding:10px}.plan-review-modal{padding:17px;border-radius:16px}.plan-review-footer{position:sticky;bottom:-17px;margin:0 -17px;padding:12px 17px;background:var(--surface);border-top:1px solid var(--border-color)}}
+
+
+/* AI plan review details */
+.plan-review-section{margin-top:20px;padding-top:18px;border-top:1px solid var(--border-color)}
+.plan-review-section-head{display:flex;align-items:flex-start;gap:9px;margin-bottom:12px}
+.plan-review-section-head>svg{flex:0 0 auto;margin-top:2px;color:var(--primary)}
+.plan-review-section-head strong,.plan-review-section-head span{display:block}
+.plan-review-section-head strong{font-size:13px;color:var(--text-primary)}
+.plan-review-section-head span{margin-top:3px;color:var(--text-secondary);font-size:11px;line-height:1.45}
+.plan-review-details-list{display:grid;gap:10px}
+.plan-review-detail-card{padding:13px;border:1px solid var(--border-color);border-radius:13px;background:var(--surface-soft)}
+.plan-review-detail-title{display:block;margin-bottom:10px;font-size:13px;color:var(--text-primary)}
+.plan-review-field{padding-top:10px;margin-top:10px;border-top:1px solid var(--border-color)}
+.plan-review-field:first-of-type{padding-top:0;margin-top:0;border-top:0}
+.plan-review-field-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.plan-review-field-head>span{font-size:11px;font-weight:800;color:var(--text-secondary)}
+.plan-review-skip{border:0;background:transparent;padding:2px 0;color:var(--text-muted);font-size:11px;font-weight:700;cursor:pointer}
+.plan-review-skip:hover{color:var(--primary)}
+.plan-review-field input,.plan-review-field select{width:100%;box-sizing:border-box;min-height:38px;padding:9px 10px;border:1px solid var(--border-color);border-radius:9px;background:var(--surface);color:var(--text-primary);outline:none}
+.plan-review-field input:focus,.plan-review-field select:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 12%,transparent)}
+.plan-review-priority{display:flex;gap:7px;flex-wrap:wrap}
+.plan-review-priority .plan-review-choice-button{flex:1;min-width:82px;justify-content:center}
+.theme-dark .plan-review-section-head span{color:#94a3b8}
+.theme-dark .plan-review-detail-card{background:#0f172a;border-color:#334155}
+.theme-dark .plan-review-field{border-color:#334155}
+@media (max-width:600px){
+  .plan-review-priority{display:grid;grid-template-columns:repeat(3,1fr)}
+  .plan-review-priority .plan-review-choice-button{min-width:0}
+}
