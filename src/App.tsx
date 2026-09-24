@@ -915,7 +915,7 @@ function App() {
       } else {
         const next = { ...task, id: crypto.randomUUID(), status: 'open' as const }
         setTasks(current => [next, ...current])
-        if (!clients.some(c => c.name.toLowerCase() === task.client.toLowerCase())) {
+        if (task.client.trim() && !clients.some(c => c.name.toLowerCase() === task.client.toLowerCase())) {
           setClients(current => [...current, { id: crypto.randomUUID(), name: task.client }])
         }
       }
