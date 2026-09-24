@@ -153,6 +153,7 @@ function App() {
   const [waitlistSent, setWaitlistSent] = useState(false)
   const [waitlistError, setWaitlistError] = useState('')
   const [aiUsage, setAiUsage] = useState<AiUsage>({ used: 0, limit: 20, remaining: 20 })
+  const [aiLimitNotice, setAiLimitNotice] = useState(false)
   useEffect(() => {
     localStorage.setItem('lifedue-theme', theme)
     const media = window.matchMedia('(prefers-color-scheme: dark)')
@@ -417,6 +418,12 @@ function App() {
     setUpdatingTaskId(null)
   }
 
+  useEffect(() => {
+    if (!aiLimitNotice) return
+    const timer = window.setTimeout(() => setAiLimitNotice(false), 7000)
+    return () => window.clearTimeout(timer)
+  }, [aiLimitNotice])
+
   const createPlan = async () => {
     const input = quickText.trim()
     if (!input) {
@@ -427,9 +434,6 @@ function App() {
     }
 
     const requestId = ++quickAddRequestId.current
-    setPlan([])
-    setPlanSource(null)
-    setPlanPayments([])
     setAiLoading(true)
     setAiError('')
 
@@ -468,7 +472,10 @@ function App() {
           }
         } catch {}
         if (code === 'AI_LIMIT_REACHED') {
-          setAiError('')
+          setAiError(currentLanguage === 'pt'
+            ? 'Os seus créditos de IA acabaram. Eles serão renovados no próximo mês.'
+            : 'Your AI credits are used up. They will reset next month.')
+          setAiLimitNotice(false)
           setProLimitReached(true)
           setUpgradeOpen(true)
           return
@@ -484,6 +491,7 @@ function App() {
           remaining: Number(data.aiUsage.remaining ?? aiUsage.remaining),
         }
         setAiUsage(nextAiUsage)
+        if (nextAiUsage.remaining === 0) setAiLimitNotice(true)
       }
 
       const items = Array.isArray(data?.items) ? data.items as QuickAddItem[] : []
@@ -507,6 +515,10 @@ function App() {
         }
         return value
       }
+
+      setPlan([])
+      setPlanSource(null)
+      setPlanPayments([])
 
       const normalizedItems = items.map(item => ({
         ...item,
@@ -931,6 +943,7 @@ function App() {
             </header>
 
             <div key={view} className={"route-view route-" + view}>
+            {aiLimitNotice && (view === 'quick-add' || view === 'planner') && <div className="error-banner" role="status" aria-live="polite">{tr('aiLimitReachedNotice')}</div>}
             {view === 'tasks' && tasksError && <div className="error-banner" role="alert">{tasksError}</div>}
             {view === 'clients' && clientsError && <div className="error-banner" role="alert">{clientsError}</div>}
             {view === 'payments' && paymentsError && <div className="error-banner" role="alert">{paymentsError}</div>}
@@ -1065,12 +1078,12 @@ function App() {
                         }
                       } catch {}
                       if (code === 'AI_LIMIT_REACHED') {
+                        setAiLimitNotice(false)
                         setProLimitReached(true)
                         setUpgradeOpen(true)
-                        setPlannerError('')
-                        setPlan(candidates)
-                        setPlannerSource('local')
-                        setView('planner')
+                        setPlannerError(currentLanguage === 'pt'
+                          ? 'Os seus créditos de IA acabaram. Eles serão renovados no próximo mês.'
+                          : 'Your AI credits are used up. They will reset next month.')
                         return
                       }
                       throw new Error(detail || error.message)
@@ -1082,6 +1095,7 @@ function App() {
                         remaining: Number(data.aiUsage.remaining ?? aiUsage.remaining),
                       }
                       setAiUsage(nextAiUsage)
+                      if (nextAiUsage.remaining === 0) setAiLimitNotice(true)
                     }
                     const orderedIds = Array.isArray(data?.orderedIds) ? data.orderedIds as string[] : []
                     const byId = new Map(candidates.map(task => [task.id, task]))
