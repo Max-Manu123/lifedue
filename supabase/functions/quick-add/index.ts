@@ -211,7 +211,7 @@ Deno.serve(async (req) => {
   let quotaReserved = false
   let quotaUserId: string | null = null
   let quotaPeriodStart = ''
-  let quotaAdmin: Awaited<ReturnType<typeof createSupabaseContext>>['data'] extends infer T ? T extends { supabaseAdmin?: infer A } ? A : never : never = undefined as never
+  let quotaAdmin: any = null
   let quotaUsage: { used: number; remaining: number; limit: number } | null = null
 
   try {
