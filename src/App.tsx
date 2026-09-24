@@ -754,18 +754,45 @@ function App() {
 
 
   const planReviewItems = () => {
-    const names = [...plan.map(task => task.client.trim()), ...planPayments.map(payment => payment.client.trim())]
-      .filter(Boolean)
-    const seen = new Set<string>()
-    return names.filter(name => {
-      const key = name.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    }).map(originalName => ({
-      originalName,
-      existingName: clients.find(client => client.name.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase() === originalName.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase())?.name,
-    }))
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
+    const items: Array<{ key: string; label: string; originalName?: string; existingName?: string }> = []
+    const seenClients = new Set<string>()
+
+    for (const task of plan) {
+      const clientName = task.client.trim()
+      if (!clientName) {
+        items.push({ key: 'task:' + task.id, label: currentLanguage === 'pt' ? task.title + ' · cliente não definido' : task.title + ' · client not set' })
+        continue
+      }
+      const normalized = normalize(clientName)
+      if (seenClients.has(normalized)) continue
+      seenClients.add(normalized)
+      items.push({
+        key: 'client:' + normalized,
+        label: clientName,
+        originalName: clientName,
+        existingName: clients.find(client => normalize(client.name.trim()) === normalized)?.name,
+      })
+    }
+
+    planPayments.forEach((payment, index) => {
+      const clientName = payment.client.trim()
+      if (!clientName) {
+        items.push({ key: 'payment:' + index, label: currentLanguage === 'pt' ? 'Pagamento · cliente não definido' : 'Payment · client not set' })
+        return
+      }
+      const normalized = normalize(clientName)
+      if (seenClients.has(normalized)) return
+      seenClients.add(normalized)
+      items.push({
+        key: 'client:' + normalized,
+        label: clientName,
+        originalName: clientName,
+        existingName: clients.find(client => normalize(client.name.trim()) === normalized)?.name,
+      })
+    })
+
+    return items
   }
 
   const addPlan = () => {
@@ -778,8 +805,19 @@ function App() {
   }
 
   const confirmPlanReview = (decisions: Record<string, string>) => {
-    const nextPlan = plan.map(task => ({ ...task, client: decisions[task.client] ?? task.client }))
-    const nextPayments = planPayments.map(payment => ({ ...payment, client: decisions[payment.client] ?? payment.client }))
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
+    const nextPlan = plan.map(task => ({
+      ...task,
+      client: task.client.trim()
+        ? (decisions['client:' + normalize(task.client)] ?? task.client)
+        : (decisions['task:' + task.id] ?? ''),
+    }))
+    const nextPayments = planPayments.map((payment, index) => ({
+      ...payment,
+      client: payment.client.trim()
+        ? (decisions['client:' + normalize(payment.client)] ?? payment.client)
+        : (decisions['payment:' + index] ?? ''),
+    }))
     setPlan(nextPlan)
     setPlanPayments(nextPayments)
     setPlanReviewOpen(false)
