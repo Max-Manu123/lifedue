@@ -469,7 +469,6 @@ function App() {
         } catch {}
         if (code === 'AI_LIMIT_REACHED') {
           setAiError('')
-          setAiLimitNotice(false)
           setProLimitReached(true)
           setUpgradeOpen(true)
           return
