@@ -243,7 +243,7 @@ Deno.serve(async (req) => {
     }
 
     if (quotaUserId && quotaAdmin) {
-      quotaPeriodStart = today.slice(0, 7) + '-01'
+      quotaPeriodStart = new Date().toISOString().slice(0, 7) + '-01'
       const { data: quotaRows, error: quotaError } = await quotaAdmin.rpc('consume_ai_credit', {
         p_user_id: quotaUserId,
         p_period_start: quotaPeriodStart,
