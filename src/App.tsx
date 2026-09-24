@@ -796,10 +796,15 @@ function App() {
 
   const addPlan = () => {
     if (!plan.length) return
-    if (!planReviewConfirmed && planReviewItems().length > 0) {
+
+    // Every AI-generated plan must pass through the review step before persistence.
+    // Do not condition this on the number of review items: a plan can still need
+    // confirmation even when the current client list is empty.
+    if (!planReviewConfirmed) {
       setPlanReviewOpen(true)
       return
     }
+
     void persistPlan()
   }
 
