@@ -582,12 +582,14 @@ function App() {
         }
 
         // Re-read the persisted data so the UI always reflects what Supabase accepted.
-        const [freshTasks, freshPayments] = await Promise.all([
+        const [freshTasks, freshPayments, freshClients] = await Promise.all([
           fetchTasks(user),
           fetchPayments(user),
+          fetchClients(user),
         ])
         setTasks(freshTasks)
         setPayments(freshPayments)
+        setClients(freshClients)
       } else {
         const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
         const newClients = taskPlan
