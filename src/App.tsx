@@ -543,6 +543,7 @@ function App() {
         dueDate: item.dueDate,
         dueDateProvided: item.dueDateProvided !== false,
         priority: item.priority,
+        priorityProvided: item.priorityProvided !== false,
         status: 'open',
       })))
       setPlanPayments(normalizedItems.filter(item => item.kind === 'payment'))
@@ -749,7 +750,8 @@ function App() {
   useEffect(() => {
     if (!user || !pendingSaveAfterAuth || !plan.length) return
     setPendingSaveAfterAuth(false)
-    void persistPlan()
+    setPlanReviewConfirmed(false)
+    setPlanReviewOpen(true)
   }, [user, pendingSaveAfterAuth, plan.length])
 
   const planReviewItems = () => {
@@ -759,10 +761,7 @@ function App() {
 
     for (const task of plan) {
       const clientName = task.client.trim()
-      if (!clientName) {
-        items.push({ key: 'task:' + task.id, label: currentLanguage === 'pt' ? task.title + ' · cliente não definido' : task.title + ' · client not set' })
-        continue
-      }
+      if (!clientName) continue
       const normalized = normalize(clientName)
       if (seenClients.has(normalized)) continue
       seenClients.add(normalized)
@@ -774,12 +773,9 @@ function App() {
       })
     }
 
-    planPayments.forEach((payment, index) => {
+    planPayments.forEach(payment => {
       const clientName = payment.client.trim()
-      if (!clientName) {
-        items.push({ key: 'payment:' + index, label: currentLanguage === 'pt' ? 'Pagamento · cliente não definido' : 'Payment · client not set' })
-        return
-      }
+      if (!clientName) return
       const normalized = normalize(clientName)
       if (seenClients.has(normalized)) return
       seenClients.add(normalized)
@@ -792,6 +788,60 @@ function App() {
     })
 
     return items
+  }
+
+  const planReviewDetails = () => {
+    const details: Array<{
+      key: string
+      title: string
+      kind: 'task' | 'payment'
+      clientMissing: boolean
+      dueDateMissing: boolean
+      dueDate?: string
+      priorityMissing: boolean
+      priority?: Priority
+      amountMissing: boolean
+      amount?: number
+      currencyMissing: boolean
+      currency?: QuickAddItem['currency'] | null
+    }> = []
+
+    for (const task of plan) {
+      if (!task.client.trim() || task.dueDateProvided === false || task.priorityProvided === false) {
+        details.push({
+          key: 'task:' + task.id,
+          title: task.title,
+          kind: 'task',
+          clientMissing: !task.client.trim(),
+          dueDateMissing: task.dueDateProvided === false,
+          dueDate: task.dueDateProvided === false ? undefined : task.dueDate,
+          priorityMissing: task.priorityProvided === false,
+          priority: task.priority,
+          amountMissing: false,
+          currencyMissing: false,
+        })
+      }
+    }
+
+    planPayments.forEach((payment, index) => {
+      if (!payment.client.trim() || payment.dueDateProvided === false || payment.amount === null || payment.amount === undefined || payment.currency === null || payment.currency === undefined) {
+        details.push({
+          key: 'payment:' + index,
+          title: currentLanguage === 'pt' ? 'Cobrança · ' + (payment.client || 'cliente não definido') : 'Payment · ' + (payment.client || 'client not set'),
+          kind: 'payment',
+          clientMissing: !payment.client.trim(),
+          dueDateMissing: payment.dueDateProvided === false,
+          dueDate: payment.dueDateProvided === false ? undefined : payment.dueDate,
+          priorityMissing: false,
+          amountMissing: payment.amount === null || payment.amount === undefined,
+          amount: payment.amount,
+          currencyMissing: payment.currency === null || payment.currency === undefined,
+          currency: payment.currency ?? null,
+        })
+      }
+    })
+
+    return details
   }
 
   const addPlan = () => {
@@ -808,20 +858,37 @@ function App() {
     void persistPlan()
   }
 
-  const confirmPlanReview = (decisions: Record<string, string>) => {
+  const confirmPlanReview = (
+    decisions: Record<string, string>,
+    detailDecisions: Record<string, { client?: string; dueDate?: string; priority?: Priority; amount?: number; currency?: QuickAddItem['currency'] | null }>
+  ) => {
     const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
-    const nextPlan = plan.map(task => ({
-      ...task,
-      client: task.client.trim()
-        ? (decisions['client:' + normalize(task.client)] ?? task.client)
-        : (decisions['task:' + task.id] ?? ''),
-    }))
-    const nextPayments = planPayments.map((payment, index) => ({
-      ...payment,
-      client: payment.client.trim()
-        ? (decisions['client:' + normalize(payment.client)] ?? payment.client)
-        : (decisions['payment:' + index] ?? ''),
-    }))
+    const nextPlan = plan.map(task => {
+      const details = detailDecisions['task:' + task.id] ?? {}
+      return {
+        ...task,
+        client: task.client.trim()
+          ? (decisions['client:' + normalize(task.client)] ?? task.client)
+          : (details.client?.trim() ?? task.client),
+        dueDate: details.dueDate ?? task.dueDate,
+        dueDateProvided: details.dueDate ? true : task.dueDateProvided,
+        priority: details.priority ?? task.priority,
+        priorityProvided: details.priority ? true : task.priorityProvided,
+      }
+    })
+    const nextPayments = planPayments.map((payment, index) => {
+      const details = detailDecisions['payment:' + index] ?? {}
+      return {
+        ...payment,
+        client: payment.client.trim()
+          ? (decisions['client:' + normalize(payment.client)] ?? payment.client)
+          : (details.client?.trim() ?? payment.client),
+        dueDate: details.dueDate ?? payment.dueDate,
+        dueDateProvided: details.dueDate ? true : payment.dueDateProvided,
+        amount: details.amount ?? payment.amount,
+        currency: details.currency !== undefined ? details.currency : payment.currency,
+      }
+    })
     setPlan(nextPlan)
     setPlanPayments(nextPayments)
     setPlanReviewOpen(false)
@@ -1223,6 +1290,8 @@ function App() {
       {planReviewOpen && <PlanReview
         language={currentLanguage}
         items={planReviewItems()}
+        details={planReviewDetails()}
+        today={currentTodayKey()}
         onCancel={() => setPlanReviewOpen(false)}
         onConfirm={confirmPlanReview}
       />}
