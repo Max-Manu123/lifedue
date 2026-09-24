@@ -1590,7 +1590,7 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
               {plan.map((task, index) => <div className="ai-plan-item" key={task.id + index}><div className="ai-plan-icon">{/payment|pagamento|cobrar|receber/i.test(task.title) ? '💰' : '✓'}</div><div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate, task.dueDateProvided !== false)}</span></div></div>)}
             </div>
             <button className="primary-button onboarding-submit" onClick={onAddPlan}>
-              {user ? (pt ? 'Guardar no LifeDue' : 'Save to LifeDue') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
+              {user ? (pt ? 'Adicionar tudo' : 'Add everything') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
             </button>
             {showDetails && (() => {
               const undatedTasks = plan.filter(task => task.dueDateProvided === false)
