@@ -87,6 +87,28 @@ function load<T>(key: string, fallback: T): T {
   }
 }
 
+const extractCompanionTask = (input: string, payment: QuickAddItem): QuickAddItem | null => {
+  const workVerb = /\b(entregar|enviar|criar|terminar|concluir|fazer|preparar|desenvolver|corrigir|revisar|publicar|configurar|instalar|atualizar|apresentar|montar|produzir|editar)\b/i
+  if (!workVerb.test(input)) return null
+  const firstClause = input.split(/[,.!?;]+/)[0].trim()
+  if (!workVerb.test(firstClause)) return null
+  let title = firstClause
+  if (payment.client) {
+    const lowerTitle = title.toLocaleLowerCase()
+    const lowerClient = payment.client.toLocaleLowerCase()
+    for (const connector of [' do ', ' da ', ' de ', ' para o ', ' para a ', ' para ']) {
+      const start = lowerTitle.indexOf(connector + lowerClient)
+      if (start >= 0) {
+        title = title.slice(0, start).trim()
+        break
+      }
+    }
+  }
+  title = title.replace(/\b(?:hoje|amanhã|ontem|today|tomorrow|sexta(?:-feira)?|segunda(?:-feira)?|terça(?:-feira)?|quarta(?:-feira)?|quinta(?:-feira)?|sábado|domingo|friday|monday|tuesday|wednesday|thursday|saturday|sunday)\b/gi, '').replace(/\s+/g, ' ').trim()
+  if (!title || !workVerb.test(title)) return null
+  return { kind: 'task', title, client: payment.client, dueDate: payment.dueDate, dueDateProvided: payment.dueDateProvided !== false, priority: payment.priority }
+}
+
 function localizeAiTitle(title: string, kind: QuickAddItem['kind']) {
   if (currentLanguage !== 'pt') return title
   const normalized = title.trim().toLowerCase()
@@ -424,6 +446,12 @@ function App() {
         client: exactClient(item.client),
         title: currentLanguage === 'pt' ? localizeAiTitle(item.title, item.kind) : item.title,
       }))
+
+      const normalizedPayment = normalizedItems.find(item => item.kind === 'payment' && item.amount !== null && item.amount !== undefined)
+      if (normalizedPayment && !normalizedItems.some(item => item.kind === 'task')) {
+        const companionTask = extractCompanionTask(input, normalizedPayment)
+        if (companionTask) normalizedItems.unshift(companionTask)
+      }
 
       setPlanSource('quick-add')
       setPlan(normalizedItems.map(item => ({
@@ -1411,6 +1439,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
   aiLoading: boolean
   user: User | null
 }) {
+  const resultRef = useRef<HTMLElement>(null)
   const todayKey = iso(new Date())
   const openTasks = tasks.filter(t => t.status === 'open')
   const upcomingTasks = openTasks
@@ -1423,6 +1452,13 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
     .sort((a, b) => (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate))
   const totalPending = pendingMoneyLabel(pendingPayments)
   const hasAttention = overdue.length > 0 || todayTasks.length > 0 || paymentAttention.length > 0
+
+  useEffect(() => {
+    if (plan.length > 0 && !aiLoading) {
+      const timer = window.setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120)
+      return () => window.clearTimeout(timer)
+    }
+  }, [plan.length, aiLoading])
 
   return (
     <div className="content-stack">
@@ -1468,7 +1504,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
       </section>
 
       {plan.length > 0 && (
-        <section className="ai-result-card">
+        <section ref={resultRef} className="ai-result-card">
           <div className="ai-result-head">
             <div>
               <div className="quick-label">{tr('yourPlan')}</div>
