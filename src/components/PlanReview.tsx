@@ -26,6 +26,11 @@ type ReviewDetail = {
   currency?: PaymentCurrency | null
 }
 
+type ClientDecision = {
+  mode: 'existing' | 'new'
+  name: string
+}
+
 type DetailDecision = {
   client?: string
   dueDate?: string
@@ -55,9 +60,9 @@ export function PlanReview({
     {
       mode: item.existingName ? 'existing' : 'new',
       name: item.existingName ?? item.originalName ?? '',
-    },
-  ])), [items])
-  const [decisions, setDecisions] = useState<Record<string, { mode: 'existing' | 'new'; name: string }>>(initial)
+    } satisfies ClientDecision,
+  ])) as Record<string, ClientDecision>, [items])
+  const [decisions, setDecisions] = useState<Record<string, ClientDecision>>(initial)
   const [detailDecisions, setDetailDecisions] = useState<Record<string, DetailDecision>>({})
   const [error, setError] = useState('')
 
