@@ -940,7 +940,6 @@ function App() {
             </header>
 
             <div key={view} className={"route-view route-" + view}>
-            {aiLimitNotice && (view === 'quick-add' || view === 'planner') && <div className="error-banner" role="status" aria-live="polite">{tr('aiLimitReachedNotice')}</div>}
             {view === 'tasks' && tasksError && <div className="error-banner" role="alert">{tasksError}</div>}
             {view === 'clients' && clientsError && <div className="error-banner" role="alert">{clientsError}</div>}
             {view === 'payments' && paymentsError && <div className="error-banner" role="alert">{paymentsError}</div>}
