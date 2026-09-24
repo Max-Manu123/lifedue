@@ -630,6 +630,18 @@ function App() {
     }
 
     if (tasksSaved || paymentsSaved) {
+      // AI already saw the user's intent. Only suggest the missing companion
+      // item: task -> payment, payment -> task. If both were created, suggest nothing.
+      if (taskPlan.length > 0 && paymentsToSave.length > 0) {
+        setNextStep(null)
+      } else if (taskPlan.length > 0 && paymentsToSave.length === 0) {
+        setNextStep({ type: 'payment', client: taskPlan[0]?.client ?? '' })
+      } else if (taskPlan.length === 0 && paymentsToSave.length > 0) {
+        setNextStep({ type: 'task', client: paymentsToSave[0]?.client ?? '' })
+      } else {
+        setNextStep(null)
+      }
+
       clearAuthDraft()
       setPlan([])
       setPlanPayments([])
@@ -637,7 +649,7 @@ function App() {
       if (pendingOnboardingPaymentAfterAuthRef.current) {
         pendingOnboardingPaymentAfterAuthRef.current = false
         setPendingOnboardingPaymentAfterAuth(false)
-        setPaymentDraftClient(taskPlan[0]?.client ?? '')
+        setPaymentDraftClient(taskPlan[0]?.client ?? paymentsToSave[0]?.client ?? '')
         setShowAddPayment(true)
       }
       setView('tasks')
