@@ -1223,7 +1223,7 @@ function Landing({ onStart, onAuth, onOpenApp, language, setLanguage, user }: { 
   )
 }
 
-function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, planSource, planPayments, onAddPlan, onAddPayment, onSkip, aiLoading, aiError, user, onBack, language }: {
+function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, planSource, planPayments, onAddPlan, onAddPayment, onUpdatePlanTask, onUpdatePlanPayment, onSkip, aiLoading, aiError, user, onBack, language }: {
   quickText: string
   onQuickTextChange: (value: string) => void
   onCreatePlan: () => void
