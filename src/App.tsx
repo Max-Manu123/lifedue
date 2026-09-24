@@ -752,7 +752,6 @@ function App() {
     void persistPlan()
   }, [user, pendingSaveAfterAuth, plan.length])
 
-
   const planReviewItems = () => {
     const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
     const items: Array<{ key: string; label: string; originalName?: string; existingName?: string }> = []
@@ -974,7 +973,7 @@ function App() {
       {view === 'home' ? (
         <Landing onStart={() => navigate('onboarding')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} language={language} setLanguage={setLanguage} user={user} />
       ) : view === 'onboarding' ? (
-        <OnboardingView quickText={quickText} onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }} onCreatePlan={() => void createPlan()} plan={plan} planSource={planSource} planPayments={planPayments} onAddPlan={() => void addPlan()} onAddPayment={addOnboardingPayment} onUpdatePlanTask={(id, patch) => setPlan(current => current.map(task => task.id === id ? { ...task, ...patch } : task))} onUpdatePlanPayment={(index, patch) => setPlanPayments(current => current.map((payment, itemIndex) => itemIndex === index ? { ...payment, ...patch } : payment))} onSkip={skipOnboarding} aiLoading={aiLoading} aiError={aiError} user={user} onBack={() => navigate('home')} language={language} />
+        <OnboardingView quickText={quickText} onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }} onCreatePlan={() => void createPlan()} plan={plan} planSource={planSource} planPayments={planPayments} onAddPlan={addPlan} onAddPayment={addOnboardingPayment} onUpdatePlanTask={(id, patch) => setPlan(current => current.map(task => task.id === id ? { ...task, ...patch } : task))} onUpdatePlanPayment={(index, patch) => setPlanPayments(current => current.map((payment, itemIndex) => itemIndex === index ? { ...payment, ...patch } : payment))} onSkip={skipOnboarding} aiLoading={aiLoading} aiError={aiError} user={user} onBack={() => navigate('home')} language={language} />
       ) : (
         <div className="workspace">
           <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
@@ -1217,7 +1216,7 @@ function App() {
       )}
 
       {planReviewOpen && <PlanReview
-        language={language}
+        language={currentLanguage}
         items={planReviewItems()}
         onCancel={() => setPlanReviewOpen(false)}
         onConfirm={confirmPlanReview}
@@ -1590,7 +1589,7 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
               {plan.map((task, index) => <div className="ai-plan-item" key={task.id + index}><div className="ai-plan-icon">{/payment|pagamento|cobrar|receber/i.test(task.title) ? '💰' : '✓'}</div><div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate, task.dueDateProvided !== false)}</span></div></div>)}
             </div>
             <button className="primary-button onboarding-submit" onClick={onAddPlan}>
-              {user ? (pt ? 'Adicionar tudo' : 'Add everything') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
+              {user ? (pt ? 'Guardar no LifeDue' : 'Save to LifeDue') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
             </button>
             {showDetails && (() => {
               const undatedTasks = plan.filter(task => task.dueDateProvided === false)
@@ -2185,3 +2184,89 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
 
   const submit = async () => {
     const cleanTitle = title.trim()
+    const cleanClient = client.trim()
+    const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === cleanClient.toLocaleLowerCase())
+    const canonicalClient = matchedClient?.name ?? cleanClient
+    if (!cleanTitle) {
+      setError(currentLanguage === 'pt' ? 'Digite o que precisa ser feito.' : 'Enter the task you need to complete.')
+      return
+    }
+    if (!cleanClient) {
+      setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
+      return
+    }
+    if (!isValidDueDate(dueDate)) {
+      setError(currentLanguage === 'pt' ? 'Escolha uma data de entrega válida a partir de hoje.' : 'Choose a valid due date from today onward.')
+      return
+    }
+    if (saving) return
+
+    setError('')
+    setSaving(true)
+    try {
+      await onAdd({ title: cleanTitle, client: canonicalClient, dueDate, priority })
+    } catch (error) {
+      console.error('LifeDue add task modal failed:', error)
+      setError(currentLanguage === 'pt' ? 'Não foi possível adicionar a tarefa. Tente novamente.' : 'Could not add the task. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <div className="modal-backdrop" onMouseDown={onClose}>
+    <div className="modal task-modal" onMouseDown={e => e.stopPropagation()}>
+      <div className="modal-head">
+        <div><p className="section-kicker">{tr('newTask')}</p><h2>{tr('addTaskTitle')}</h2></div>
+        <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={currentLanguage === 'pt' ? 'Fechar' : 'Close'}><X size={20} /></button>
+      </div>
+      <label>{tr('task')}<input value={title} onChange={e => { setTitle(e.target.value); setError('') }} placeholder={tr('finishHomepage')} autoFocus disabled={saving} /></label>
+      <label>{tr('client')}<input list="lifedue-task-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={tr('john')} disabled={saving} /><datalist id="lifedue-task-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
+      <div className="form-grid">
+        <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={currentTodayKey()} disabled={saving} /></label>
+        <label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)} disabled={saving}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label>
+      </div>
+      {error && <div className="form-error" role="alert">{error}</div>}
+      <div className="modal-actions">
+        <button type="button" className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button>
+        <button type="button" className="primary-button" onClick={() => void submit()} disabled={saving}>
+          {saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addTask')}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+function PriorityBadge({ priority }: { priority: Priority }) {
+  const label = priority === 'low' ? tr('low') : priority === 'medium' ? tr('medium') : tr('high')
+  return <span className={'priority ' + priority}>{label}</span>
+}
+
+function getTodayGreeting() {
+  const hour = new Date().getHours()
+  if (currentLanguage === 'pt') {
+    if (hour < 12) return tr('todayGreetingMorning')
+    if (hour < 18) return tr('todayGreetingAfternoon')
+    return tr('todayGreetingEvening')
+  }
+  if (hour < 12) return tr('todayGreetingMorning')
+  if (hour < 18) return tr('todayGreetingAfternoon')
+  return tr('todayGreetingEvening')
+}
+
+function isValidDueDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const [year, month, day] = value.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return false
+  return value >= currentTodayKey()
+}
+
+function formatDate(value: string, provided = true) {
+  if (!provided) return tr('noDueDate')
+  const date = new Date(value + 'T00:00:00')
+  if (value === currentTodayKey()) return tr('today')
+  if (value === addDays(1)) return tr('tomorrow')
+  return date.toLocaleDateString(currentLanguage === 'pt' ? 'pt-PT' : 'en-US', { month: 'short', day: 'numeric' })
+}
+
+export default App
