@@ -992,6 +992,7 @@ function App() {
               waitlistSaving={waitlistSaving}
               waitlistError={waitlistError}
               onJoinWaitlist={() => void joinProWaitlist()}
+              aiUsage={aiUsage}
             />}
             {view === 'planner' && (
               <PlannerView
@@ -1202,6 +1203,7 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
   waitlistSaving: boolean
   waitlistError: string
   onJoinWaitlist: () => void
+  aiUsage: AiUsage
 }) {
   return <div className="content-stack settings-page">
     <div className="page-intro">
@@ -1625,7 +1627,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
           <h3>{tr('quickQuestion')}</h3>
           <textarea value={quickText} onChange={e => onQuickTextChange(e.target.value)} placeholder={currentLanguage === 'pt' ? 'ex.: Entregar o site da Maria sexta, cobrar 200 USD amanhã e enviar a proposta ao Carlos segunda.' : "e.g. Deliver Maria's website Friday, collect $200 tomorrow, and send Carlos the proposal Monday."} />
           <div className="quick-actions">
-            <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading || aiUsage.remaining === 0}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
+            <button className="primary-button" onClick={() => { if (aiUsage.remaining === 0) setUpgradeOpen(true); else onCreatePlan() }} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : aiUsage.remaining === 0 ? tr('upgrade') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
             <span>{aiUsage.remaining > 0 ? tr('aiUsesRemaining').replace('{n}', String(aiUsage.remaining)) : tr('proComingSoon')}</span>
           </div>
           {aiError && <div className="quick-error" role="alert">{aiError}</div>}
