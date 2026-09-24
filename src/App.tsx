@@ -562,6 +562,7 @@ function App() {
         const newTaskPlan = taskPlan.filter(task => !existingTaskKeys.has(taskKey(task)))
         const created = newTaskPlan.length ? await createTasks(user, newTaskPlan) : []
         setTasks(current => uniqueTasks([...created, ...current]))
+
         if (savablePayments.length > 0) {
           const existingPaymentKeys = new Set(payments.map(paymentKey))
           const newPayments = savablePayments.filter(item => !existingPaymentKeys.has(paymentKey({
@@ -579,6 +580,14 @@ function App() {
           })))
           setPayments(current => uniquePayments([...createdPayments, ...current]))
         }
+
+        // Re-read the persisted data so the UI always reflects what Supabase accepted.
+        const [freshTasks, freshPayments] = await Promise.all([
+          fetchTasks(user),
+          fetchPayments(user),
+        ])
+        setTasks(freshTasks)
+        setPayments(freshPayments)
       } else {
         const clientNames = new Set(clients.map(c => c.name.toLowerCase()))
         const newClients = taskPlan
@@ -617,7 +626,7 @@ function App() {
         setPaymentDraftClient(taskPlan[0]?.client ?? '')
         setShowAddPayment(true)
       }
-      setView('quick-add')
+      setView('tasks')
     } catch (error) {
       console.error('LifeDue plan save failed:', error)
       setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar o plano.' : 'Could not save the plan.')
