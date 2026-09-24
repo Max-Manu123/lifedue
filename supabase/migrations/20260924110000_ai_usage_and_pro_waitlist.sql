@@ -5,6 +5,30 @@
 alter table public.profiles
   add column if not exists pro_waitlist_email text;
 
+create table if not exists public.pro_waitlist (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  email text not null,
+  created_at timestamptz not null default now(),
+  unique (user_id)
+);
+
+alter table public.pro_waitlist enable row level security;
+
+drop policy if exists "Users can read own Pro waitlist entry" on public.pro_waitlist;
+create policy "Users can read own Pro waitlist entry"
+  on public.pro_waitlist for select
+  to authenticated
+  using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert own Pro waitlist entry" on public.pro_waitlist;
+create policy "Users can insert own Pro waitlist entry"
+  on public.pro_waitlist for insert
+  to authenticated
+  with check ((select auth.uid()) = user_id);
+
+grant select, insert on table public.pro_waitlist to authenticated;
+
 create table if not exists public.ai_usage (
   user_id uuid not null references auth.users(id) on delete cascade,
   period_start date not null,
