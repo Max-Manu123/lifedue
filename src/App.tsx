@@ -1582,6 +1582,7 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
     { key: 'overdue', label: tr('overdueTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDate < todayKey), tone: 'danger' as const },
     { key: 'today', label: tr('todayTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDate === todayKey), tone: 'today' as const },
     { key: 'upcoming', label: tr('upcomingTasks'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided !== false && t.dueDate > todayKey), tone: 'upcoming' as const },
+    { key: 'no-deadline', label: tr('noDueDate'), items: filtered.filter(t => t.status === 'open' && t.dueDateProvided === false), tone: 'upcoming' as const },
     { key: 'completed', label: tr('completedTasks'), items: filtered.filter(t => t.status === 'completed'), tone: 'completed' as const },
   ].filter(group => group.items.length)
 
