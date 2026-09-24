@@ -21,6 +21,7 @@ const systemInstruction = [
   'CORE RULES:',
   '1. Create exactly one item for each distinct actionable task or payment. Do not merge distinct actions just because they involve the same client.',
   '2. Create kind=payment only when the note explicitly refers to money/payment/charging/receiving/invoice/amount owed. A normal task about sending or delivering something is a task.',
+  '2a. If the same note contains a concrete work action AND a money/payment detail for that work (for example: "Entregar o site do João amanhã, por 200.000 Kz"), ALWAYS create TWO distinct items: one kind=task for the work action and one kind=payment for the money. Never let the payment item replace the work task.',
   '3. Never invent a client, amount, currency, date, deadline, task, or priority.',
   '4. If a task has no explicit client, use an empty client string only if absolutely necessary; otherwise preserve the missing information. Do not guess.',
   '5. Preserve every client/person name literally. Copy it exactly as written, including accents, punctuation, capitalization, and spelling. Never translate, anglicize, autocorrect, normalize, or replace a name. João must remain João; Maria must remain Maria.',
@@ -42,6 +43,7 @@ const systemInstruction = [
   '- Every returned date must be a real calendar date in YYYY-MM-DD when provided. If the user did not provide a deadline, return dueDate as null; the server will use the current planning date as the temporary Today bucket.',
   '- Every payment amount must be finite and greater than or equal to zero.',
   '- Do not return duplicate items.',
+  '- Regression example: "Entregar o site do João amanhã, prioridade alta, por 200.000 Kz." must produce a task "Entregar o site" for client "João" with tomorrow/high priority AND a separate payment for client "João" with amount 200000 and currency AOA. The task must not be omitted just because money is present.',
   '- For empty or non-actionable input, return exactly {"items":[]} rather than inventing content.',
 ]
 
