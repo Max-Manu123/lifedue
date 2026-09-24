@@ -4,7 +4,9 @@ import { AlertTriangle, Check, ChevronRight, Users, X } from 'lucide-react'
 type Language = 'en' | 'pt'
 
 type ReviewItem = {
-  originalName: string
+  key: string
+  label: string
+  originalName?: string
   existingName?: string
 }
 
@@ -21,19 +23,19 @@ export function PlanReview({ language, items, onConfirm, onCancel }: {
 }) {
   const pt = language === 'pt'
   const initial = useMemo(() => Object.fromEntries(items.map(item => [
-    item.originalName,
+    item.key,
     {
       mode: item.existingName ? 'existing' : 'new',
-      name: item.existingName ?? item.originalName,
+      name: item.existingName ?? item.originalName ?? '',
     } satisfies Decision,
   ])), [items])
   const [decisions, setDecisions] = useState<Record<string, Decision>>(initial)
   const [error, setError] = useState('')
 
-  const update = (originalName: string, patch: Partial<Decision>) => {
+  const update = (key: string, patch: Partial<Decision>) => {
     setDecisions(current => ({
       ...current,
-      [originalName]: { ...current[originalName], ...patch },
+      [key]: { ...current[key], ...patch },
     }))
     setError('')
   }
@@ -41,7 +43,7 @@ export function PlanReview({ language, items, onConfirm, onCancel }: {
   const submit = () => {
     const result: Record<string, string> = {}
     for (const item of items) {
-      const decision = decisions[item.originalName]
+      const decision = decisions[item.key]
       const name = decision?.name.trim() ?? ''
       if (!name) {
         setError(pt ? 'Cada cliente precisa de um nome ou você pode voltar e corrigir o plano.' : 'Each client needs a name, or you can go back and correct the plan.')
@@ -51,7 +53,7 @@ export function PlanReview({ language, items, onConfirm, onCancel }: {
         setError(pt ? 'Escolha outro nome ou use o cliente existente.' : 'Choose another name or use the existing client.')
         return
       }
-      result[item.originalName] = name
+      result[item.key] = name
     }
     onConfirm(result)
   }
@@ -75,10 +77,10 @@ export function PlanReview({ language, items, onConfirm, onCancel }: {
             const hasExisting = Boolean(item.existingName)
             const useExisting = decision?.mode === 'existing'
             return (
-              <div className="plan-review-item" key={item.originalName}>
+              <div className="plan-review-item" key={item.key}>
                 <div className="plan-review-item-head">
                   <div>
-                    <strong>{item.originalName}</strong>
+                    <strong>{item.label}</strong>
                     {hasExisting
                       ? <span className="plan-review-warning"><AlertTriangle size={14} /> {pt ? 'Já existe “' + item.existingName + '”.' : '“' + item.existingName + '” already exists.'}</span>
                       : <span>{pt ? 'Novo cliente — será adicionado.' : 'New client — will be added.'}</span>}
@@ -86,7 +88,7 @@ export function PlanReview({ language, items, onConfirm, onCancel }: {
                 </div>
                 {hasExisting ? (
                   <div className="plan-review-choice">
-                    <button type="button" className={useExisting ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => update(item.originalName, { mode: 'existing', name: item.existingName! })}>
+                    <button type="button" className={useExisting ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => update(item.key, { mode: 'existing', name: item.existingName! })}>
                       <Check size={15} /> {pt ? 'Usar cliente existente' : 'Use existing client'}
                     </button>
                     <button type="button" className={!useExisting ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => update(item.originalName, { mode: 'new', name: decision?.name === item.existingName ? '' : decision?.name ?? '' })}>
