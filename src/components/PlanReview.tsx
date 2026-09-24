@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Check, ChevronRight, CircleDollarSign, Clock3, Users, X } from 'lucide-react'
+import { AlertTriangle, Check, ChevronRight, Clock3, Users, X } from 'lucide-react'
 import type { PaymentCurrency, Priority } from '../types'
 
 type Language = 'en' | 'pt'
@@ -117,9 +117,6 @@ export function PlanReview({
       if (detail.dueDateMissing && decision?.dueDate && decision.dueDate < today) {
         setError(pt ? 'Escolha um prazo de hoje ou de uma data futura.' : 'Choose today or a future date.')
         return
-      }
-      if (detail.clientMissing && decision?.client !== undefined && !decision.client.trim()) {
-        delete decision.client
       }
       if (detail.amountMissing && decision?.amount !== undefined && (!Number.isFinite(decision.amount) || decision.amount < 0)) {
         setError(pt ? 'Digite um valor de pagamento válido.' : 'Enter a valid payment amount.')
