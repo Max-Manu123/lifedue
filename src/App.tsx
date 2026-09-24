@@ -560,103 +560,73 @@ function App() {
       return
     }
 
-    const savablePayments = planPayments.filter(item =>
+    // AI plans now use the exact same persistence path as the manual
+    // "Add task" / "Add payment" actions. This keeps both flows identical.
+    const taskPlan = plan.filter(task =>
+      !planPayments.some(payment =>
+        payment.client.trim().toLowerCase() === task.client.trim().toLowerCase() &&
+        payment.dueDate === task.dueDate &&
+        payment.amount !== null &&
+        payment.amount !== undefined &&
+        /payment|pagamento|collect|cobrar|receber/i.test(task.title)
+      )
+    )
+
+    const paymentsToSave = planPayments.filter(item =>
       item.amount !== null &&
       item.amount !== undefined
     )
-    const incompletePaymentItems = planPayments.filter(item =>
-      item.amount === null ||
-      item.amount === undefined
-    )
-    const taskPlan = [
-      ...plan.filter(task => !planPayments.some(payment =>
-        payment.client.trim().toLowerCase() === task.client.trim().toLowerCase() &&
-        payment.dueDate === task.dueDate &&
-        /payment|pagamento|collect|cobrar|receber/i.test(task.title)
-      )),
-      ...incompletePaymentItems.map(item => ({
-        id: crypto.randomUUID(),
-        title: currentLanguage === 'pt' ? 'Cobrar pagamento' : 'Follow up payment',
-        client: item.client,
-        dueDate: item.dueDate,
-        dueDateProvided: item.dueDateProvided !== false,
-        priority: item.priority,
-        status: 'open' as const,
-      })),
-    ]
 
-    let tasksSaved = false
-    let paymentsSaved = false
+    let tasksSaved = taskPlan.length === 0
+    let paymentsSaved = paymentsToSave.length === 0
 
-    if (taskPlan.length > 0) {
+    // Suppress the manual-flow "next step" cards while saving the whole AI plan.
+    suppressNextStepRef.current = true
+
+    for (const task of taskPlan) {
       try {
-        const existingTaskKeys = new Set(tasks.map(taskKey))
-        const newTaskPlan = taskPlan.filter(task => !existingTaskKeys.has(taskKey(task)))
-        if (newTaskPlan.length) {
-          const created = await createTasks(user, newTaskPlan)
-          setTasks(current => uniqueTasks([...created, ...current]))
-          tasksSaved = created.length > 0
-        } else {
-          tasksSaved = true
-        }
+        await addTask({
+          title: task.title,
+          client: task.client,
+          dueDate: task.dueDate,
+          dueDateProvided: task.dueDateProvided !== false,
+          priority: task.priority,
+        })
+        tasksSaved = true
       } catch (error) {
         console.error('LifeDue AI task save failed:', error)
         setTasksError(currentLanguage === 'pt'
-          ? 'A tarefa não foi guardada. Abra o console para ver o erro técnico.'
-          : 'The task was not saved. Open the console to see the technical error.')
+          ? 'A tarefa não foi guardada. Tente novamente.'
+          : 'The task was not saved. Please try again.')
+        tasksSaved = false
       }
     }
 
-    if (savablePayments.length > 0) {
+    for (const payment of paymentsToSave) {
       try {
-        const existingPaymentKeys = new Set(payments.map(paymentKey))
-        const newPayments = savablePayments.filter(item => !existingPaymentKeys.has(paymentKey({
-          client: item.client,
-          amount: item.amount as number,
-          currency: item.currency as string,
-          dueDate: item.dueDate,
-        })))
-        if (newPayments.length) {
-          const createdPayments = await Promise.all(newPayments.map(item => createPayment(user, {
-            client: item.client,
-            amount: item.amount as number,
-            currency: item.currency ?? null,
-            dueDate: item.dueDate,
-            dueDateProvided: item.dueDateProvided !== false,
-          })))
-          setPayments(current => uniquePayments([...createdPayments, ...current]))
-          paymentsSaved = createdPayments.length > 0
-        } else {
-          paymentsSaved = true
-        }
+        await addPayment({
+          client: payment.client,
+          amount: payment.amount as number,
+          currency: payment.currency ?? null,
+          dueDate: payment.dueDate,
+          dueDateProvided: payment.dueDateProvided !== false,
+        })
+        paymentsSaved = true
       } catch (error) {
         console.error('LifeDue AI payment save failed:', error)
         setPaymentsError(currentLanguage === 'pt'
-          ? 'O pagamento não foi guardado. Abra o console para ver o erro técnico.'
-          : 'The payment was not saved. Open the console to see the technical error.')
+          ? 'O pagamento não foi guardado. Tente novamente.'
+          : 'The payment was not saved. Please try again.')
+        paymentsSaved = false
       }
     }
 
-    // Refresh each resource independently. A failure loading one section must
-    // never hide data that was already saved in another section.
-    if (tasksSaved) {
-      try {
-        setTasks(await fetchTasks(user))
-      } catch (error) {
-        console.error('LifeDue task refresh failed:', error)
-      }
-    }
-    if (paymentsSaved) {
-      try {
-        setPayments(await fetchPayments(user))
-      } catch (error) {
-        console.error('LifeDue payment refresh failed:', error)
-      }
-    }
+    suppressNextStepRef.current = false
+
     try {
       setClients(await fetchClients(user))
     } catch (error) {
-      console.error('LifeDue client refresh failed:', error)
+      console.error('LifeDue AI client refresh failed:', error)
     }
 
     if (tasksSaved || paymentsSaved) {
@@ -673,8 +643,8 @@ function App() {
       setView('tasks')
     } else {
       setTasksError(currentLanguage === 'pt'
-        ? 'Nada foi guardado. Verifique o console do navegador para o erro técnico.'
-        : 'Nothing was saved. Check the browser console for the technical error.')
+        ? 'Nada foi guardado. Tente novamente.'
+        : 'Nothing was saved. Please try again.')
     }
   }
 
