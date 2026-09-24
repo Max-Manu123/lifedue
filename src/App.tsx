@@ -30,6 +30,7 @@ import type { User, FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createClient, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
+import { PlanReview } from './components/PlanReview'
 
 type View = 'home' | 'onboarding' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner' | 'feedback' | 'settings'
 type Language='en'|'pt'
@@ -172,6 +173,8 @@ function App() {
   const [plan, setPlan] = useState<Task[]>([])
   const [planSource, setPlanSource] = useState<'quick-add' | 'planner' | null>(null)
   const [planPayments, setPlanPayments] = useState<QuickAddItem[]>([])
+  const [planReviewOpen, setPlanReviewOpen] = useState(false)
+  const [planReviewConfirmed, setPlanReviewConfirmed] = useState(false)
   const [plannerError, setPlannerError] = useState('')
   const [plannerSource, setPlannerSource] = useState<'ai' | 'local' | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
@@ -624,7 +627,7 @@ function App() {
 
   const clearAuthDraft = () => localStorage.removeItem(authDraftKey)
 
-  const addPlan = async () => {
+  const persistPlan = async () => {
     if (!plan.length) return
     setTasksError('')
     setPaymentsError('')
@@ -746,8 +749,48 @@ function App() {
   useEffect(() => {
     if (!user || !pendingSaveAfterAuth || !plan.length) return
     setPendingSaveAfterAuth(false)
-    void addPlan()
+    void persistPlan()
   }, [user, pendingSaveAfterAuth, plan.length])
+
+
+  const planReviewItems = () => {
+    const names = [...plan.map(task => task.client.trim()), ...planPayments.map(payment => payment.client.trim())]
+      .filter(Boolean)
+    const seen = new Set<string>()
+    return names.filter(name => {
+      const key = name.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    }).map(originalName => ({
+      originalName,
+      existingName: clients.find(client => client.name.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase() === originalName.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase())?.name,
+    }))
+  }
+
+  const addPlan = () => {
+    if (!plan.length) return
+    if (!planReviewConfirmed && planReviewItems().length > 0) {
+      setPlanReviewOpen(true)
+      return
+    }
+    void persistPlan()
+  }
+
+  const confirmPlanReview = (decisions: Record<string, string>) => {
+    const nextPlan = plan.map(task => ({ ...task, client: decisions[task.client] ?? task.client }))
+    const nextPayments = planPayments.map(payment => ({ ...payment, client: decisions[payment.client] ?? payment.client }))
+    setPlan(nextPlan)
+    setPlanPayments(nextPayments)
+    setPlanReviewOpen(false)
+    setPlanReviewConfirmed(true)
+  }
+
+  useEffect(() => {
+    if (!planReviewConfirmed || !plan.length) return
+    setPlanReviewConfirmed(false)
+    void persistPlan()
+  }, [planReviewConfirmed, plan.length])
 
   const addTask = async (task: Omit<Task, 'id' | 'status'>) => {
     if (!isValidDueDate(task.dueDate)) {
@@ -1135,6 +1178,12 @@ function App() {
         </div>
       )}
 
+      {planReviewOpen && <PlanReview
+        language={language}
+        items={planReviewItems()}
+        onCancel={() => setPlanReviewOpen(false)}
+        onConfirm={confirmPlanReview}
+      />}
       {showAddClient && user && <AddClientModal onClose={() => setShowAddClient(false)} onAdd={async name => { if (!supabase || !user) return; const created = await createClient(user, name); setClients(current => current.some(client => client.name.trim().toLowerCase() === created.name.trim().toLowerCase()) ? current : [...current, created].sort((a,b) => a.name.localeCompare(b.name))) }} />}
       {nextStep && <NextStepCard type={nextStep.type} client={nextStep.client} onAction={() => { suppressNextStepRef.current = true; if (nextStep.type === 'payment') { setPaymentDraftClient(nextStep.client); setShowAddPayment(true) } else { setTaskDraftClient(nextStep.client); setShowAdd(true) }; setNextStep(null) }} onDismiss={() => setNextStep(null)} />}
       {showAdd && <AddTaskModal initialClient={taskDraftClient} onClose={() => { setShowAdd(false); setTaskDraftClient('') }} onAdd={addTask} clients={clients} />}
@@ -2098,89 +2147,3 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
 
   const submit = async () => {
     const cleanTitle = title.trim()
-    const cleanClient = client.trim()
-    const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === cleanClient.toLocaleLowerCase())
-    const canonicalClient = matchedClient?.name ?? cleanClient
-    if (!cleanTitle) {
-      setError(currentLanguage === 'pt' ? 'Digite o que precisa ser feito.' : 'Enter the task you need to complete.')
-      return
-    }
-    if (!cleanClient) {
-      setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
-      return
-    }
-    if (!isValidDueDate(dueDate)) {
-      setError(currentLanguage === 'pt' ? 'Escolha uma data de entrega válida a partir de hoje.' : 'Choose a valid due date from today onward.')
-      return
-    }
-    if (saving) return
-
-    setError('')
-    setSaving(true)
-    try {
-      await onAdd({ title: cleanTitle, client: canonicalClient, dueDate, priority })
-    } catch (error) {
-      console.error('LifeDue add task modal failed:', error)
-      setError(currentLanguage === 'pt' ? 'Não foi possível adicionar a tarefa. Tente novamente.' : 'Could not add the task. Please try again.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return <div className="modal-backdrop" onMouseDown={onClose}>
-    <div className="modal task-modal" onMouseDown={e => e.stopPropagation()}>
-      <div className="modal-head">
-        <div><p className="section-kicker">{tr('newTask')}</p><h2>{tr('addTaskTitle')}</h2></div>
-        <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={currentLanguage === 'pt' ? 'Fechar' : 'Close'}><X size={20} /></button>
-      </div>
-      <label>{tr('task')}<input value={title} onChange={e => { setTitle(e.target.value); setError('') }} placeholder={tr('finishHomepage')} autoFocus disabled={saving} /></label>
-      <label>{tr('client')}<input list="lifedue-task-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={tr('john')} disabled={saving} /><datalist id="lifedue-task-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
-      <div className="form-grid">
-        <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={currentTodayKey()} disabled={saving} /></label>
-        <label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)} disabled={saving}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label>
-      </div>
-      {error && <div className="form-error" role="alert">{error}</div>}
-      <div className="modal-actions">
-        <button type="button" className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button>
-        <button type="button" className="primary-button" onClick={() => void submit()} disabled={saving}>
-          {saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addTask')}
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
-function PriorityBadge({ priority }: { priority: Priority }) {
-  const label = priority === 'low' ? tr('low') : priority === 'medium' ? tr('medium') : tr('high')
-  return <span className={'priority ' + priority}>{label}</span>
-}
-
-function getTodayGreeting() {
-  const hour = new Date().getHours()
-  if (currentLanguage === 'pt') {
-    if (hour < 12) return tr('todayGreetingMorning')
-    if (hour < 18) return tr('todayGreetingAfternoon')
-    return tr('todayGreetingEvening')
-  }
-  if (hour < 12) return tr('todayGreetingMorning')
-  if (hour < 18) return tr('todayGreetingAfternoon')
-  return tr('todayGreetingEvening')
-}
-
-function isValidDueDate(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
-  const [year, month, day] = value.split('-').map(Number)
-  const date = new Date(year, month - 1, day)
-  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return false
-  return value >= currentTodayKey()
-}
-
-function formatDate(value: string, provided = true) {
-  if (!provided) return tr('noDueDate')
-  const date = new Date(value + 'T00:00:00')
-  if (value === currentTodayKey()) return tr('today')
-  if (value === addDays(1)) return tr('tomorrow')
-  return date.toLocaleDateString(currentLanguage === 'pt' ? 'pt-PT' : 'en-US', { month: 'short', day: 'numeric' })
-}
-
-export default App
