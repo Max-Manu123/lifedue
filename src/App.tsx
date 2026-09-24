@@ -958,6 +958,7 @@ function App() {
                 aiLoading={aiLoading}
                 user={user}
                 aiUsage={aiUsage}
+                onUpgrade={() => setUpgradeOpen(true)}
               />
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
@@ -1546,7 +1547,7 @@ function MobileNav({ icon, label, active, onClick }: { icon: React.ReactNode; la
   return <button className={active ? 'mobile-nav-item active' : 'mobile-nav-item'} onClick={onClick}>{icon}<span>{label}</span></button>
 }
 
-function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiError, onQuickTextChange, onToggle, plan, planSource, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user, aiUsage }: {
+function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiError, onQuickTextChange, onToggle, plan, planSource, onCreatePlan, onAddPlan, onPlanner, onMarkPaid, onViewTasks, onViewPayments, onAddTask, onAddPayment, busyTaskId, aiLoading, user, aiUsage, onUpgrade }: {
   tasks: Task[]
   overdue: Task[]
   todayTasks: Task[]
@@ -1569,6 +1570,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
   aiLoading: boolean
   user: User | null
   aiUsage: AiUsage
+  onUpgrade: () => void
 }) {
   const resultRef = useRef<HTMLElement>(null)
   const todayKey = iso(new Date())
@@ -1627,7 +1629,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
           <h3>{tr('quickQuestion')}</h3>
           <textarea value={quickText} onChange={e => onQuickTextChange(e.target.value)} placeholder={currentLanguage === 'pt' ? 'ex.: Entregar o site da Maria sexta, cobrar 200 USD amanhã e enviar a proposta ao Carlos segunda.' : "e.g. Deliver Maria's website Friday, collect $200 tomorrow, and send Carlos the proposal Monday."} />
           <div className="quick-actions">
-            <button className="primary-button" onClick={() => { if (aiUsage.remaining === 0) setUpgradeOpen(true); else onCreatePlan() }} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : aiUsage.remaining === 0 ? tr('upgrade') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
+            <button className="primary-button" onClick={() => { if (aiUsage.remaining === 0) onUpgrade(); else onCreatePlan() }} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : aiUsage.remaining === 0 ? tr('upgrade') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
             <span>{aiUsage.remaining > 0 ? tr('aiUsesRemaining').replace('{n}', String(aiUsage.remaining)) : tr('proComingSoon')}</span>
           </div>
           {aiError && <div className="quick-error" role="alert">{aiError}</div>}
