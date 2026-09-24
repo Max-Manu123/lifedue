@@ -6,7 +6,7 @@ create or replace function public.get_ai_usage(
   p_period_start date,
   p_limit integer
 )
-returns table(used integer, remaining integer, limit integer)
+returns table(used integer, remaining integer, monthly_limit integer)
 language plpgsql
 security definer
 set search_path = ''
