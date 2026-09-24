@@ -991,6 +991,7 @@ function App() {
               onFeedback={() => navigate('feedback')}
               onUpgrade={() => { setProLimitReached(false); setUpgradeOpen(true) }}
               waitlistEmail={waitlistEmail}
+              setWaitlistEmail={setWaitlistEmail}
               waitlistSent={waitlistSent}
               waitlistSaving={waitlistSaving}
               waitlistError={waitlistError}
@@ -1193,7 +1194,7 @@ function FeedbackView({ type, rating, message, sent, saving, error, canSubmit, o
   </div>
 }
 
-function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut, onFeedback, onUpgrade, waitlistEmail, waitlistSent, waitlistSaving, waitlistError, onJoinWaitlist }: {
+function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut, onFeedback, onUpgrade, waitlistEmail, setWaitlistEmail, waitlistSent, waitlistSaving, waitlistError, onJoinWaitlist, aiUsage }: {
   user: User | null
   language: Language
   setLanguage: (value: Language) => void
@@ -1203,6 +1204,7 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
   onFeedback: () => void
   onUpgrade: () => void
   waitlistEmail: string
+  setWaitlistEmail: (value: string) => void
   waitlistSent: boolean
   waitlistSaving: boolean
   waitlistError: string
