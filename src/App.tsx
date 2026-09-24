@@ -253,7 +253,7 @@ function App() {
     }
 
     let cancelled = false
-    const periodStart = currentTodayKey().slice(0, 7) + '-01'
+    const periodStart = new Date().toISOString().slice(0, 7) + '-01'
 
     Promise.all([
       supabase.rpc('get_ai_usage', {
