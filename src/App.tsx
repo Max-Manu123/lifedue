@@ -989,7 +989,7 @@ function App() {
               setTheme={setTheme}
               onSignOut={handleSignOut}
               onFeedback={() => navigate('feedback')}
-              onUpgrade={() => setUpgradeOpen(true)}
+              onUpgrade={() => { setProLimitReached(false); setUpgradeOpen(true) }}
               waitlistEmail={waitlistEmail}
               waitlistSent={waitlistSent}
               waitlistSaving={waitlistSaving}
