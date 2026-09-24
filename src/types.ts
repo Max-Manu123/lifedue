@@ -9,6 +9,7 @@ export interface QuickAddItem {
   dueDate: string
   dueDateProvided?: boolean
   priority: Priority
+  priorityProvided?: boolean
   amount?: number
   currency?: PaymentCurrency
 }
@@ -20,6 +21,7 @@ export interface Task {
   dueDate: string
   dueDateProvided?: boolean
   priority: Priority
+  priorityProvided?: boolean
   status: TaskStatus
 }
 
