@@ -87,7 +87,7 @@ function load<T>(key: string, fallback: T): T {
   }
 }
 
-const extractCompanionTask = (input: string, payment: QuickAddItem): QuickAddItem | null => {
+const extractCompanionTask = (input: string, payment: QuickAddItem): (QuickAddItem & { dueDateProvided: boolean }) | null => {
   const workVerb = /\b(entregar|enviar|criar|terminar|concluir|fazer|preparar|desenvolver|corrigir|revisar|publicar|configurar|instalar|atualizar|apresentar|montar|produzir|editar)\b/i
   if (!workVerb.test(input)) return null
   const firstClause = input.split(/[,.!?;]+/)[0].trim()
