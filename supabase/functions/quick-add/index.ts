@@ -32,6 +32,7 @@ const systemInstruction = [
   '9. If a money amount is present, extract the numeric amount exactly. Recognize common symbols/codes such as $, US$, €, EUR, R$, BRL, Kz/AOA, £/GBP. If the user did not provide a currency or it is genuinely unclear, return currency as null. Never guess a currency.',
   '10. For payments, amount and currency are null when the user did not provide them. A missing amount or currency must never be replaced with 0, USD, AOA, or another invented value.',
   '11. Priority should reflect urgency stated by the user. If urgency is not stated or omitted, use medium. Use high only for clearly urgent/critical/overdue/asap language.',
+  '11a. Return priorityProvided=true only when the user explicitly stated the priority or urgency for that item. If the priority was not stated, return priorityProvided=false even though priority must still be medium as the default. LifeDue uses this flag to avoid asking the user for information they already supplied.',
   '12. Titles must be concise actions and should be written in the same language as the user note when possible. Do not put the client name in the title.',
   '13. Preserve multiple actions in the same sentence and in the order they appear.',
   '14. Do not create reminders or recurring schedules unless the note explicitly states the recurrence; when explicit, represent the immediate actionable occurrence rather than inventing a recurrence model.',
@@ -40,7 +41,7 @@ const systemInstruction = [
   '17. If the note is ambiguous but contains a plausible action, extract only what is safe and never invent a client or specific action.',
   '',
   'OUTPUT QUALITY:',
-  '- Return only valid JSON matching this exact shape: {"items":[{"kind":"task"|"payment","title":"string","client":"string","dueDate":"YYYY-MM-DD","priority":"low"|"medium"|"high","amount":number|null,"currency":"USD"|"EUR"|"BRL"|"AOA"|"GBP"|"Other"|null}]}',
+  '- Return only valid JSON matching this exact shape: {"items":[{"kind":"task"|"payment","title":"string","client":"string","dueDate":"YYYY-MM-DD","priority":"low"|"medium"|"high","priorityProvided":boolean,"amount":number|null,"currency":"USD"|"EUR"|"BRL"|"AOA"|"GBP"|"Other"|null}]}',
   '- Every returned date must be a real calendar date in YYYY-MM-DD when provided. If the user did not provide a deadline, return dueDate as null; the server will use the current planning date as the temporary Today bucket.',
   '- Every payment amount must be finite and greater than or equal to zero.',
   '- Do not return duplicate items.',
@@ -69,6 +70,7 @@ function cleanItems(value: unknown, fallbackDate: string) {
     const client = typeof item.client === 'string' ? item.client.trim() : ''
     const dueDate = item.dueDate
     const priority = item.priority
+    const priorityProvided = item.priorityProvided === true
     const amount = item.amount
     const currency = item.currency
 
@@ -96,7 +98,7 @@ function cleanItems(value: unknown, fallbackDate: string) {
     const key = JSON.stringify([kind, title.toLowerCase(), client.toLowerCase(), normalizedDueDate, amount, currency])
     if (seen.has(key)) continue
     seen.add(key)
-    cleaned.push({ kind, title, client, dueDate: normalizedDueDate, dueDateProvided, priority: normalizedPriority, amount, currency })
+    cleaned.push({ kind, title, client, dueDate: normalizedDueDate, dueDateProvided, priority: normalizedPriority, priorityProvided, amount, currency })
   }
 
   return { items: cleaned }
