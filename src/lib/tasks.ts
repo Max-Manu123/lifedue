@@ -87,7 +87,7 @@ export async function createPayment(user: User, payment: Omit<Payment, 'id' | 's
       due_date_is_explicit: payment.dueDateProvided !== false,
       status: 'pending',
     })
-    .select('id, amount, currency, due_date, due_date_is_explicit, status, client_id, clients(name)')
+    .select('id, amount, currency, due_date, due_date_is_explicit, status, client_id')
     .single()
   if (error) throw error
   const row = data as {
@@ -97,11 +97,11 @@ export async function createPayment(user: User, payment: Omit<Payment, 'id' | 's
     due_date: string
     due_date_is_explicit: boolean
     status: Payment['status']
-    clients: { name: string } | { name: string }[] | null
+    client_id: string
   }
   return {
     id: row.id,
-    client: clientName(row.clients, payment.client),
+    client: payment.client.trim(),
     amount: Number(row.amount),
     currency: row.currency,
     dueDate: row.due_date,
@@ -280,13 +280,21 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
   const { data, error } = await supabase!
     .from('tasks')
     .insert(rows)
-    .select('id, title, due_date, due_date_is_explicit, priority, status, client_id, clients(name)')
+    .select('id, title, due_date, due_date_is_explicit, priority, status, client_id')
   if (error) throw error
 
-  return (data as RemoteTask[]).map(task => ({
+  return (data as Array<{
+    id: string
+    title: string
+    due_date: string
+    due_date_is_explicit: boolean
+    priority: Task['priority']
+    status: Task['status']
+    client_id: string | null
+  }>).map((task, index) => ({
     id: task.id,
     title: task.title,
-    client: clientName(task.clients, 'No client'),
+    client: tasks[index]?.client?.trim() ?? '',
     dueDate: task.due_date,
     dueDateProvided: task.due_date_is_explicit,
     priority: task.priority,
