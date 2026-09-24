@@ -1193,3 +1193,13 @@ button, input, textarea, select { transition: background-color .2s ease, border-
 .settings-usage-notice.exhausted { border-color: rgba(220,38,38,.22); background: rgba(220,38,38,.05); }
 .settings-usage-notice.exhausted span { color: var(--text-primary); font-weight: 700; }
 .theme-dark .settings-usage-notice.exhausted { border-color: rgba(248,113,113,.28); background: rgba(127,29,29,.18); }
+
+
+.planner-credit-note{display:flex;align-items:flex-start;gap:10px;margin:14px 0;padding:11px 13px;border:1px solid var(--border-color);border-radius:12px;background:var(--surface-soft);color:var(--text-secondary)}
+.planner-credit-note svg{flex:0 0 auto;margin-top:1px;color:var(--primary)}
+.planner-credit-note strong,.planner-credit-note span{display:block}
+.planner-credit-note strong{font-size:12px;color:var(--text-primary);line-height:1.4}
+.planner-credit-note span{margin-top:3px;font-size:11px;line-height:1.45;color:var(--text-muted)}
+.theme-dark .planner-credit-note{background:#0f172a;border-color:#334155}
+.theme-dark .planner-credit-note strong{color:#f8fafc}
+.theme-dark .planner-credit-note span{color:#94a3b8}
