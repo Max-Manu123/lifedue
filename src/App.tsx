@@ -147,6 +147,7 @@ function App() {
   const [feedbackSaving, setFeedbackSaving] = useState(false)
   const [feedbackError, setFeedbackError] = useState('')
   const [upgradeOpen, setUpgradeOpen] = useState(false)
+  const [proLimitReached, setProLimitReached] = useState(false)
   const [waitlistEmail, setWaitlistEmail] = useState('')
   const [waitlistSaving, setWaitlistSaving] = useState(false)
   const [waitlistSent, setWaitlistSent] = useState(false)
@@ -468,6 +469,7 @@ function App() {
         } catch {}
         if (code === 'AI_LIMIT_REACHED') {
           setAiError('')
+          setProLimitReached(true)
           setUpgradeOpen(true)
           return
         }
@@ -911,8 +913,8 @@ function App() {
               <button className="upgrade-close" type="button" onClick={() => setUpgradeOpen(false)} aria-label={tr('close')}>×</button>
               <div className="upgrade-icon"><Sparkles size={22} /></div>
               <p className="section-kicker">{tr('upgrade')}</p>
-              <h2 id="upgrade-title">{tr('upgradeTitle')}</h2>
-              <p className="upgrade-description">{tr('upgradeDesc')}</p>
+              <h2 id="upgrade-title">{proLimitReached ? tr('aiLimitReachedTitle') : tr('upgradeTitle')}</h2>
+              <p className="upgrade-description">{proLimitReached ? tr('aiLimitReachedDesc') : tr('upgradeDesc')}</p>
               <div className="upgrade-benefits"><strong>{tr('proBenefits')}</strong><ul><li>{tr('proBenefit1')}</li><li>{tr('proBenefit2')}</li><li>{tr('proBenefit3')}</li></ul></div>
               {!waitlistSent ? <div className="upgrade-form"><label htmlFor="pro-waitlist-email">{tr('notifyEmail')}</label><input id="pro-waitlist-email" type="email" value={waitlistEmail || user?.email || ''} onChange={event => { setWaitlistEmail(event.target.value); setWaitlistError('') }} placeholder={tr('notifyEmailPlaceholder')} autoComplete="email" /><p className="upgrade-note">{tr('notifyMe')}</p>{waitlistError && <div className="form-error" role="alert">{waitlistError}</div>}<button className="primary-button" type="button" onClick={joinProWaitlist} disabled={waitlistSaving}>{waitlistSaving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('joinWaitlist')}</button></div> : <div className="upgrade-success"><CheckCircle size={18} /><div><strong>{tr('proComingSoon')}</strong><span>{tr('proComingSoonDesc')}</span></div></div>}
             </section>
@@ -958,7 +960,7 @@ function App() {
                 aiLoading={aiLoading}
                 user={user}
                 aiUsage={aiUsage}
-                onUpgrade={() => setUpgradeOpen(true)}
+                onUpgrade={() => { setProLimitReached(false); setUpgradeOpen(true) }}
               />
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
@@ -1061,6 +1063,7 @@ function App() {
                         }
                       } catch {}
                       if (code === 'AI_LIMIT_REACHED') {
+                        setProLimitReached(true)
                         setUpgradeOpen(true)
                         setPlannerError('')
                         setPlan(candidates)
