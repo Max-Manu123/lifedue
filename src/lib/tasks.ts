@@ -59,7 +59,7 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
     clients: { name: string } | { name: string }[] | null
   }>).map(payment => ({
     id: payment.id,
-    client: clientName(payment.clients, 'No client'),
+    client: clientName(payment.clients, ''),
     amount: Number(payment.amount),
     currency: payment.currency,
     dueDate: payment.due_date,
@@ -75,7 +75,7 @@ export async function fetchPayments(user: User): Promise<Payment[]> {
 
 export async function createPayment(user: User, payment: Omit<Payment, 'id' | 'status'>): Promise<Payment> {
   requireSupabaseUser(user)
-  const clientId = await getOrCreateClient(user, payment.client)
+  const clientId = payment.client.trim() ? await getOrCreateClient(user, payment.client) : null
   const { data, error } = await supabase!
     .from('payments')
     .insert({
@@ -201,7 +201,7 @@ export async function fetchTasks(user: User): Promise<Task[]> {
   return ((data ?? []) as RemoteTask[]).map(task => ({
     id: task.id,
     title: task.title,
-    client: clientName(task.clients, 'No client'),
+    client: clientName(task.clients, ''),
     dueDate: task.due_date,
     dueDateProvided: task.due_date_is_explicit,
     priority: task.priority,
