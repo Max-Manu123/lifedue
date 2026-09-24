@@ -2,9 +2,6 @@
 -- Free users receive 20 successful AI actions per calendar month.
 -- Usage is counted server-side so the browser cannot bypass the limit.
 
-alter table public.profiles
-  add column if not exists pro_waitlist_email text;
-
 create table if not exists public.pro_waitlist (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
