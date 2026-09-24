@@ -9,6 +9,7 @@ const corsHeaders = {
 const MAX_INPUT_LENGTH = 4000
 const MAX_ITEMS = 12
 const MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite'] as const
+const FREE_AI_MONTHLY_LIMIT = 20
 
 const currencies = ['USD', 'EUR', 'BRL', 'AOA', 'GBP', 'Other'] as const
 type Currency = typeof currencies[number]
@@ -207,12 +208,24 @@ async function callGemini(apiKey: string, prompt: string, model: string, fallbac
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
+  let quotaReserved = false
+  let quotaUserId: string | null = null
+  let quotaPeriodStart = ''
+  let quotaAdmin: Awaited<ReturnType<typeof createSupabaseContext>>['data'] extends infer T ? T extends { supabaseAdmin?: infer A } ? A : never : never = undefined as never
+  let quotaUsage: { used: number; remaining: number; limit: number } | null = null
+
   try {
     const body = await req.json()
     const mode = body.mode === 'plan' ? 'plan' : 'quick-add'
-    const auth = mode === 'plan' ? await createSupabaseContext(req, { auth: 'user' }) : null
-    if (auth?.error) {
-      return Response.json({ message: auth.error.message }, { status: auth.error.status, headers: corsHeaders })
+    const authorization = req.headers.get('authorization')
+    let auth: Awaited<ReturnType<typeof createSupabaseContext>> | null = null
+    if (mode === 'plan' || authorization) {
+      auth = await createSupabaseContext(req, { auth: 'user' })
+      if (auth.error) {
+        return Response.json({ message: auth.error.message }, { status: auth.error.status, headers: corsHeaders })
+      }
+      quotaUserId = auth.data?.userClaims?.id ?? null
+      quotaAdmin = auth.data?.supabaseAdmin as typeof quotaAdmin
     }
     const text = typeof body.text === 'string' ? body.text.trim() : ''
     const today = typeof body.today === 'string' ? body.today : ''
@@ -227,6 +240,30 @@ Deno.serve(async (req) => {
     }
     if (timezone.length > 100 || !/^[A-Za-z0-9_+./-]+$/.test(timezone)) {
       return Response.json({ message: 'Invalid timezone.' }, { status: 400, headers: corsHeaders })
+    }
+
+    if (quotaUserId && quotaAdmin) {
+      quotaPeriodStart = today.slice(0, 7) + '-01'
+      const { data: quotaRows, error: quotaError } = await quotaAdmin.rpc('consume_ai_credit', {
+        p_user_id: quotaUserId,
+        p_period_start: quotaPeriodStart,
+        p_limit: FREE_AI_MONTHLY_LIMIT,
+      })
+      if (quotaError) throw quotaError
+
+      const quota = Array.isArray(quotaRows) ? quotaRows[0] : quotaRows
+      const used = Number(quota?.used ?? 0)
+      const remaining = Number(quota?.remaining ?? 0)
+      const allowed = Boolean(quota?.allowed)
+      quotaUsage = { used, remaining, limit: FREE_AI_MONTHLY_LIMIT }
+      if (!allowed) {
+        return Response.json({
+          code: 'AI_LIMIT_REACHED',
+          message: 'AI monthly limit reached.',
+          aiUsage: quotaUsage,
+        }, { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      quotaReserved = true
     }
 
     if (mode === 'plan') {
@@ -270,7 +307,8 @@ Deno.serve(async (req) => {
         }
       }
       if (!orderedIds) throw lastError ?? new Error('No planner result.')
-      return Response.json({ orderedIds }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      quotaReserved = false
+      return Response.json({ orderedIds, aiUsage: quotaUsage }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const apiKey = Deno.env.get('GEMINI_API_KEY')
@@ -319,8 +357,19 @@ Deno.serve(async (req) => {
           : 'I could not find a clear task or payment. Describe one concrete action, for example: "Deliver Maria\'s website Friday".',
       }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
-    return Response.json({ ...normalizedResult, status: 'ok' }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    quotaReserved = false
+    return Response.json({ ...normalizedResult, status: 'ok', aiUsage: quotaUsage }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
+    if (quotaReserved && quotaUserId && quotaAdmin && quotaPeriodStart) {
+      try {
+        await quotaAdmin.rpc('refund_ai_credit', {
+          p_user_id: quotaUserId,
+          p_period_start: quotaPeriodStart,
+        })
+      } catch (refundError) {
+        console.error('LifeDue AI quota refund failed:', refundError)
+      }
+    }
     console.error('quick-add function failed:', error)
     const message = error instanceof Error ? error.message : 'Unknown Quick Add error.'
     return Response.json(
