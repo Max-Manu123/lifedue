@@ -506,7 +506,18 @@ function App() {
 
       const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
       const normalizedName = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+      const isMissingClient = (value: string) => {
+        const normalized = normalizedName(value.trim())
+        return !normalized
+          || normalized === 'cliente nao definido'
+          || normalized === 'cliente nao informado'
+          || normalized === 'sem cliente'
+          || normalized === 'client not set'
+          || normalized === 'no client'
+          || normalized === 'no client defined'
+      }
       const exactClient = (value: string) => {
+        if (isMissingClient(value)) return ''
         const match = clientNames.find(name => normalizedName(name) === normalizedName(value))
         if (match) return match
         if (normalizedName(value) === 'john') {
