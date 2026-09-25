@@ -663,13 +663,14 @@ function App() {
       const draft = JSON.parse(raw) as { plan?: Task[]; planPayments?: QuickAddItem[]; quickText?: string }
       if (!Array.isArray(draft.plan) || draft.plan.length === 0) return false
 
+      const restoredPlan = draft.plan
       const restoredPayments = Array.isArray(draft.planPayments) ? draft.planPayments : []
       const paymentTaskIds = new Set(
         restoredPayments
           .filter(payment => payment.amount !== null && payment.amount !== undefined)
           .map(payment => {
             const paymentClient = payment.client.trim().toLocaleLowerCase()
-            return draft.plan.find(task =>
+            return restoredPlan.find(task =>
               task.client.trim().toLocaleLowerCase() === paymentClient &&
               /payment|pagamento|collect|cobrar|receber/i.test(task.title)
             )?.id
@@ -679,7 +680,7 @@ function App() {
 
       // Migrate drafts created before payment items stopped being represented
       // as fake tasks in the plan.
-      setPlan(draft.plan.filter(task => !paymentTaskIds.has(task.id)))
+      setPlan(restoredPlan.filter(task => !paymentTaskIds.has(task.id)))
       setPlanPayments(restoredPayments)
       setQuickText(typeof draft.quickText === 'string' ? draft.quickText : '')
       return true
