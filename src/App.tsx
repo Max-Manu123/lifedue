@@ -541,9 +541,9 @@ function App() {
           : item.title,
         client: item.client,
         dueDate: item.dueDate,
-        dueDateProvided: item.dueDateProvided !== false,
+        dueDateProvided: item.dueDateProvided === true,
         priority: item.priority,
-        priorityProvided: item.priorityProvided !== false,
+        priorityProvided: item.priorityProvided === true,
         status: 'open',
       })))
       setPlanPayments(normalizedItems.filter(item => item.kind === 'payment'))
