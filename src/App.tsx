@@ -992,6 +992,9 @@ function App() {
         task.client.trim().toLocaleLowerCase() === paymentClient.toLocaleLowerCase()
       )
       const relatedTaskDetails = relatedTask ? detailDecisions['task:' + relatedTask.id] ?? {} : {}
+      const relatedNextTask = relatedTask
+        ? nextPlan.find(task => task.id === relatedTask.id)
+        : undefined
 
       // A payment that originated from a task card is controlled by that card.
       // This lets the user edit or remove an AI-detected payment without
@@ -1002,11 +1005,12 @@ function App() {
 
       return [{
         ...payment,
-        client: details.client !== undefined
-          ? details.client.trim()
-          : (payment.client.trim()
-            ? (decisions['client:' + normalize(payment.client)] ?? payment.client)
-            : payment.client),
+        client: relatedNextTask?.client?.trim()
+          || (details.client !== undefined
+            ? details.client.trim()
+            : (payment.client.trim()
+              ? (decisions['client:' + normalize(payment.client)] ?? payment.client)
+              : payment.client)),
         dueDate: relatedTaskDetails.paymentEnabled
           ? (relatedTaskDetails.paymentDueDate || payment.dueDate)
           : (details.dueDate ?? payment.dueDate),
