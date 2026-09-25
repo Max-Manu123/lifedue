@@ -768,12 +768,22 @@ function App() {
 
   const planReviewItems = () => {
     const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
+    const isMissingClient = (value: string) => {
+      const normalized = normalize(value.trim())
+      return !normalized
+        || normalized === 'cliente nao definido'
+        || normalized === 'cliente nao informado'
+        || normalized === 'sem cliente'
+        || normalized === 'client not set'
+        || normalized === 'no client'
+        || normalized === 'no client defined'
+    }
     const items: Array<{ key: string; label: string; originalName?: string; existingName?: string }> = []
     const seenClients = new Set<string>()
 
     for (const task of plan) {
       const clientName = task.client.trim()
-      if (!clientName) continue
+      if (isMissingClient(clientName)) continue
       const normalized = normalize(clientName)
       if (seenClients.has(normalized)) continue
       seenClients.add(normalized)
@@ -787,7 +797,7 @@ function App() {
 
     planPayments.forEach(payment => {
       const clientName = payment.client.trim()
-      if (!clientName) return
+      if (isMissingClient(clientName)) return
       const normalized = normalize(clientName)
       if (seenClients.has(normalized)) return
       seenClients.add(normalized)
