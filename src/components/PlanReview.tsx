@@ -25,6 +25,7 @@ type ReviewDetail = {
   currencyMissing: boolean
   currency?: PaymentCurrency | null
   clientName?: string
+  paymentAlreadyIncluded?: boolean
 }
 
 type ClientDecision = {
@@ -350,7 +351,7 @@ export function PlanReview({
                       </div>
                     )}
 
-                    {detail.kind === 'task' && (detail.clientName || decision.client) && (
+                    {detail.kind === 'task' && !detail.paymentAlreadyIncluded && (detail.clientName || decision.client) && (
                       <div className="plan-review-payment-box">
                         <div className="plan-review-payment-head">
                           <div>
