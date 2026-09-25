@@ -1131,6 +1131,25 @@ function App() {
     }
   }
   const addPayment = async (payment: Omit<Payment, 'id' | 'status'>) => {
+    const normalizedClient = payment.client.trim().toLocaleLowerCase()
+    if (!normalizedClient) {
+      const message = currentLanguage === 'pt' ? 'Informe o cliente antes de adicionar o pagamento.' : 'Enter the client before adding the payment.'
+      setPaymentsError(message)
+      throw new Error(message)
+    }
+
+    const alreadyPending = payments.some(existing =>
+      existing.status === 'pending' &&
+      existing.client.trim().toLocaleLowerCase() === normalizedClient
+    )
+    if (alreadyPending) {
+      const message = currentLanguage === 'pt'
+        ? 'Este cliente já tem um pagamento pendente. Edite o pagamento existente em vez de criar outro.'
+        : 'This client already has a pending payment. Edit the existing payment instead of creating another one.'
+      setPaymentsError(message)
+      throw new Error(message)
+    }
+
     if (user && supabase) {
       try {
         const created = await createPayment(user, payment)
@@ -1315,7 +1334,21 @@ function App() {
             )}
             {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
             {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} />}
-            {view === 'payments' && <PaymentsView payments={payments} onMarkPaid={markPaid} onAdd={() => setShowAddPayment(true)} />}
+            {view === 'payments' && <PaymentsView
+              payments={payments}
+              tasks={tasks}
+              onMarkPaid={markPaid}
+              onAdd={() => { setPaymentDraftClient(''); setShowAddPayment(true) }}
+              onAddForClient={client => {
+                const hasPending = payments.some(payment =>
+                  payment.status === 'pending' &&
+                  payment.client.trim().toLocaleLowerCase() === client.trim().toLocaleLowerCase()
+                )
+                if (hasPending) return
+                setPaymentDraftClient(client)
+                setShowAddPayment(true)
+              }}
+            />}
             {view === 'feedback' && <FeedbackView
               type={feedbackType}
               rating={feedbackRating}
@@ -1486,7 +1519,7 @@ function App() {
       {showAddClient && user && <AddClientModal onClose={() => setShowAddClient(false)} onAdd={async name => { if (!supabase || !user) return; const created = await createClient(user, name); setClients(current => current.some(client => client.name.trim().toLowerCase() === created.name.trim().toLowerCase()) ? current : [...current, created].sort((a,b) => a.name.localeCompare(b.name))) }} />}
       {nextStep && <NextStepCard type={nextStep.type} client={nextStep.client} onAction={() => { suppressNextStepRef.current = true; if (nextStep.type === 'payment') { setPaymentDraftClient(nextStep.client); setShowAddPayment(true) } else { setTaskDraftClient(nextStep.client); setShowAdd(true) }; setNextStep(null) }} onDismiss={() => setNextStep(null)} />}
       {showAdd && <AddTaskModal initialClient={taskDraftClient} onClose={() => { setShowAdd(false); setTaskDraftClient('') }} onAdd={addTask} clients={clients} />}
-      {showAddPayment && <AddPaymentModal initialClient={paymentDraftClient} onClose={() => { setShowAddPayment(false); setPaymentDraftClient('') }} onAdd={addPayment} clients={clients} />}
+      {showAddPayment && <AddPaymentModal initialClient={paymentDraftClient} onClose={() => { setShowAddPayment(false); setPaymentDraftClient('') }} onAdd={addPayment} clients={clients} existingPayments={payments} />}
       {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
     </div>
   )
@@ -2281,7 +2314,7 @@ function AddClientModal({ onClose, onAdd }: { onClose: () => void; onAdd: (name:
   </div></div>
 }
 
-function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; onMarkPaid: (id: string) => void; onAdd: () => void }) {
+function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { payments: Payment[]; tasks: Task[]; onMarkPaid: (id: string) => void; onAdd: () => void; onAddForClient: (client: string) => void }) {
   const [filter, setFilter] = useState<'all' | 'pending' | 'overdue' | 'paid'>('pending')
   const [search, setSearch] = useState('')
   const todayKey = currentTodayKey()
@@ -2301,6 +2334,22 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
     if (a.dueDate !== b.dueDate) return (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate)
     return a.client.localeCompare(b.client)
   })
+
+  const clientsWithoutPendingPayment = Array.from(new Map(
+    tasks
+      .filter(task => task.client.trim())
+      .map(task => [task.client.trim().toLocaleLowerCase(), task.client.trim()])
+  ).values())
+    .filter(client => !payments.some(payment =>
+      payment.status === 'pending' &&
+      payment.client.trim().toLocaleLowerCase() === client.toLocaleLowerCase()
+    ))
+    .sort((a, b) => a.localeCompare(b))
+
+  const canAddPaymentForClient = (client: string) => !payments.some(payment =>
+    payment.status === 'pending' &&
+    payment.client.trim().toLocaleLowerCase() === client.trim().toLocaleLowerCase()
+  )
 
   const pendingByCurrency = [...new Set(pending.map(p => p.currency))].map(currency => ({
     currency,
@@ -2323,6 +2372,43 @@ function PaymentsView({ payments, onMarkPaid, onAdd }: { payments: Payment[]; on
       <div className={overdue.length ? 'danger' : ''}><span>{tr('paymentOverdueCount')}</span><strong>{overdue.length}</strong><small>{currentLanguage === 'pt' ? 'precisam de atenção' : 'need attention'}</small></div>
       <div><span>{tr('paymentPaidCount')}</span><strong>{paid.length}</strong><small>{currentLanguage === 'pt' ? 'já recebidos' : 'already received'}</small></div>
     </section>
+
+    {clientsWithoutPendingPayment.length > 0 && (
+      <section className="pending-payment-gaps" aria-labelledby="pending-payment-gaps-title">
+        <div className="pending-payment-gaps-head">
+          <div>
+            <p className="section-kicker">{currentLanguage === 'pt' ? 'ACOMPANHAR PAGAMENTOS' : 'PAYMENT FOLLOW-UPS'}</p>
+            <h3 id="pending-payment-gaps-title">{currentLanguage === 'pt' ? 'Clientes sem pagamento pendente' : 'Clients without a pending payment'}</h3>
+            <p>{currentLanguage === 'pt'
+              ? 'Estes clientes têm trabalho registado, mas ainda não têm uma cobrança em aberto.'
+              : 'These clients have work recorded, but no open payment is being tracked yet.'}</p>
+          </div>
+          <span className="pending-payment-gaps-count">{clientsWithoutPendingPayment.length}</span>
+        </div>
+        <div className="pending-payment-gaps-list">
+          {clientsWithoutPendingPayment.map(client => {
+            const canAdd = canAddPaymentForClient(client)
+            return (
+              <div className="pending-payment-gap-row" key={client}>
+                <div className="pending-payment-gap-icon"><Users size={16} /></div>
+                <div className="pending-payment-gap-info">
+                  <strong>{client}</strong>
+                  <span>{currentLanguage === 'pt' ? 'Nenhum pagamento pendente' : 'No pending payment'}</span>
+                </div>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  disabled={!canAdd}
+                  onClick={() => canAdd && onAddForClient(client)}
+                >
+                  <Plus size={14} /> {currentLanguage === 'pt' ? 'Adicionar pagamento' : 'Add payment'}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+    )}
 
     <div className="payments-toolbar">
       <div className="payment-search"><span>⌕</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder={tr('paymentSearch')} aria-label={tr('paymentSearch')} />{search && <button type="button" onClick={() => setSearch('')} aria-label={tr('clearSearch')}>×</button>}</div>
@@ -2378,7 +2464,7 @@ function NextStepCard({ type, client, onAction, onDismiss }: { type: 'payment' |
     <button className="icon-button next-step-close" onClick={onDismiss} aria-label={currentLanguage === 'pt' ? 'Fechar sugestão' : 'Dismiss suggestion'}><X size={16} /></button>
   </div>
 }
-function AddPaymentModal({ onClose, onAdd, clients, initialClient = '' }: { onClose: () => void; onAdd: (payment: Omit<Payment, 'id' | 'status'>) => void; clients: Client[]; initialClient?: string }) {
+function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialClient = '' }: { onClose: () => void; onAdd: (payment: Omit<Payment, 'id' | 'status'>) => void; clients: Client[]; existingPayments: Payment[]; initialClient?: string }) {
   const [client, setClient] = useState(initialClient)
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState('USD')
@@ -2393,8 +2479,17 @@ function AddPaymentModal({ onClose, onAdd, clients, initialClient = '' }: { onCl
     const value = Number(normalizedAmount)
     const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === cleanClient.toLocaleLowerCase())
     const clientName = matchedClient?.name ?? cleanClient
+    const hasPendingPayment = existingPayments.some(payment =>
+      payment.status === 'pending' &&
+      payment.client.trim().toLocaleLowerCase() === clientName.toLocaleLowerCase()
+    )
 
     if (!cleanClient) return setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
+    if (hasPendingPayment) {
+      return setError(currentLanguage === 'pt'
+        ? 'Este cliente já tem um pagamento pendente. Use o pagamento existente.'
+        : 'This client already has a pending payment. Use the existing payment.')
+    }
     if (!normalizedAmount || !Number.isFinite(value) || value <= 0 || !/^\d+(?:\.\d{1,2})?$/.test(normalizedAmount)) {
       return setError(currentLanguage === 'pt' ? 'Digite um valor positivo com no máximo 2 casas decimais.' : 'Enter a positive amount with up to 2 decimal places.')
     }
@@ -2430,7 +2525,7 @@ function AddPaymentModal({ onClose, onAdd, clients, initialClient = '' }: { onCl
       {error && <div className="form-error" role="alert">{error}</div>}
       <div className="modal-actions">
         <button type="button" className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button>
-        <button type="button" className="primary-button" onClick={submit} disabled={saving || !client.trim() || !amount.trim()}>{saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addPayment')}</button>
+        <button type="button" className="primary-button" onClick={submit} disabled={saving || !client.trim() || !amount.trim() || hasPendingPayment}>{saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addPayment')}</button>
       </div>
     </div>
   </div>
