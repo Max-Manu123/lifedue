@@ -754,17 +754,10 @@ function App() {
     }
 
     if (tasksSaved || paymentsSaved) {
-      // AI already saw the user's intent. Only suggest the missing companion
-      // item: task -> payment, payment -> task. If both were created, suggest nothing.
-      if (taskPlan.length > 0 && paymentsToSave.length > 0) {
-        setNextStep(null)
-      } else if (taskPlan.length > 0 && paymentsToSave.length === 0) {
-        setNextStep({ type: 'payment', client: taskPlan[0]?.client ?? '' })
-      } else if (taskPlan.length === 0 && paymentsToSave.length > 0) {
-        setNextStep({ type: 'task', client: paymentsToSave[0]?.client ?? '' })
-      } else {
-        setNextStep(null)
-      }
+      // AI-generated plans are complete when this review is saved. Optional
+      // payments are handled inside PlanReview, so do not open a separate
+      // post-save payment prompt here.
+      setNextStep(null)
 
       clearAuthDraft()
       setPlan([])
@@ -890,7 +883,7 @@ function App() {
       const clientMissing = missingClient(task.client)
       const dueDateMissing = task.dueDateProvided !== true
       const priorityMissing = task.priorityProvided !== true
-      if (!clientMissing && !dueDateMissing && !priorityMissing) continue
+      if (!clientMissing && !dueDateMissing && !priorityMissing && !task.client.trim()) continue
 
       details.push({
         key: 'task:' + task.id,
@@ -901,6 +894,7 @@ function App() {
         dueDate: task.dueDateProvided === true ? task.dueDate : undefined,
         priorityMissing,
         priority: task.priority,
+        clientName: clientMissing ? undefined : task.client.trim(),
         amountMissing: false,
         currencyMissing: false,
       })
@@ -982,8 +976,29 @@ function App() {
         currency: details.currency !== undefined ? (details.currency ?? undefined) : (payment.currency ?? undefined),
       }
     })
+
+    const inlinePayments = nextPlan.flatMap(task => {
+      const detail = detailDecisions['task:' + task.id] ?? {}
+      if (!detail.paymentEnabled || !detail.amount || !detail.currency) return []
+      const client = (detail.client?.trim() || task.client.trim())
+      if (!client) return []
+
+      const dueDate = detail.paymentDueDate || (task.dueDateProvided !== false ? task.dueDate : currentTodayKey())
+      return [{
+        kind: 'payment' as const,
+        title: currentLanguage === 'pt' ? 'Cobrança · ' + client : 'Payment · ' + client,
+        client,
+        dueDate,
+        dueDateProvided: true,
+        priority: 'medium' as Priority,
+        priorityProvided: true,
+        amount: detail.amount,
+        currency: detail.currency,
+      }]
+    })
+
     setPlan(nextPlan)
-    setPlanPayments(nextPayments)
+    setPlanPayments([...nextPayments, ...inlinePayments])
     setPlanReviewOpen(false)
     setPlanReviewConfirmed(true)
   }
