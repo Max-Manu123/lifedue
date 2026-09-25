@@ -2500,6 +2500,7 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState('USD')
   const [dueDate, setDueDate] = useState(currentTodayKey())
+  const [dueDateProvided, setDueDateProvided] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -2525,14 +2526,14 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
       return setError(currentLanguage === 'pt' ? 'Digite um valor positivo com no máximo 2 casas decimais.' : 'Enter a positive amount with up to 2 decimal places.')
     }
     if (value > 999999999) return setError(currentLanguage === 'pt' ? 'O valor é demasiado alto.' : 'The amount is too large.')
-    if (!isValidDueDate(dueDate)) {
+    if (dueDateProvided && !isValidDueDate(dueDate)) {
       return setError(currentLanguage === 'pt' ? 'Escolha uma data de vencimento válida a partir de hoje.' : 'Choose a valid payment due date from today onward.')
     }
 
     setError('')
     setSaving(true)
     try {
-      onAdd({ client: clientName, amount: value, currency, dueDate })
+      onAdd({ client: clientName, amount: value, currency, dueDate: dueDateProvided ? dueDate : currentTodayKey(), dueDateProvided })
     } catch (submitError) {
       console.error('LifeDue add payment modal failed:', submitError)
       setError(currentLanguage === 'pt' ? 'Não foi possível adicionar o pagamento. Tente novamente.' : 'Could not add the payment. Please try again.')
@@ -2552,7 +2553,15 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
         <label>{tr('amount')}<input type="text" inputMode="decimal" value={amount} onChange={e => { setAmount(e.target.value); setError('') }} placeholder={currentLanguage === 'pt' ? 'ex.: 200,00' : 'e.g. 200.00'} disabled={saving} aria-describedby="lifedue-payment-amount-help" /><small id="lifedue-payment-amount-help" className="field-help">{currentLanguage === 'pt' ? 'Use um valor positivo, até 2 casas decimais.' : 'Use a positive amount, up to 2 decimal places.'}</small></label>
         <label>{tr('currency')}<select value={currency} onChange={e => setCurrency(e.target.value)} disabled={saving}><option value="USD">{tr('usd')} · US$</option><option value="EUR">{tr('eur')} · €</option><option value="AOA">{tr('aoa')} · Kz</option></select></label>
       </div>
-      <label>{tr('dueDate')}<input type="date" value={dueDate} min={currentTodayKey()} onChange={e => { setDueDate(e.target.value); setError('') }} disabled={saving} aria-describedby="lifedue-payment-date-help" /><small id="lifedue-payment-date-help" className="field-help">{currentLanguage === 'pt' ? 'Hoje ou uma data futura.' : 'Today or a future date.'}</small></label>
+      <div className="plan-review-field">
+        <div className="plan-review-field-head"><span>{tr('dueDate')}</span></div>
+        <div className="plan-review-priority">
+          <button type="button" className={dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(true); setError('') }} disabled={saving}>{currentLanguage === 'pt' ? 'Escolher data' : 'Choose date'}</button>
+          <button type="button" className={!dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(false); setError('') }} disabled={saving}>{tr('noDueDate')}</button>
+        </div>
+        {dueDateProvided && <input type="date" value={dueDate} min={currentTodayKey()} onChange={e => { setDueDate(e.target.value); setError('') }} disabled={saving} aria-describedby="lifedue-payment-date-help" />}
+        <small id="lifedue-payment-date-help" className="field-help">{dueDateProvided ? (currentLanguage === 'pt' ? 'Hoje ou uma data futura.' : 'Today or a future date.') : (currentLanguage === 'pt' ? 'Este pagamento ficará sem data de vencimento.' : 'This payment will have no due date.')}</small>
+      </div>
       {error && <div className="form-error" role="alert">{error}</div>}
       <div className="modal-actions">
         <button type="button" className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button>
@@ -2566,6 +2575,7 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
   const [title, setTitle] = useState('')
   const [client, setClient] = useState(initialClient)
   const [dueDate, setDueDate] = useState(addDays(0))
+  const [dueDateProvided, setDueDateProvided] = useState(true)
   const [priority, setPriority] = useState<Priority>('medium')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -2583,7 +2593,7 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
       setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
       return
     }
-    if (!isValidDueDate(dueDate)) {
+    if (dueDateProvided && !isValidDueDate(dueDate)) {
       setError(currentLanguage === 'pt' ? 'Escolha uma data de entrega válida a partir de hoje.' : 'Choose a valid due date from today onward.')
       return
     }
@@ -2592,7 +2602,7 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
     setError('')
     setSaving(true)
     try {
-      await onAdd({ title: cleanTitle, client: canonicalClient, dueDate, priority })
+      await onAdd({ title: cleanTitle, client: canonicalClient, dueDate: dueDateProvided ? dueDate : currentTodayKey(), dueDateProvided, priority })
     } catch (error) {
       console.error('LifeDue add task modal failed:', error)
       setError(currentLanguage === 'pt' ? 'Não foi possível adicionar a tarefa. Tente novamente.' : 'Could not add the task. Please try again.')
@@ -2610,7 +2620,15 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
       <label>{tr('task')}<input value={title} onChange={e => { setTitle(e.target.value); setError('') }} placeholder={tr('finishHomepage')} autoFocus disabled={saving} /></label>
       <label>{tr('client')}<input list="lifedue-task-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={tr('john')} disabled={saving} /><datalist id="lifedue-task-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
       <div className="form-grid">
-        <label>{tr('dueDate')}<input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={currentTodayKey()} disabled={saving} /></label>
+        <div className="plan-review-field">
+          <div className="plan-review-field-head"><span>{tr('dueDate')}</span></div>
+          <div className="plan-review-priority">
+            <button type="button" className={dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(true); setError('') }} disabled={saving}>{currentLanguage === 'pt' ? 'Escolher data' : 'Choose date'}</button>
+            <button type="button" className={!dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(false); setError('') }} disabled={saving}>{tr('noDueDate')}</button>
+          </div>
+          {dueDateProvided && <input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={currentTodayKey()} disabled={saving} />}
+          <small className="field-help">{dueDateProvided ? (currentLanguage === 'pt' ? 'Hoje ou uma data futura.' : 'Today or a future date.') : (currentLanguage === 'pt' ? 'Esta tarefa ficará sem prazo.' : 'This task will have no deadline.')}</small>
+        </div>
         <label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)} disabled={saving}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label>
       </div>
       {error && <div className="form-error" role="alert">{error}</div>}
