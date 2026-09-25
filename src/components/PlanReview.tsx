@@ -109,7 +109,7 @@ export function PlanReview({
     setError('')
   }
 
-  const submit = () => {
+  const submit = (saveAnyway = false) => {
     const result: Record<string, string> = {}
 
     for (const item of safeItems) {
@@ -326,11 +326,11 @@ export function PlanReview({
         <div className="plan-review-footer">
           <button type="button" className="secondary-button" onClick={onCancel}>{pt ? 'Voltar' : 'Back'}</button>
           {details.length > 0 && (
-            <button type="button" className="secondary-button" onClick={submit}>
-              {pt ? 'Guardar sem completar' : 'Save without completing'}
+            <button type="button" className="secondary-button" onClick={() => submit(true)}>
+              {pt ? 'Guardar mesmo assim' : 'Save anyway'}
             </button>
           )}
-          <button type="button" className="primary-button" onClick={submit}>
+          <button type="button" className="primary-button" onClick={() => submit(false)}>
             {pt ? 'Guardar plano' : 'Save plan'} <ChevronRight size={17} />
           </button>
         </div>
