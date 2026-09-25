@@ -2458,7 +2458,10 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
 
 function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id: string) => void }) {
   const isOverdue = payment.status === 'pending' && payment.dueDateProvided !== false && payment.dueDate < currentTodayKey()
-  return <div className={isOverdue ? 'payment-row overdue-row' : 'payment-row'}><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{formatMoney(payment.amount, payment.currency)} · {payment.client}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? tr('paymentOverdueLabel') + ' · ' + tr('paymentDue').toLowerCase() + ' ' + formatDate(payment.dueDate, payment.dueDateProvided !== false) : tr('paymentDue') + ' ' + formatDate(payment.dueDate, payment.dueDateProvided !== false)}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>{tr('markPaid')}</button> : <span className="paid-label"><Check size={15} /> {tr('paid')}</span>}</div>
+  const dateLabel = payment.dueDateProvided === false
+    ? tr('noDueDate')
+    : formatDate(payment.dueDate, true)
+  return <div className={isOverdue ? 'payment-row overdue-row' : 'payment-row'}><div className={isOverdue ? 'payment-icon overdue' : 'payment-icon'}><CircleDollarSign size={19} /></div><div className="payment-info"><strong>{formatMoney(payment.amount, payment.currency)} · {payment.client}</strong><span>{payment.status === 'paid' ? tr('paid') : isOverdue ? tr('paymentOverdueLabel') + ' · ' + tr('paymentDue').toLowerCase() + ' ' + dateLabel : payment.dueDateProvided === false ? dateLabel : tr('paymentDue') + ' ' + dateLabel}</span></div>{payment.status === 'pending' ? <button className="secondary-button" onClick={() => onMarkPaid(payment.id)}>{tr('markPaid')}</button> : <span className="paid-label"><Check size={15} /> {tr('paid')}</span>}</div>
 }
 
 
