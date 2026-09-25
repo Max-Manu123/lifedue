@@ -122,6 +122,21 @@ export function AuthModal({
         })
         if (authError) throw authError
 
+        // Supabase can intentionally return an obfuscated user for an existing
+        // account when email confirmation is enabled. In that case no new
+        // account was created, and an empty identities array is the signal.
+        // Treat it as a duplicate signup instead of telling the user that a
+        // new account was created.
+        if (!data.user || (Array.isArray(data.user.identities) && data.user.identities.length === 0)) {
+          setError(pt
+            ? 'Este email já tem uma conta. Entre em vez de criar outra.'
+            : 'This email already has an account. Sign in instead of creating another one.')
+          setMode('login')
+          setPassword('')
+          setConfirmPassword('')
+          return
+        }
+
         if (data.session) {
           onAuthenticated()
         } else {
