@@ -1574,3 +1574,23 @@ button, input, textarea, select { transition: background-color .2s ease, border-
   .auth-divider { margin: 14px 0; }
   .password-requirements span { font-size: 8px; padding: 4px 6px; }
 }
+
+
+/* Inline payment controls for AI plan review */
+
+.plan-review-payment-box{margin-top:12px;padding:12px;border:1px solid var(--border-color);border-radius:12px;background:var(--surface)}
+.plan-review-payment-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.plan-review-payment-head>div{min-width:0}
+.plan-review-payment-head strong,.plan-review-payment-head span{display:block}
+.plan-review-payment-head strong{font-size:12px;color:var(--text-primary)}
+.plan-review-payment-head span{margin-top:3px;font-size:11px;line-height:1.45;color:var(--text-secondary)}
+.plan-review-payment-head .plan-review-choice-button{flex:0 0 auto;white-space:nowrap}
+.plan-review-payment-fields{margin-top:2px}
+.plan-review-payment-fields .plan-review-field:first-child{padding-top:10px;margin-top:10px;border-top:1px solid var(--border-color)}
+.plan-review-remove-payment{margin-top:10px;border:0;background:transparent;padding:3px 0;color:var(--text-muted);font-size:11px;font-weight:700;cursor:pointer}
+.plan-review-remove-payment:hover{color:var(--primary)}
+.theme-dark .plan-review-payment-box{background:#0f172a;border-color:#334155}
+@media (max-width:600px){
+  .plan-review-payment-head{align-items:stretch;flex-direction:column}
+  .plan-review-payment-head .plan-review-choice-button{align-self:flex-start}
+}
