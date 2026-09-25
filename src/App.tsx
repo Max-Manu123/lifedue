@@ -920,6 +920,14 @@ function App() {
       const dueDateMissing = payment.dueDateProvided !== true
       const amountMissing = payment.amount === null || payment.amount === undefined
       const currencyMissing = payment.currency === null || payment.currency === undefined
+
+      // Payments belonging to an AI task are reviewed inside that task card.
+      // Never render the same payment again as a separate detail card.
+      const linkedToTask = !clientMissing && plan.some(task =>
+        !missingClient(task.client) &&
+        task.client.trim().toLocaleLowerCase() === payment.client.trim().toLocaleLowerCase()
+      )
+      if (linkedToTask) return
       if (!clientMissing && !dueDateMissing && !amountMissing && !currencyMissing) return
 
       details.push({
