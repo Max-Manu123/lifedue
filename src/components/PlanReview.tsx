@@ -39,7 +39,7 @@ type DetailDecision = {
   currency?: PaymentCurrency | null
 }
 
-export function PlanReview({
+function isValidReviewDate(value: string, minimum: string) {\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(minimum)) return false\n\n  const [year, month, day] = value.split('-').map(Number)\n  const date = new Date(Date.UTC(year, month - 1, day))\n  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return false\n\n  return value >= minimum\n}\n\nexport function PlanReview({
   language,
   items,
   details,
@@ -84,14 +84,14 @@ export function PlanReview({
   ])) as Record<string, ClientDecision>, [itemSignature])
 
   const [decisions, setDecisions] = useState<Record<string, ClientDecision>>(initial)
-  const [detailDecisions, setDetailDecisions] = useState<Record<string, DetailDecision>>({})
+  const initialDetailDecisions = useMemo(() => Object.fromEntries(details.map(detail => [\n    detail.key, detail.dueDateMissing ? { dueDate: detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : today } : {},\n  ])) as Record<string, DetailDecision>, [details, today])\n\n  const [detailDecisions, setDetailDecisions] = useState<Record<string, DetailDecision>>(initialDetailDecisions)
   const [error, setError] = useState('')
 
   useEffect(() => {
     setDecisions(initial)
-    setDetailDecisions({})
+    setDetailDecisions(initialDetailDecisions)
     setError('')
-  }, [initial])
+  }, [initial, initialDetailDecisions])
 
   const update = (key: string, patch: Partial<ClientDecision>) => {
     setDecisions(current => ({
@@ -270,7 +270,7 @@ export function PlanReview({
                         <div className="plan-review-field-head">
                           <span><CalendarDays size={14} /> {pt ? 'Prazo' : 'Deadline'}</span>
                         </div>
-                        <input type="date" min={today} value={decision.dueDate ?? ''} onChange={event => updateDetail(detail.key, { dueDate: event.target.value })} />
+                        <input\n                          type="date"\n                          min={today}\n                          value={decision.dueDate ?? today}\n                          onChange={event => updateDetail(detail.key, { dueDate: event.target.value || today })}\n                          aria-label={pt ? `Prazo para ${detail.title}` : `Deadline for ${detail.title}`}\n                        />\n                        <small className="field-help">{pt ? 'Hoje é a data padrão. Escolha hoje ou uma data futura.' : 'Today is the default. Choose today or a future date.'}</small>
                       </div>
                     )}
 
