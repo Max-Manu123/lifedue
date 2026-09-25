@@ -2486,18 +2486,18 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
+  const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === client.trim().toLocaleLowerCase())
+  const clientName = matchedClient?.name ?? client.trim()
+  const hasPendingPayment = existingPayments.some(payment =>
+    payment.status === 'pending' &&
+    payment.client.trim().toLocaleLowerCase() === clientName.toLocaleLowerCase()
+  )
+
   const submit = () => {
     if (saving) return
     const cleanClient = client.trim()
     const normalizedAmount = amount.trim().replace(',', '.')
     const value = Number(normalizedAmount)
-    const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === cleanClient.toLocaleLowerCase())
-    const clientName = matchedClient?.name ?? cleanClient
-    const hasPendingPayment = existingPayments.some(payment =>
-      payment.status === 'pending' &&
-      payment.client.trim().toLocaleLowerCase() === clientName.toLocaleLowerCase()
-    )
-
     if (!cleanClient) return setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
     if (hasPendingPayment) {
       return setError(currentLanguage === 'pt'
