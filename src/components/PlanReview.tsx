@@ -253,58 +253,6 @@ export function PlanReview({
           </div>
         </div>
 
-        {safeItems.length > 0 && (
-          <section className="plan-review-section">
-            <div className="plan-review-section-head">
-              <UserRound size={17} />
-              <div>
-                <strong>{pt ? 'Clientes' : 'Clients'}</strong>
-                <span>{pt ? 'Confirme clientes existentes ou nomes novos.' : 'Confirm existing clients or new names.'}</span>
-              </div>
-            </div>
-            <div className="plan-review-list">
-              {safeItems.map(item => {
-                const decision = decisions[item.key]
-                const hasExisting = Boolean(item.existingName)
-                const useExisting = decision?.mode === 'existing'
-
-                return (
-                  <div className="plan-review-item" key={item.key}>
-                    <div className="plan-review-item-head">
-                      <div>
-                        <strong>{item.label}</strong>
-                        <span>{hasExisting
-                          ? (pt ? `Já existe “${item.existingName}”.` : `“${item.existingName}” already exists.`)
-                          : (pt ? 'Novo cliente' : 'New client')}</span>
-                      </div>
-                    </div>
-
-                    {hasExisting && (
-                      <div className="plan-review-choice">
-                        <button type="button" className={useExisting ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => update(item.key, { mode: 'existing', name: item.existingName! })}>
-                          <Check size={15} /> {pt ? 'Usar existente' : 'Use existing'}
-                        </button>
-                        <button type="button" className={!useExisting ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => update(item.key, { mode: 'new', name: decision?.name === item.existingName ? '' : decision?.name ?? '' })}>
-                          {pt ? 'Outro nome' : 'Another name'}
-                        </button>
-                      </div>
-                    )}
-
-                    {(!hasExisting || !useExisting) && (
-                      <input
-                        value={decision?.name ?? ''}
-                        onChange={event => update(item.key, { mode: 'new', name: event.target.value })}
-                        placeholder={pt ? 'Nome do cliente' : 'Client name'}
-                        autoComplete="off"
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-        )}
-
         {details.length > 0 && (
           <section className="plan-review-section">
             <div className="plan-review-section-head">
