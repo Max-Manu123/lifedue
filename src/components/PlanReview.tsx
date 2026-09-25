@@ -26,6 +26,7 @@ type ReviewDetail = {
   currency?: PaymentCurrency | null
   clientName?: string
   paymentAlreadyIncluded?: boolean
+  paymentDueDate?: string
 }
 
 type ClientDecision = {
@@ -99,9 +100,19 @@ export function PlanReview({
   ])) as Record<string, ClientDecision>, [itemSignature])
 
   const [decisions, setDecisions] = useState<Record<string, ClientDecision>>(initial)
-  const initialDetailDecisions = useMemo(() => Object.fromEntries(details.map(detail => [
-    detail.key, detail.dueDateMissing ? { dueDate: detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : today } : {},
-  ])) as Record<string, DetailDecision>, [details, today])
+  const initialDetailDecisions = useMemo(() => Object.fromEntries(details.map(detail => {
+    const dueDate = detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : undefined
+    const paymentDueDate = detail.paymentDueDate && isValidReviewDate(detail.paymentDueDate, today) ? detail.paymentDueDate : undefined
+    return [detail.key, {
+      ...(detail.clientName ? { client: detail.clientName } : {}),
+      ...(dueDate ? { dueDate } : {}),
+      ...(detail.priority ? { priority: detail.priority } : {}),
+      ...(detail.amount !== undefined && detail.amount !== null ? { amount: detail.amount } : {}),
+      ...(detail.currency ? { currency: detail.currency } : {}),
+      ...(detail.kind === 'task' && detail.paymentAlreadyIncluded ? { paymentEnabled: true } : {}),
+      ...(paymentDueDate ? { paymentDueDate } : {}),
+    } satisfies DetailDecision]
+  })) as Record<string, DetailDecision>, [details, today])
 
   const [detailDecisions, setDetailDecisions] = useState<Record<string, DetailDecision>>(initialDetailDecisions)
   const [error, setError] = useState('')
@@ -204,7 +215,7 @@ export function PlanReview({
           <div className="plan-review-head-copy">
             <p className="section-kicker">{pt ? 'REVER ANTES DE GUARDAR' : 'REVIEW BEFORE SAVING'}</p>
             <h2 id="plan-review-title">{pt ? 'Confirme seu plano' : 'Confirm your plan'}</h2>
-            <p>{pt ? 'A IA organizou o seu trabalho. Revise o que foi entendido e complete apenas os dados que faltam.' : 'AI organized your work. Review what was understood and complete only the missing details.'}</p>
+            <p>{pt ? 'A IA preencheu o que entendeu. Confirme ou ajuste antes de guardar.' : 'AI filled in what it understood. Confirm or adjust it before saving.'}</p>
           </div>
           <button className="icon-button" type="button" onClick={onCancel} aria-label={pt ? 'Fechar' : 'Close'}><X size={18} /></button>
         </div>
@@ -299,8 +310,8 @@ export function PlanReview({
             <div className="plan-review-section-head">
               <Flag size={17} />
               <div>
-                <strong>{pt ? 'Detalhes opcionais' : 'Optional details'}</strong>
-                <span>{pt ? 'Complete apenas o que quiser antes de guardar.' : 'Complete only what you want before saving.'}</span>
+                <strong>{pt ? 'Detalhes do plano' : 'Plan details'}</strong>
+                <span>{pt ? 'A IA preencheu o que encontrou. Os campos em branco são opcionais.' : 'AI filled what it found. Blank fields are optional.'}</span>
               </div>
             </div>
 
@@ -311,7 +322,7 @@ export function PlanReview({
                   <div className="plan-review-detail-card" key={detail.key}>
                     <strong className="plan-review-detail-title">{detail.title}</strong>
 
-                    {detail.clientMissing && (
+                    {(detail.clientMissing || detail.clientName) && (
                       <div className="plan-review-field">
                         <div className="plan-review-field-head">
                           <span>{pt ? 'Cliente' : 'Client'}</span>
@@ -320,7 +331,7 @@ export function PlanReview({
                       </div>
                     )}
 
-                    {detail.dueDateMissing && (
+                    {(detail.dueDateMissing || detail.dueDate) && (
                       <div className="plan-review-field">
                         <div className="plan-review-field-head">
                           <span><CalendarDays size={14} /> {pt ? 'Prazo' : 'Deadline'}</span>
@@ -328,15 +339,15 @@ export function PlanReview({
                         <input
                           type="date"
                           min={today}
-                          value={decision.dueDate ?? today}
-                          onChange={event => updateDetail(detail.key, { dueDate: event.target.value || today })}
+                          value={decision.dueDate ?? ''}
+                          onChange={event => updateDetail(detail.key, { dueDate: event.target.value || undefined })}
                           aria-label={pt ? `Prazo para ${detail.title}` : `Deadline for ${detail.title}`}
                         />
-                        <small className="field-help">{pt ? 'Hoje é a data padrão. Escolha hoje ou uma data futura.' : 'Today is the default. Choose today or a future date.'}</small>
+                        <small className="field-help">{detail.dueDate ? (pt ? 'Data entendida pela IA. Você pode ajustar.' : 'Date understood by AI. You can adjust it.') : (pt ? 'Opcional — escolha hoje ou uma data futura se quiser.' : 'Optional — choose today or a future date if you want.')}</small>
                       </div>
                     )}
 
-                    {detail.priorityMissing && (
+                    {(detail.priorityMissing || detail.priority) && (
                       <div className="plan-review-field">
                         <div className="plan-review-field-head">
                           <span><Flag size={14} /> {pt ? 'Prioridade' : 'Priority'}</span>
@@ -351,17 +362,19 @@ export function PlanReview({
                       </div>
                     )}
 
-                    {detail.kind === 'task' && !detail.paymentAlreadyIncluded && (detail.clientName || decision.client) && (
+                    {detail.kind === 'task' && (detail.clientName || decision.client) && (
                       <div className="plan-review-payment-box">
                         <div className="plan-review-payment-head">
                           <div>
                             <strong>{pt ? 'Pagamento' : 'Payment'}</strong>
                             <span>{decision.paymentEnabled
-                              ? (pt ? 'Adicione a cobrança deste cliente dentro do mesmo plano.' : 'Add this client payment inside the same plan.')
+                              ? (detail.paymentAlreadyIncluded
+                                ? (pt ? 'Pagamento encontrado pela IA. Confirme ou ajuste os dados.' : 'Payment found by AI. Confirm or adjust the details.')
+                                : (pt ? 'Adicione uma cobrança para este cliente dentro do mesmo plano.' : 'Add a payment for this client inside the same plan.'))
                               : (pt ? 'Nenhum pagamento foi definido para este cliente.' : 'No payment has been defined for this client.')}</span>
                           </div>
                           {!decision.paymentEnabled && (
-                            <button type="button" className="plan-review-choice-button" onClick={() => updateDetail(detail.key, { paymentEnabled: true, paymentDueDate: detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : today })}>
+                            <button type="button" className="plan-review-choice-button" onClick={() => updateDetail(detail.key, { paymentEnabled: true, paymentDueDate: detail.paymentDueDate && isValidReviewDate(detail.paymentDueDate, today) ? detail.paymentDueDate : (detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : undefined) })}>
                               <CircleDollarSign size={14} /> {pt ? 'Adicionar pagamento' : 'Add payment'}
                             </button>
                           )}
@@ -386,7 +399,7 @@ export function PlanReview({
                             </div>
                             <div className="plan-review-field">
                               <div className="plan-review-field-head"><span><CalendarDays size={14} /> {pt ? 'Vencimento' : 'Payment due date'}</span></div>
-                              <input type="date" min={today} value={decision.paymentDueDate ?? today} onChange={event => updateDetail(detail.key, { paymentDueDate: event.target.value || today })} />
+                              <input type="date" min={today} value={decision.paymentDueDate ?? ''} onChange={event => updateDetail(detail.key, { paymentDueDate: event.target.value || undefined })} />
                             </div>
                             <button type="button" className="plan-review-remove-payment" onClick={() => updateDetail(detail.key, { paymentEnabled: false, amount: undefined, currency: undefined, paymentDueDate: undefined })}>
                               {pt ? 'Remover pagamento' : 'Remove payment'}
