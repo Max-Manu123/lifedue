@@ -55,13 +55,14 @@ export function PlanReview({
   onCancel: () => void
 }) {
   const pt = language === 'pt'
+  const itemSignature = items.map(item => `${item.key}|${item.originalName ?? ''}|${item.existingName ?? ''}`).join('||')
   const initial = useMemo(() => Object.fromEntries(items.map(item => [
     item.key,
     {
       mode: item.existingName ? 'existing' : 'new',
       name: item.existingName ?? item.originalName ?? '',
     } satisfies ClientDecision,
-  ])) as Record<string, ClientDecision>, [items])
+  ])) as Record<string, ClientDecision>, [itemSignature])
   const [decisions, setDecisions] = useState<Record<string, ClientDecision>>(initial)
   const [detailDecisions, setDetailDecisions] = useState<Record<string, DetailDecision>>({})
   const [error, setError] = useState('')
