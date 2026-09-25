@@ -680,7 +680,8 @@ function App() {
     }
 
     persistingPlanRef.current = true
-    setTasksError('')
+    try {
+      setTasksError('')
     setPaymentsError('')
 
     // AI plans now use the exact same persistence path as the manual
@@ -776,12 +777,12 @@ function App() {
         setShowAddPayment(true)
       }
       setView('tasks')
-    } else {
-      setTasksError(currentLanguage === 'pt'
-        ? 'Nada foi guardado. Tente novamente.'
-        : 'Nothing was saved. Please try again.')
-    }
-  } finally {
+      } else {
+        setTasksError(currentLanguage === 'pt'
+          ? 'Nada foi guardado. Tente novamente.'
+          : 'Nothing was saved. Please try again.')
+      }
+    } finally {
     persistingPlanRef.current = false
   }
 
