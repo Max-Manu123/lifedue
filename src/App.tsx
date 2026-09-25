@@ -515,7 +515,7 @@ function App() {
         return
       }
 
-      const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
+      const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a|para|pra o|pra a|pra)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
       const normalizedName = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
       const isMissingClient = (value: string) => {
         const normalized = normalizedName(value.trim())
