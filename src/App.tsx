@@ -785,6 +785,7 @@ function App() {
     } finally {
     persistingPlanRef.current = false
   }
+  }
 
   useEffect(() => {
     if (!user) return
