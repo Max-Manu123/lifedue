@@ -89,7 +89,7 @@ function load<T>(key: string, fallback: T): T {
   }
 }
 
-const extractCompanionTask = (input: string, payment: QuickAddItem): (QuickAddItem & { dueDateProvided: boolean }) | null => {
+const extractCompanionTask = (input: string, payment: QuickAddItem): (QuickAddItem & { dueDateProvided: boolean; priorityProvided: boolean }) | null => {
   const workVerb = /\b(entregar|enviar|criar|terminar|concluir|fazer|preparar|desenvolver|corrigir|revisar|publicar|configurar|instalar|atualizar|apresentar|montar|produzir|editar)\b/i
   if (!workVerb.test(input)) return null
   const firstClause = input.split(/[,.!?;]+/)[0].trim()
@@ -108,7 +108,7 @@ const extractCompanionTask = (input: string, payment: QuickAddItem): (QuickAddIt
   }
   title = title.replace(/\b(?:hoje|amanhã|ontem|today|tomorrow|sexta(?:-feira)?|segunda(?:-feira)?|terça(?:-feira)?|quarta(?:-feira)?|quinta(?:-feira)?|sábado|domingo|friday|monday|tuesday|wednesday|thursday|saturday|sunday)\b/gi, '').replace(/\s+/g, ' ').trim()
   if (!title || !workVerb.test(title)) return null
-  return { kind: 'task', title, client: payment.client, dueDate: payment.dueDate, dueDateProvided: payment.dueDateProvided !== false, priority: payment.priority }
+  return { kind: 'task', title, client: payment.client, dueDate: payment.dueDate, dueDateProvided: payment.dueDateProvided !== false, priority: payment.priority, priorityProvided: payment.priorityProvided === true }
 }
 
 function localizeAiTitle(title: string, _kind: QuickAddItem['kind']) {
@@ -939,7 +939,7 @@ function App() {
         dueDate: details.dueDate ?? payment.dueDate,
         dueDateProvided: details.dueDate ? true : payment.dueDateProvided,
         amount: details.amount ?? payment.amount,
-        currency: details.currency !== undefined ? details.currency : payment.currency,
+        currency: details.currency !== undefined ? (details.currency ?? undefined) : (payment.currency ?? undefined),
       }
     })
     setPlan(nextPlan)
