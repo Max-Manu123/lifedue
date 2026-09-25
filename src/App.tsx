@@ -523,14 +523,26 @@ function App() {
           || normalized.endsWith(' · no client defined')
       }
       const exactClient = (value: string) => {
-        if (isMissingClient(value)) return ''
-        const match = clientNames.find(name => normalizedName(name) === normalizedName(value))
+        const trimmed = value.trim()
+        if (isMissingClient(trimmed)) return ''
+        const normalized = normalizedName(trimmed)
+        const missingSuffixes = [
+          ' · cliente nao definido',
+          ' · cliente nao informado',
+          ' · sem cliente',
+          ' · client not set',
+          ' · no client',
+          ' · no client defined',
+        ]
+        const cleaned = missingSuffixes.reduce((current, suffix) => current.endsWith(suffix) ? current.slice(0, -suffix.length).trim() : current, normalized)
+        if (cleaned !== normalized && missingSuffixes.some(suffix => normalized.endsWith(suffix))) return ''
+        const match = clientNames.find(name => normalizedName(name) === normalized)
         if (match) return match
-        if (normalizedName(value) === 'john') {
+        if (normalized === 'john') {
           const joao = clientNames.find(name => normalizedName(name) === 'joao')
           if (joao) return joao
         }
-        return value
+        return trimmed
       }
 
       setPlan([])
