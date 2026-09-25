@@ -109,17 +109,6 @@ export function PlanReview({
     setError('')
   }
 
-  const clearDetail = (key: string, field: keyof DetailDecision) => {
-    setDetailDecisions(current => {
-      const next = { ...current }
-      const detail = { ...(next[key] ?? {}) }
-      delete detail[field]
-      next[key] = detail
-      return next
-    })
-    setError('')
-  }
-
   const submit = (skipDetails = false) => {
     const result: Record<string, string> = {}
 
