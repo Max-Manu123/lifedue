@@ -340,7 +340,7 @@ export function PlanReview({
                           )}
                         </div>
                         {decision.paymentEnabled && (
-                            <div className="plan-review-field">
+                          <div className="plan-review-payment-fields">
                               <div className="plan-review-field-head"><span><CircleDollarSign size={14} /> {pt ? 'Valor' : 'Amount'}</span></div>
                               <input type="number" min="0" step="any" value={decision.amount ?? ''} onChange={event => updateDetail(detail.key, { amount: event.target.value === '' ? undefined : Number(event.target.value) })} placeholder={pt ? 'Ex.: 200000' : 'e.g. 200000'} inputMode="decimal" />
                             </div>
