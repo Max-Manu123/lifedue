@@ -885,7 +885,9 @@ function App() {
       const clientMissing = missingClient(task.client)
       const dueDateMissing = task.dueDateProvided !== true
       const priorityMissing = task.priorityProvided !== true
-      if (!clientMissing && !dueDateMissing && !priorityMissing && !task.client.trim()) continue
+      // Keep client-linked tasks in Plan Review even when all task fields are
+      // already complete, so the optional payment action is always available.
+      if (!clientMissing && !task.client.trim() && !dueDateMissing && !priorityMissing) continue
 
       details.push({
         key: 'task:' + task.id,
