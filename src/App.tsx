@@ -1089,6 +1089,15 @@ function App() {
     void persistPlan()
   }, [planReviewConfirmed, plan.length])
 
+  const hasPendingPaymentForClient = (client: string) => {
+    const normalizedClient = client.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
+    if (!normalizedClient) return false
+    return payments.some(payment =>
+      payment.status === 'pending' &&
+      payment.client.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase() === normalizedClient
+    )
+  }
+
   const addTask = async (task: Omit<Task, 'id' | 'status'>) => {
     if (!isValidDueDate(task.dueDate)) {
       const message = currentLanguage === 'pt' ? 'A data de entrega deve ser hoje ou uma data futura válida.' : 'The due date must be today or a valid future date.'
@@ -1108,8 +1117,10 @@ function App() {
         }
       }
       setShowAdd(false)
+      const shouldSuggestPayment = task.client.trim() && !hasPendingPaymentForClient(task.client)
       if (suppressNextStepRef.current) suppressNextStepRef.current = false
-      else setNextStep({ type: 'payment', client: task.client })
+      else if (shouldSuggestPayment) setNextStep({ type: 'payment', client: task.client })
+      else setNextStep(null)
     } catch (error) {
       console.error('LifeDue task creation failed:', error)
       setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar a tarefa.' : 'Could not save the task.')
@@ -1519,7 +1530,7 @@ function App() {
         onConfirm={confirmPlanReview}
       />}
       {showAddClient && user && <AddClientModal onClose={() => setShowAddClient(false)} onAdd={async name => { if (!supabase || !user) return; const created = await createClient(user, name); setClients(current => current.some(client => client.name.trim().toLowerCase() === created.name.trim().toLowerCase()) ? current : [...current, created].sort((a,b) => a.name.localeCompare(b.name))) }} />}
-      {nextStep && <NextStepCard type={nextStep.type} client={nextStep.client} onAction={() => { suppressNextStepRef.current = true; if (nextStep.type === 'payment') { setPaymentDraftClient(nextStep.client); setShowAddPayment(true) } else { setTaskDraftClient(nextStep.client); setShowAdd(true) }; setNextStep(null) }} onDismiss={() => setNextStep(null)} />}
+      {nextStep && !((nextStep.type === 'payment' && hasPendingPaymentForClient(nextStep.client))) && <NextStepCard type={nextStep.type} client={nextStep.client} onAction={() => { suppressNextStepRef.current = true; if (nextStep.type === 'payment') { setPaymentDraftClient(nextStep.client); setShowAddPayment(true) } else { setTaskDraftClient(nextStep.client); setShowAdd(true) }; setNextStep(null) }} onDismiss={() => setNextStep(null)} />}
       {showAdd && <AddTaskModal initialClient={taskDraftClient} onClose={() => { setShowAdd(false); setTaskDraftClient('') }} onAdd={addTask} clients={clients} />}
       {showAddPayment && <AddPaymentModal initialClient={paymentDraftClient} onClose={() => { setShowAddPayment(false); setPaymentDraftClient('') }} onAdd={addPayment} clients={clients} existingPayments={payments} />}
       {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
