@@ -1594,3 +1594,19 @@ button, input, textarea, select { transition: background-color .2s ease, border-
   .plan-review-payment-head{align-items:stretch;flex-direction:column}
   .plan-review-payment-head .plan-review-choice-button{align-self:flex-start}
 }
+
+
+/* Final polish for the AI plan review */
+.plan-review-detail-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.plan-review-detail-card-head>div{min-width:0}
+.plan-review-detail-card-head>div>span{display:block;margin-top:3px;color:var(--text-muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.plan-review-ready-badge{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;padding:5px 8px;border:1px solid color-mix(in srgb,var(--primary) 24%,var(--border-color));border-radius:999px;background:var(--surface);color:var(--primary);font-size:10px;font-weight:800}
+.plan-review-confirmed-value{display:flex;align-items:center;gap:6px;margin-top:10px;padding:9px 10px;border:1px solid color-mix(in srgb,var(--primary) 20%,var(--border-color));border-radius:9px;background:var(--surface);color:var(--text-primary);font-size:12px;font-weight:700}
+.plan-review-count.attention{border-color:color-mix(in srgb,#d97706 25%,var(--border-color));color:#b45309!important}
+.plan-review-error{margin-top:14px;padding:10px 12px;border:1px solid #fecaca;border-radius:10px;background:#fff1f2;color:#b91c1c;font-size:11px;line-height:1.5}
+.theme-dark .plan-review-error{border-color:#71333b;background:#35191e;color:#fca5a5}
+.theme-dark .plan-review-ready-badge,.theme-dark .plan-review-confirmed-value{background:#111827;border-color:#334155}
+@media (max-width:600px){
+  .plan-review-detail-card-head{align-items:stretch;flex-direction:column}
+  .plan-review-ready-badge{align-self:flex-start}
+}
