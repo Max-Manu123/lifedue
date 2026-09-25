@@ -310,8 +310,8 @@ export function PlanReview({
                       </div>
                     )}
 
-                    {detail.kind === 'task' && (detail.clientName || decision.client) && (
-                      <div className="plan-review-payment-box">
+                    {detail.kind === 'task' && (
+                      <div className={decision.client?.trim() || detail.clientName ? 'plan-review-payment-box' : 'plan-review-payment-box plan-review-payment-box-disabled'}>
                         <div className="plan-review-payment-head">
                           <div>
                             <strong>{pt ? 'Pagamento' : 'Payment'}</strong>
@@ -319,16 +319,27 @@ export function PlanReview({
                               ? (detail.paymentAlreadyIncluded
                                 ? (pt ? 'Pagamento encontrado pela IA. Confirme ou ajuste os dados.' : 'Payment found by AI. Confirm or adjust the details.')
                                 : (pt ? 'Adicione uma cobrança para este cliente dentro do mesmo plano.' : 'Add a payment for this client inside the same plan.'))
-                              : (pt ? 'Nenhum pagamento foi definido para este cliente.' : 'No payment has been defined for this client.')}</span>
+                              : (detail.clientName || decision.client
+                                ? (pt ? 'Nenhum pagamento foi definido para este cliente.' : 'No payment has been defined for this client.')
+                                : (pt ? 'Informe o cliente acima para poder adicionar um pagamento.' : 'Enter the client above to add a payment.'))}</span>
                           </div>
                           {!decision.paymentEnabled && (
-                            <button type="button" className="plan-review-choice-button" onClick={() => updateDetail(detail.key, { paymentEnabled: true, paymentDueDate: detail.paymentDueDate && isValidReviewDate(detail.paymentDueDate, today) ? detail.paymentDueDate : (detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : undefined) })}>
+                            <button
+                              type="button"
+                              className="plan-review-choice-button"
+                              disabled={!detail.clientName && !decision.client?.trim()}
+                              onClick={() => updateDetail(detail.key, {
+                                paymentEnabled: true,
+                                paymentDueDate: detail.paymentDueDate && isValidReviewDate(detail.paymentDueDate, today)
+                                  ? detail.paymentDueDate
+                                  : (detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : undefined),
+                              })}
+                            >
                               <CircleDollarSign size={14} /> {pt ? 'Adicionar pagamento' : 'Add payment'}
                             </button>
                           )}
                         </div>
                         {decision.paymentEnabled && (
-                          <div className="plan-review-payment-fields">
                             <div className="plan-review-field">
                               <div className="plan-review-field-head"><span><CircleDollarSign size={14} /> {pt ? 'Valor' : 'Amount'}</span></div>
                               <input type="number" min="0" step="any" value={decision.amount ?? ''} onChange={event => updateDetail(detail.key, { amount: event.target.value === '' ? undefined : Number(event.target.value) })} placeholder={pt ? 'Ex.: 200000' : 'e.g. 200000'} inputMode="decimal" />
