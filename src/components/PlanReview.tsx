@@ -109,7 +109,7 @@ export function PlanReview({
     setError('')
   }
 
-  const submit = (skipDetails = false) => {
+  const submit = () => {
     const result: Record<string, string> = {}
 
     for (const item of safeItems) {
@@ -138,7 +138,7 @@ export function PlanReview({
       }
     }
 
-    onConfirm(result, skipDetails ? {} : detailDecisions)
+    onConfirm(result, detailDecisions)
   }
 
   return (
@@ -326,11 +326,11 @@ export function PlanReview({
         <div className="plan-review-footer">
           <button type="button" className="secondary-button" onClick={onCancel}>{pt ? 'Voltar' : 'Back'}</button>
           {details.length > 0 && (
-            <button type="button" className="text-button plan-review-skip-all" onClick={() => submit(true)}>
-              {pt ? 'Pular detalhes' : 'Skip details'}
+            <button type="button" className="secondary-button" onClick={submit}>
+              {pt ? 'Guardar sem completar' : 'Save without completing'}
             </button>
           )}
-          <button type="button" className="primary-button" onClick={() => submit(false)}>
+          <button type="button" className="primary-button" onClick={submit}>
             {pt ? 'Guardar plano' : 'Save plan'} <ChevronRight size={17} />
           </button>
         </div>
