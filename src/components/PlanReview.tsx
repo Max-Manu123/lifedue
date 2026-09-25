@@ -120,7 +120,7 @@ export function PlanReview({
     setError('')
   }
 
-  const submit = () => {
+  const submit = (skipDetails = false) => {
     const result: Record<string, string> = {}
 
     for (const item of safeItems) {
@@ -149,7 +149,7 @@ export function PlanReview({
       }
     }
 
-    onConfirm(result, detailDecisions)
+    onConfirm(result, skipDetails ? {} : detailDecisions)
   }
 
   return (
@@ -271,7 +271,6 @@ export function PlanReview({
                       <div className="plan-review-field">
                         <div className="plan-review-field-head">
                           <span>{pt ? 'Cliente' : 'Client'}</span>
-                          <button type="button" className="plan-review-skip" onClick={() => clearDetail(detail.key, 'client')}>{pt ? 'Pular' : 'Skip'}</button>
                         </div>
                         <input value={decision.client ?? ''} onChange={event => updateDetail(detail.key, { client: event.target.value })} placeholder={pt ? 'Nome do cliente (opcional)' : 'Client name (optional)'} autoComplete="off" />
                       </div>
@@ -281,7 +280,6 @@ export function PlanReview({
                       <div className="plan-review-field">
                         <div className="plan-review-field-head">
                           <span><CalendarDays size={14} /> {pt ? 'Prazo' : 'Deadline'}</span>
-                          <button type="button" className="plan-review-skip" onClick={() => clearDetail(detail.key, 'dueDate')}>{pt ? 'Pular' : 'Skip'}</button>
                         </div>
                         <input type="date" min={today} value={decision.dueDate ?? ''} onChange={event => updateDetail(detail.key, { dueDate: event.target.value })} />
                       </div>
@@ -291,7 +289,6 @@ export function PlanReview({
                       <div className="plan-review-field">
                         <div className="plan-review-field-head">
                           <span><Flag size={14} /> {pt ? 'Prioridade' : 'Priority'}</span>
-                          <button type="button" className="plan-review-skip" onClick={() => clearDetail(detail.key, 'priority')}>{pt ? 'Pular' : 'Skip'}</button>
                         </div>
                         <div className="plan-review-priority">
                           {(['low', 'medium', 'high'] as Priority[]).map(priority => (
@@ -307,8 +304,7 @@ export function PlanReview({
                       <div className="plan-review-field">
                         <div className="plan-review-field-head">
                           <span><CircleDollarSign size={14} /> {pt ? 'Valor' : 'Amount'}</span>
-                          <button type="button" className="plan-review-skip" onClick={() => clearDetail(detail.key, 'amount')}>{pt ? 'Pular' : 'Skip'}</button>
-                        </div>
+                          </div>
                         <input type="number" min="0" step="any" value={decision.amount ?? ''} onChange={event => updateDetail(detail.key, { amount: event.target.value === '' ? undefined : Number(event.target.value) })} placeholder={pt ? 'Ex.: 200000' : 'e.g. 200000'} inputMode="decimal" />
                       </div>
                     )}
@@ -317,8 +313,7 @@ export function PlanReview({
                       <div className="plan-review-field">
                         <div className="plan-review-field-head">
                           <span><CircleDollarSign size={14} /> {pt ? 'Moeda' : 'Currency'}</span>
-                          <button type="button" className="plan-review-skip" onClick={() => clearDetail(detail.key, 'currency')}>{pt ? 'Pular' : 'Skip'}</button>
-                        </div>
+                          </div>
                         <select value={decision.currency ?? ''} onChange={event => updateDetail(detail.key, { currency: (event.target.value || undefined) as PaymentCurrency | undefined })}>
                           <option value="">{pt ? 'Escolher moeda' : 'Choose currency'}</option>
                           <option value="AOA">AOA · Kz</option>
@@ -341,7 +336,12 @@ export function PlanReview({
 
         <div className="plan-review-footer">
           <button type="button" className="secondary-button" onClick={onCancel}>{pt ? 'Voltar' : 'Back'}</button>
-          <button type="button" className="primary-button" onClick={submit}>
+          {details.length > 0 && (
+            <button type="button" className="text-button plan-review-skip-all" onClick={() => submit(true)}>
+              {pt ? 'Pular detalhes' : 'Skip details'}
+            </button>
+          )}
+          <button type="button" className="primary-button" onClick={() => submit(false)}>
             {pt ? 'Guardar plano' : 'Save plan'} <ChevronRight size={17} />
           </button>
         </div>
