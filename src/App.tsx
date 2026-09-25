@@ -878,6 +878,7 @@ function App() {
       currencyMissing: boolean
       currency?: QuickAddItem['currency'] | null
       clientName?: string
+      paymentAlreadyIncluded?: boolean
     }> = []
 
     for (const task of plan) {
@@ -896,6 +897,9 @@ function App() {
         priorityMissing,
         priority: task.priority,
         clientName: clientMissing ? undefined : task.client.trim(),
+        paymentAlreadyIncluded: !clientMissing && planPayments.some(payment =>
+          payment.client.trim().toLocaleLowerCase() === task.client.trim().toLocaleLowerCase()
+        ),
         amountMissing: false,
         currencyMissing: false,
       })
