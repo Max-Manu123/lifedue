@@ -852,39 +852,42 @@ function App() {
       currency?: QuickAddItem['currency'] | null
     }> = []
 
+    // Review every generated item, not only items with missing data.
+    // This makes the review step deterministic: the user always sees the
+    // complete plan and can skip any optional field.
     for (const task of plan) {
-      if (!task.client.trim() || task.dueDateProvided !== true || task.priorityProvided !== true) {
-        details.push({
-          key: 'task:' + task.id,
-          title: task.title,
-          kind: 'task',
-          clientMissing: !task.client.trim(),
-          dueDateMissing: task.dueDateProvided !== true,
-          dueDate: task.dueDateProvided === true ? task.dueDate : undefined,
-          priorityMissing: task.priorityProvided !== true,
-          priority: task.priority,
-          amountMissing: false,
-          currencyMissing: false,
-        })
-      }
+      const client = task.client.trim()
+      details.push({
+        key: 'task:' + task.id,
+        title: task.title.trim() || (currentLanguage === 'pt' ? 'Tarefa sem título' : 'Untitled task'),
+        kind: 'task',
+        clientMissing: !client,
+        dueDateMissing: task.dueDateProvided !== true,
+        dueDate: task.dueDateProvided === true ? task.dueDate : undefined,
+        priorityMissing: task.priorityProvided !== true,
+        priority: task.priority,
+        amountMissing: false,
+        currencyMissing: false,
+      })
     }
 
     planPayments.forEach((payment, index) => {
-      if (!payment.client.trim() || payment.dueDateProvided !== true || payment.amount === null || payment.amount === undefined || payment.currency === null || payment.currency === undefined) {
-        details.push({
-          key: 'payment:' + index,
-          title: currentLanguage === 'pt' ? 'Cobrança · ' + (payment.client || 'cliente não definido') : 'Payment · ' + (payment.client || 'client not set'),
-          kind: 'payment',
-          clientMissing: !payment.client.trim(),
-          dueDateMissing: payment.dueDateProvided !== true,
-          dueDate: payment.dueDateProvided === true ? payment.dueDate : undefined,
-          priorityMissing: false,
-          amountMissing: payment.amount === null || payment.amount === undefined,
-          amount: payment.amount,
-          currencyMissing: payment.currency === null || payment.currency === undefined,
-          currency: payment.currency ?? null,
-        })
-      }
+      const client = payment.client.trim()
+      details.push({
+        key: 'payment:' + index,
+        title: currentLanguage === 'pt'
+          ? 'Cobrança' + (client ? ' · ' + client : '')
+          : 'Payment' + (client ? ' · ' + client : ''),
+        kind: 'payment',
+        clientMissing: !client,
+        dueDateMissing: payment.dueDateProvided !== true,
+        dueDate: payment.dueDateProvided === true ? payment.dueDate : undefined,
+        priorityMissing: false,
+        amountMissing: payment.amount === null || payment.amount === undefined,
+        amount: payment.amount,
+        currencyMissing: payment.currency === null || payment.currency === undefined,
+        currency: payment.currency ?? null,
+      })
     })
 
     return details
@@ -913,9 +916,11 @@ function App() {
       const details = detailDecisions['task:' + task.id] ?? {}
       return {
         ...task,
-        client: task.client.trim()
-          ? (decisions['client:' + normalize(task.client)] ?? task.client)
-          : (details.client?.trim() ?? task.client),
+        client: details.client !== undefined
+          ? details.client.trim()
+          : (task.client.trim()
+            ? (decisions['client:' + normalize(task.client)] ?? task.client)
+            : task.client),
         dueDate: details.dueDate ?? task.dueDate,
         dueDateProvided: details.dueDate ? true : task.dueDateProvided,
         priority: details.priority ?? task.priority,
@@ -926,9 +931,11 @@ function App() {
       const details = detailDecisions['payment:' + index] ?? {}
       return {
         ...payment,
-        client: payment.client.trim()
-          ? (decisions['client:' + normalize(payment.client)] ?? payment.client)
-          : (details.client?.trim() ?? payment.client),
+        client: details.client !== undefined
+          ? details.client.trim()
+          : (payment.client.trim()
+            ? (decisions['client:' + normalize(payment.client)] ?? payment.client)
+            : payment.client),
         dueDate: details.dueDate ?? payment.dueDate,
         dueDateProvided: details.dueDate ? true : payment.dueDateProvided,
         amount: details.amount ?? payment.amount,
