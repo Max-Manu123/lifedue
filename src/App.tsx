@@ -187,6 +187,8 @@ function App() {
   const [paymentDraftClient, setPaymentDraftClient] = useState('')
   const [nextStep, setNextStep] = useState<{ type: 'payment' | 'task'; client: string } | null>(null)
   const suppressNextStepRef = useRef(false)
+  const taskUpdateInFlightRef = useRef(new Set<string>())
+  const persistingPlanRef = useRef(false)
   const [showAddClient, setShowAddClient] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -394,17 +396,24 @@ function App() {
   }
 
   const toggleTask = async (id: string) => {
-    if (updatingTaskId) return
+    if (taskUpdateInFlightRef.current.has(id)) return
     const currentTask = tasks.find(task => task.id === id)
     if (!currentTask) return
+
     const nextStatus = currentTask.status === 'open' ? 'completed' : 'open'
+    taskUpdateInFlightRef.current.add(id)
     setUpdatingTaskId(id)
     setTasksError('')
+
+    // Optimistic UI: the checkbox responds immediately, while the same task
+    // is locked so a double click cannot create a second state transition.
     setTasks(current => current.map(task => task.id === id ? { ...task, status: nextStatus } : task))
 
     if (user && supabase) {
       try {
-        await updateTaskStatus(user, id, nextStatus)
+        const persisted = await updateTaskStatus(user, id, nextStatus)
+        // Apply the exact server-confirmed state before refreshing the list.
+        setTasks(current => current.map(task => task.id === id ? { ...task, status: persisted.status } : task))
         const refreshed = await fetchTasks(user)
         setTasks(refreshed)
       } catch (error) {
@@ -414,12 +423,14 @@ function App() {
           ? 'Não foi possível guardar esta tarefa. Tente novamente.'
           : 'Could not save this task. Please try again.')
       } finally {
-        setUpdatingTaskId(null)
+        taskUpdateInFlightRef.current.delete(id)
+        setUpdatingTaskId(current => current === id ? null : current)
       }
       return
     }
 
-    setUpdatingTaskId(null)
+    taskUpdateInFlightRef.current.delete(id)
+    setUpdatingTaskId(current => current === id ? null : current)
   }
 
   const applyAiUsage = (value: unknown) => {
@@ -659,10 +670,7 @@ function App() {
   const clearAuthDraft = () => localStorage.removeItem(authDraftKey)
 
   const persistPlan = async () => {
-    if (!plan.length) return
-    setTasksError('')
-    setPaymentsError('')
-
+    if (!plan.length || persistingPlanRef.current) return
     if (!user) {
       saveAuthDraft()
       setPendingSaveAfterAuth(true)
@@ -670,6 +678,10 @@ function App() {
       setAuthOpen(true)
       return
     }
+
+    persistingPlanRef.current = true
+    setTasksError('')
+    setPaymentsError('')
 
     // AI plans now use the exact same persistence path as the manual
     // "Add task" / "Add payment" actions. This keeps both flows identical.
@@ -769,6 +781,8 @@ function App() {
         ? 'Nada foi guardado. Tente novamente.'
         : 'Nothing was saved. Please try again.')
     }
+  } finally {
+    persistingPlanRef.current = false
   }
 
   useEffect(() => {
