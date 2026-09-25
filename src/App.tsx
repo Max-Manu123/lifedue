@@ -1358,6 +1358,11 @@ function App() {
                   payment.client.trim().toLocaleLowerCase() === client.trim().toLocaleLowerCase()
                 )
                 if (hasPending) return
+
+                // A payment added from the "clients without a pending payment"
+                // follow-up completes that client's follow-up flow. Do not create
+                // a new standalone "add task" suggestion after the payment is saved.
+                suppressNextStepRef.current = true
                 setPaymentDraftClient(client)
                 setShowAddPayment(true)
               }}
