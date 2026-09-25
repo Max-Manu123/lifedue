@@ -837,6 +837,24 @@ function App() {
   }
 
   const planReviewDetails = () => {
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase().trim()
+    const missingClient = (value: string) => {
+      const normalized = normalize(value)
+      return !normalized
+        || normalized === 'cliente nao definido'
+        || normalized === 'cliente nao informado'
+        || normalized === 'sem cliente'
+        || normalized === 'client not set'
+        || normalized === 'no client'
+        || normalized === 'no client defined'
+        || normalized.endsWith(' · cliente nao definido')
+        || normalized.endsWith(' · cliente nao informado')
+        || normalized.endsWith(' · sem cliente')
+        || normalized.endsWith(' · client not set')
+        || normalized.endsWith(' · no client')
+        || normalized.endsWith(' · no client defined')
+    }
+
     const details: Array<{
       key: string
       title: string
@@ -852,19 +870,20 @@ function App() {
       currency?: QuickAddItem['currency'] | null
     }> = []
 
-    // Review every generated item, not only items with missing data.
-    // This makes the review step deterministic: the user always sees the
-    // complete plan and can skip any optional field.
     for (const task of plan) {
-      const client = task.client.trim()
+      const clientMissing = missingClient(task.client)
+      const dueDateMissing = task.dueDateProvided !== true
+      const priorityMissing = task.priorityProvided !== true
+      if (!clientMissing && !dueDateMissing && !priorityMissing) continue
+
       details.push({
         key: 'task:' + task.id,
         title: task.title.trim() || (currentLanguage === 'pt' ? 'Tarefa sem título' : 'Untitled task'),
         kind: 'task',
-        clientMissing: !client,
-        dueDateMissing: task.dueDateProvided !== true,
+        clientMissing,
+        dueDateMissing,
         dueDate: task.dueDateProvided === true ? task.dueDate : undefined,
-        priorityMissing: task.priorityProvided !== true,
+        priorityMissing,
         priority: task.priority,
         amountMissing: false,
         currencyMissing: false,
@@ -872,20 +891,25 @@ function App() {
     }
 
     planPayments.forEach((payment, index) => {
-      const client = payment.client.trim()
+      const clientMissing = missingClient(payment.client)
+      const dueDateMissing = payment.dueDateProvided !== true
+      const amountMissing = payment.amount === null || payment.amount === undefined
+      const currencyMissing = payment.currency === null || payment.currency === undefined
+      if (!clientMissing && !dueDateMissing && !amountMissing && !currencyMissing) return
+
       details.push({
         key: 'payment:' + index,
         title: currentLanguage === 'pt'
-          ? 'Cobrança' + (client ? ' · ' + client : '')
-          : 'Payment' + (client ? ' · ' + client : ''),
+          ? 'Cobrança' + (clientMissing ? '' : ' · ' + payment.client.trim())
+          : 'Payment' + (clientMissing ? '' : ' · ' + payment.client.trim()),
         kind: 'payment',
-        clientMissing: !client,
-        dueDateMissing: payment.dueDateProvided !== true,
+        clientMissing,
+        dueDateMissing,
         dueDate: payment.dueDateProvided === true ? payment.dueDate : undefined,
         priorityMissing: false,
-        amountMissing: payment.amount === null || payment.amount === undefined,
+        amountMissing,
         amount: payment.amount,
-        currencyMissing: payment.currency === null || payment.currency === undefined,
+        currencyMissing,
         currency: payment.currency ?? null,
       })
     })
