@@ -978,6 +978,20 @@ function App() {
     })
     const nextPayments = planPayments.flatMap((payment, index) => {
       const details = detailDecisions['payment:' + index] ?? {}
+      const paymentClient = payment.client.trim()
+      const relatedTask = plan.find(task =>
+        paymentClient &&
+        task.client.trim().toLocaleLowerCase() === paymentClient.toLocaleLowerCase()
+      )
+      const relatedTaskDetails = relatedTask ? detailDecisions['task:' + relatedTask.id] ?? {} : {}
+
+      // A payment that originated from a task card is controlled by that card.
+      // This lets the user edit or remove an AI-detected payment without
+      // creating a second payment record.
+      if (relatedTask && relatedTaskDetails.paymentEnabled === false && relatedTaskDetails.amount !== undefined) {
+        return []
+      }
+
       return [{
         ...payment,
         client: details.client !== undefined
@@ -985,10 +999,18 @@ function App() {
           : (payment.client.trim()
             ? (decisions['client:' + normalize(payment.client)] ?? payment.client)
             : payment.client),
-        dueDate: details.dueDate ?? payment.dueDate,
-        dueDateProvided: details.dueDate ? true : payment.dueDateProvided,
-        amount: details.amount ?? payment.amount,
-        currency: details.currency !== undefined ? (details.currency ?? undefined) : (payment.currency ?? undefined),
+        dueDate: relatedTaskDetails.paymentEnabled
+          ? (relatedTaskDetails.paymentDueDate || payment.dueDate)
+          : (details.dueDate ?? payment.dueDate),
+        dueDateProvided: relatedTaskDetails.paymentEnabled
+          ? Boolean(relatedTaskDetails.paymentDueDate || payment.dueDateProvided)
+          : (details.dueDate ? true : payment.dueDateProvided),
+        amount: relatedTaskDetails.paymentEnabled && relatedTaskDetails.amount !== undefined
+          ? relatedTaskDetails.amount
+          : (details.amount ?? payment.amount),
+        currency: relatedTaskDetails.paymentEnabled && relatedTaskDetails.currency !== undefined
+          ? (relatedTaskDetails.currency ?? undefined)
+          : (details.currency !== undefined ? (details.currency ?? undefined) : (payment.currency ?? undefined)),
       }]
     })
 
@@ -1012,14 +1034,7 @@ function App() {
       }]
     })
 
-    // A payment found by the AI is already present in planPayments. When the
-    // user edits it in the task card, keep the single existing payment rather
-    // than creating a duplicate inline payment.
-    const taskPaymentKeys = new Set(
-      nextPlan
-        .map(task => task.client.trim().toLocaleLowerCase())
-        .filter(Boolean)
-    )
+    // AI payments are edited in-place when their related task is reviewed.
     const dedupedPayments = [...nextPayments, ...inlinePayments].filter((payment, index, all) => {
       const key = payment.client.trim().toLocaleLowerCase() + '|' + payment.amount + '|' + payment.dueDate + '|' + (payment.currency ?? '')
       return all.findIndex(candidate =>
