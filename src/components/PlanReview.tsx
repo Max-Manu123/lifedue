@@ -179,6 +179,10 @@ export function PlanReview({
 
     for (const detail of details) {
       const decision = detailDecisions[detail.key]
+      if (decision?.dueDateProvided !== false && !decision?.dueDate) {
+        setError(pt ? 'Escolha uma data ou selecione sem prazo.' : 'Choose a date or select no deadline.')
+        return
+      }
       if (decision?.dueDateProvided !== false && decision?.dueDate && decision.dueDate < today) {
         setError(pt ? 'Escolha um prazo de hoje ou de uma data futura.' : 'Choose today or a future date.')
         return
@@ -195,6 +199,10 @@ export function PlanReview({
         }
         if (!decision.currency) {
           setError(pt ? 'Escolha a moeda do pagamento.' : 'Choose the payment currency.')
+          return
+        }
+        if (decision.paymentDueDateProvided !== false && !decision.paymentDueDate) {
+          setError(pt ? 'Escolha uma data de vencimento ou selecione sem prazo.' : 'Choose a due date or select no due date.')
           return
         }
         if (decision.paymentDueDateProvided !== false && decision.paymentDueDate && !isValidReviewDate(decision.paymentDueDate, today)) {
