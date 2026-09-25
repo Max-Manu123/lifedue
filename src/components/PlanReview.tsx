@@ -366,7 +366,8 @@ export function PlanReview({
                             </button>
                           </div>
                         )}
-                      )}
+                      </div>
+                    )}
 
                     {detail.kind === 'payment' && detail.amountMissing && (
                       <div className="plan-review-field">
