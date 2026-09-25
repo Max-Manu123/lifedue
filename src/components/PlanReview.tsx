@@ -39,7 +39,18 @@ type DetailDecision = {
   currency?: PaymentCurrency | null
 }
 
-function isValidReviewDate(value: string, minimum: string) {\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(minimum)) return false\n\n  const [year, month, day] = value.split('-').map(Number)\n  const date = new Date(Date.UTC(year, month - 1, day))\n  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return false\n\n  return value >= minimum\n}\n\nexport function PlanReview({
+function isValidReviewDate(value: string, minimum: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(minimum)) return false
+
+  const [year, month, day] = value.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day))
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return false
+
+  return value >= minimum
+}
+
+export function PlanReview({
   language,
   items,
   details,
@@ -55,7 +66,7 @@ function isValidReviewDate(value: string, minimum: string) {\n  if (!/^\\d{4}-\\
   onCancel: () => void
 }) {
   const pt = language === 'pt'
-  const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase().trim()
+  const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().trim()
   const isMissingClient = (value: string) => {
     const normalized = normalize(value)
     return !normalized
@@ -84,7 +95,11 @@ function isValidReviewDate(value: string, minimum: string) {\n  if (!/^\\d{4}-\\
   ])) as Record<string, ClientDecision>, [itemSignature])
 
   const [decisions, setDecisions] = useState<Record<string, ClientDecision>>(initial)
-  const initialDetailDecisions = useMemo(() => Object.fromEntries(details.map(detail => [\n    detail.key, detail.dueDateMissing ? { dueDate: detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : today } : {},\n  ])) as Record<string, DetailDecision>, [details, today])\n\n  const [detailDecisions, setDetailDecisions] = useState<Record<string, DetailDecision>>(initialDetailDecisions)
+  const initialDetailDecisions = useMemo(() => Object.fromEntries(details.map(detail => [
+    detail.key, detail.dueDateMissing ? { dueDate: detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : today } : {},
+  ])) as Record<string, DetailDecision>, [details, today])
+
+  const [detailDecisions, setDetailDecisions] = useState<Record<string, DetailDecision>>(initialDetailDecisions)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -109,7 +124,7 @@ function isValidReviewDate(value: string, minimum: string) {\n  if (!/^\\d{4}-\\
     setError('')
   }
 
-  const submit = (saveAnyway = false) => {
+  const submit = () => {
     const result: Record<string, string> = {}
 
     for (const item of safeItems) {
@@ -244,8 +259,8 @@ function isValidReviewDate(value: string, minimum: string) {\n  if (!/^\\d{4}-\\
             <div className="plan-review-section-head">
               <Flag size={17} />
               <div>
-                <strong>{pt ? 'Detalhes a confirmar' : 'Details to confirm'}</strong>
-                <span>{pt ? 'Nada aqui é obrigatório. Pode deixar para depois.' : 'Nothing here is required. You can leave it for later.'}</span>
+                <strong>{pt ? 'Detalhes opcionais' : 'Optional details'}</strong>
+                <span>{pt ? 'Complete apenas o que quiser antes de guardar.' : 'Complete only what you want before saving.'}</span>
               </div>
             </div>
 
@@ -270,7 +285,14 @@ function isValidReviewDate(value: string, minimum: string) {\n  if (!/^\\d{4}-\\
                         <div className="plan-review-field-head">
                           <span><CalendarDays size={14} /> {pt ? 'Prazo' : 'Deadline'}</span>
                         </div>
-                        <input\n                          type="date"\n                          min={today}\n                          value={decision.dueDate ?? today}\n                          onChange={event => updateDetail(detail.key, { dueDate: event.target.value || today })}\n                          aria-label={pt ? `Prazo para ${detail.title}` : `Deadline for ${detail.title}`}\n                        />\n                        <small className="field-help">{pt ? 'Hoje é a data padrão. Escolha hoje ou uma data futura.' : 'Today is the default. Choose today or a future date.'}</small>
+                        <input
+                          type="date"
+                          min={today}
+                          value={decision.dueDate ?? today}
+                          onChange={event => updateDetail(detail.key, { dueDate: event.target.value || today })}
+                          aria-label={pt ? `Prazo para ${detail.title}` : `Deadline for ${detail.title}`}
+                        />
+                        <small className="field-help">{pt ? 'Hoje é a data padrão. Escolha hoje ou uma data futura.' : 'Today is the default. Choose today or a future date.'}</small>
                       </div>
                     )}
 
@@ -326,11 +348,11 @@ function isValidReviewDate(value: string, minimum: string) {\n  if (!/^\\d{4}-\\
         <div className="plan-review-footer">
           <button type="button" className="secondary-button" onClick={onCancel}>{pt ? 'Voltar' : 'Back'}</button>
           {details.length > 0 && (
-            <button type="button" className="secondary-button" onClick={() => submit(true)}>
-              {pt ? 'Guardar mesmo assim' : 'Save anyway'}
+            <button type="button" className="secondary-button" onClick={() => onConfirm({}, {})}>
+              {pt ? 'Guardar sem completar' : 'Save without completing'}
             </button>
           )}
-          <button type="button" className="primary-button" onClick={() => submit(false)}>
+          <button type="button" className="primary-button" onClick={submit}>
             {pt ? 'Guardar plano' : 'Save plan'} <ChevronRight size={17} />
           </button>
         </div>
