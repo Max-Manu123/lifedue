@@ -522,7 +522,8 @@ function App() {
 
       const normalizedItems = items.map(item => ({
         ...item,
-        dueDateProvided: item.dueDateProvided !== false,
+        dueDateProvided: item.dueDateProvided === true,
+        priorityProvided: item.priorityProvided === true,
         client: exactClient(item.client),
         title: currentLanguage === 'pt' ? localizeAiTitle(item.title, item.kind) : item.title,
       }))
