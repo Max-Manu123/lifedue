@@ -1153,6 +1153,7 @@ function App() {
     if (user && supabase) {
       try {
         const created = await createPayment(user, payment)
+        setPaymentsError('')
         setPayments(current => [created, ...current])
         setShowAddPayment(false)
         if (suppressNextStepRef.current) suppressNextStepRef.current = false
@@ -1162,6 +1163,7 @@ function App() {
         setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível adicionar o pagamento.' : 'Could not add the payment.')
       }
     } else {
+      setPaymentsError('')
       setPayments(current => [{ ...payment, id: crypto.randomUUID(), status: 'pending' }, ...current])
       setShowAddPayment(false)
       if (suppressNextStepRef.current) suppressNextStepRef.current = false
@@ -2335,9 +2337,21 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
     return a.client.localeCompare(b.client)
   })
 
+  const isUsablePaymentClient = (value: string) => {
+    const normalized = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().trim()
+    return Boolean(normalized) &&
+      !['cliente nao definido', 'cliente nao informado', 'sem cliente', 'client not set', 'no client', 'no client defined'].includes(normalized) &&
+      !normalized.endsWith(' · cliente nao definido') &&
+      !normalized.endsWith(' · cliente nao informado') &&
+      !normalized.endsWith(' · sem cliente') &&
+      !normalized.endsWith(' · client not set') &&
+      !normalized.endsWith(' · no client') &&
+      !normalized.endsWith(' · no client defined')
+  }
+
   const clientsWithoutPendingPayment = Array.from(new Map(
     tasks
-      .filter(task => task.client.trim())
+      .filter(task => isUsablePaymentClient(task.client))
       .map(task => [task.client.trim().toLocaleLowerCase(), task.client.trim()])
   ).values())
     .filter(client => !payments.some(payment =>
