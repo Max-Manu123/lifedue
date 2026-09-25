@@ -197,6 +197,9 @@ export async function fetchTasks(user: User): Promise<Task[]> {
     .order('due_date', { ascending: true })
     .order('created_at', { ascending: true })
   if (error) throw error
+  // IDs are the source of truth. Two different tasks may legitimately have
+  // the same title, client, date, and status, so content-based deduplication
+  // can make a real task disappear or reappear after a status toggle.
   const seen = new Set<string>()
   return ((data ?? []) as RemoteTask[]).map(task => ({
     id: task.id,
@@ -207,9 +210,8 @@ export async function fetchTasks(user: User): Promise<Task[]> {
     priority: task.priority,
     status: task.status,
   })).filter(task => {
-    const key = `${task.title.trim().toLowerCase()}|${task.client.trim().toLowerCase()}|${task.dueDate}|${task.status}`
-    if (seen.has(key)) return false
-    seen.add(key)
+    if (seen.has(task.id)) return false
+    seen.add(task.id)
     return true
   })
 }
