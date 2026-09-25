@@ -44,6 +44,7 @@ type DetailDecision = {
   currency?: PaymentCurrency | null
   paymentEnabled?: boolean
   paymentDueDate?: string
+  paymentDueDateProvided?: boolean
 }
 
 function isValidReviewDate(value: string, minimum: string) {
