@@ -879,15 +879,22 @@ function App() {
       currency?: QuickAddItem['currency'] | null
       clientName?: string
       paymentAlreadyIncluded?: boolean
+      paymentDueDate?: string
     }> = []
 
     for (const task of plan) {
       const clientMissing = missingClient(task.client)
       const dueDateMissing = task.dueDateProvided !== true
       const priorityMissing = task.priorityProvided !== true
-      // Keep client-linked tasks in Plan Review even when all task fields are
-      // already complete, so the optional payment action is always available.
-      if (!clientMissing && !task.client.trim() && !dueDateMissing && !priorityMissing) continue
+      const matchedPayment = !clientMissing
+        ? planPayments.find(payment =>
+          payment.client.trim().toLocaleLowerCase() === task.client.trim().toLocaleLowerCase()
+        )
+        : undefined
+
+      // Client-linked tasks stay in Review so the user can confirm or edit
+      // the complete AI result, including an optional payment.
+      if (clientMissing && !dueDateMissing && !priorityMissing && !matchedPayment) continue
 
       details.push({
         key: 'task:' + task.id,
@@ -899,11 +906,12 @@ function App() {
         priorityMissing,
         priority: task.priority,
         clientName: clientMissing ? undefined : task.client.trim(),
-        paymentAlreadyIncluded: !clientMissing && planPayments.some(payment =>
-          payment.client.trim().toLocaleLowerCase() === task.client.trim().toLocaleLowerCase()
-        ),
+        paymentAlreadyIncluded: Boolean(matchedPayment),
+        paymentDueDate: matchedPayment?.dueDateProvided !== false ? matchedPayment?.dueDate : undefined,
         amountMissing: false,
+        amount: matchedPayment?.amount ?? undefined,
         currencyMissing: false,
+        currency: matchedPayment?.currency ?? null,
       })
     }
 
@@ -968,9 +976,9 @@ function App() {
         priorityProvided: details.priority ? true : task.priorityProvided,
       }
     })
-    const nextPayments = planPayments.map((payment, index) => {
+    const nextPayments = planPayments.flatMap((payment, index) => {
       const details = detailDecisions['payment:' + index] ?? {}
-      return {
+      return [{
         ...payment,
         client: details.client !== undefined
           ? details.client.trim()
@@ -981,7 +989,7 @@ function App() {
         dueDateProvided: details.dueDate ? true : payment.dueDateProvided,
         amount: details.amount ?? payment.amount,
         currency: details.currency !== undefined ? (details.currency ?? undefined) : (payment.currency ?? undefined),
-      }
+      }]
     })
 
     const inlinePayments = nextPlan.flatMap(task => {
@@ -1004,8 +1012,23 @@ function App() {
       }]
     })
 
+    // A payment found by the AI is already present in planPayments. When the
+    // user edits it in the task card, keep the single existing payment rather
+    // than creating a duplicate inline payment.
+    const taskPaymentKeys = new Set(
+      nextPlan
+        .map(task => task.client.trim().toLocaleLowerCase())
+        .filter(Boolean)
+    )
+    const dedupedPayments = [...nextPayments, ...inlinePayments].filter((payment, index, all) => {
+      const key = payment.client.trim().toLocaleLowerCase() + '|' + payment.amount + '|' + payment.dueDate + '|' + (payment.currency ?? '')
+      return all.findIndex(candidate =>
+        candidate.client.trim().toLocaleLowerCase() + '|' + candidate.amount + '|' + candidate.dueDate + '|' + (candidate.currency ?? '') === key
+      ) === index
+    })
+
     setPlan(nextPlan)
-    setPlanPayments([...nextPayments, ...inlinePayments])
+    setPlanPayments(dedupedPayments)
     setPlanReviewOpen(false)
     setPlanReviewConfirmed(true)
   }
