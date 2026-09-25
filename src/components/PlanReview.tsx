@@ -152,7 +152,7 @@ export function PlanReview({
       result[item.key] = name
     }
 
-    onConfirm(result, {})
+    onConfirm(result, detailDecisions)
   }
 
   const submit = () => {
