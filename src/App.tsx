@@ -575,11 +575,16 @@ function App() {
       }
 
       setPlanSource('quick-add')
-      setPlan(normalizedItems.map(item => ({
+
+      // A payment is supporting data for the plan, not a second task.
+      // Keep payment items exclusively in planPayments so Review never
+      // renders a fake "Cobrar pagamento" task beside the real task.
+      const taskItems = normalizedItems.filter(item => item.kind === 'task')
+      const paymentItems = normalizedItems.filter(item => item.kind === 'payment')
+
+      setPlan(taskItems.map(item => ({
         id: crypto.randomUUID(),
-        title: item.kind === 'payment'
-          ? (currentLanguage === 'pt' ? 'Cobrar pagamento' : 'Follow up payment')
-          : item.title,
+        title: item.title,
         client: item.client,
         dueDate: item.dueDate,
         dueDateProvided: item.dueDateProvided === true,
@@ -587,7 +592,7 @@ function App() {
         priorityProvided: item.priorityProvided === true,
         status: 'open',
       })))
-      setPlanPayments(normalizedItems.filter(item => item.kind === 'payment'))
+      setPlanPayments(paymentItems)
       setView(view === 'onboarding' ? 'onboarding' : 'quick-add')
     } catch (error) {
       if (requestId !== quickAddRequestId.current) return
