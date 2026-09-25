@@ -24,6 +24,7 @@ type ReviewDetail = {
   amount?: number
   currencyMissing: boolean
   currency?: PaymentCurrency | null
+  clientName?: string
 }
 
 type ClientDecision = {
@@ -37,6 +38,8 @@ type DetailDecision = {
   priority?: Priority
   amount?: number
   currency?: PaymentCurrency | null
+  paymentEnabled?: boolean
+  paymentDueDate?: string
 }
 
 function isValidReviewDate(value: string, minimum: string) {
@@ -166,6 +169,26 @@ export function PlanReview({
       if (detail.amountMissing && decision?.amount !== undefined && (!Number.isFinite(decision.amount) || decision.amount < 0)) {
         setError(pt ? 'Digite um valor de pagamento válido.' : 'Enter a valid payment amount.')
         return
+      }
+      if (detail.kind === 'task' && decision?.paymentEnabled) {
+        const amount = decision.amount
+        if (!Number.isFinite(amount) || amount === undefined || amount <= 0) {
+          setError(pt ? 'Digite um valor de pagamento válido.' : 'Enter a valid payment amount.')
+          return
+        }
+        if (!decision.currency) {
+          setError(pt ? 'Escolha a moeda do pagamento.' : 'Choose the payment currency.')
+          return
+        }
+        if (!decision.paymentDueDate || !isValidReviewDate(decision.paymentDueDate, today)) {
+          setError(pt ? 'Escolha uma data de vencimento válida.' : 'Choose a valid payment due date.')
+          return
+        }
+        const clientName = decision.client?.trim() || detail.clientName?.trim() || ''
+        if (!clientName) {
+          setError(pt ? 'Informe o cliente antes de adicionar o pagamento.' : 'Enter the client before adding the payment.')
+          return
+        }
       }
     }
 
@@ -324,6 +347,51 @@ export function PlanReview({
                             </button>
                           ))}
                         </div>
+                      </div>
+                    )}
+
+                    {detail.kind === 'task' && (detail.clientName || decision.client) && (
+                      <div className="plan-review-payment-box">
+                        <div className="plan-review-payment-head">
+                          <div>
+                            <strong>{pt ? 'Pagamento' : 'Payment'}</strong>
+                            <span>{decision.paymentEnabled
+                              ? (pt ? 'Adicione a cobrança deste cliente dentro do mesmo plano.' : 'Add this client payment inside the same plan.')
+                              : (pt ? 'Nenhum pagamento foi definido para este cliente.' : 'No payment has been defined for this client.')}</span>
+                          </div>
+                          {!decision.paymentEnabled && (
+                            <button type="button" className="plan-review-choice-button" onClick={() => updateDetail(detail.key, { paymentEnabled: true, paymentDueDate: detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : today })}>
+                              <CircleDollarSign size={14} /> {pt ? 'Adicionar pagamento' : 'Add payment'}
+                            </button>
+                          )}
+                        </div>
+                        {decision.paymentEnabled && (
+                          <div className="plan-review-payment-fields">
+                            <div className="plan-review-field">
+                              <div className="plan-review-field-head"><span><CircleDollarSign size={14} /> {pt ? 'Valor' : 'Amount'}</span></div>
+                              <input type="number" min="0" step="any" value={decision.amount ?? ''} onChange={event => updateDetail(detail.key, { amount: event.target.value === '' ? undefined : Number(event.target.value) })} placeholder={pt ? 'Ex.: 200000' : 'e.g. 200000'} inputMode="decimal" />
+                            </div>
+                            <div className="plan-review-field">
+                              <div className="plan-review-field-head"><span><CircleDollarSign size={14} /> {pt ? 'Moeda' : 'Currency'}</span></div>
+                              <select value={decision.currency ?? ''} onChange={event => updateDetail(detail.key, { currency: (event.target.value || undefined) as PaymentCurrency | undefined })}>
+                                <option value="">{pt ? 'Escolher moeda' : 'Choose currency'}</option>
+                                <option value="AOA">AOA · Kz</option>
+                                <option value="USD">USD · US$</option>
+                                <option value="EUR">EUR · €</option>
+                                <option value="BRL">BRL · R$</option>
+                                <option value="GBP">GBP · £</option>
+                                <option value="Other">{pt ? 'Outra' : 'Other'}</option>
+                              </select>
+                            </div>
+                            <div className="plan-review-field">
+                              <div className="plan-review-field-head"><span><CalendarDays size={14} /> {pt ? 'Vencimento' : 'Payment due date'}</span></div>
+                              <input type="date" min={today} value={decision.paymentDueDate ?? today} onChange={event => updateDetail(detail.key, { paymentDueDate: event.target.value || today })} />
+                            </div>
+                            <button type="button" className="plan-review-remove-payment" onClick={() => updateDetail(detail.key, { paymentEnabled: false, amount: undefined, currency: undefined, paymentDueDate: undefined })}>
+                              {pt ? 'Remover pagamento' : 'Remove payment'}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 
