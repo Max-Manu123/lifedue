@@ -793,6 +793,67 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 }
 
 
+/* Pending payment follow-ups */
+.pending-payment-gaps {
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:15px;
+  padding:15px;
+}
+.pending-payment-gaps-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:12px;
+}
+.pending-payment-gaps-head h3 { margin:3px 0 4px; font-size:15px; letter-spacing:-.02em; }
+.pending-payment-gaps-head p:last-child { margin:0; color:#64748b; font-size:11px; line-height:1.5; max-width:650px; }
+.pending-payment-gaps-count {
+  flex:0 0 auto;
+  min-width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:#f1f5f9;
+  color:#475569;
+  font-size:11px;
+  font-weight:900;
+}
+.pending-payment-gaps-list { display:grid; gap:7px; }
+.pending-payment-gap-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 0;
+  border-top:1px solid #f1f5f9;
+}
+.pending-payment-gap-row:first-child { border-top:0; padding-top:0; }
+.pending-payment-gap-row:last-child { padding-bottom:0; }
+.pending-payment-gap-icon {
+  width:34px;
+  height:34px;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  background:#f8fafc;
+  color:#64748b;
+}
+.pending-payment-gap-info { flex:1; min-width:0; }
+.pending-payment-gap-info strong,
+.pending-payment-gap-info span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pending-payment-gap-info strong { font-size:12px; }
+.pending-payment-gap-info span { margin-top:3px; color:#94a3b8; font-size:10px; }
+.pending-payment-gap-row .secondary-button { flex:0 0 auto; }
+.pending-payment-gap-row .secondary-button:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+@media (max-width:560px) {
+  .pending-payment-gaps-head { gap:9px; }
+  .pending-payment-gap-row { align-items:flex-start; }
+  .pending-payment-gap-row .secondary-button { margin-left:auto; white-space:nowrap; }
+}
+
 /* Payments dashboard */
 .payments-page { max-width: 900px; }
 .payments-page-intro { align-items:flex-end; }
