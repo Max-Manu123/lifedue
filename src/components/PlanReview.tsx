@@ -124,6 +124,22 @@ export function PlanReview({
     setError('')
   }
 
+  const saveWithoutCompleting = () => {
+    const result: Record<string, string> = {}
+
+    for (const item of safeItems) {
+      const decision = decisions[item.key]
+      const name = decision?.name.trim() ?? ''
+      if (!name) {
+        setError(pt ? 'Escolha ou informe um cliente para continuar.' : 'Choose or enter a client to continue.')
+        return
+      }
+      result[item.key] = name
+    }
+
+    onConfirm(result, {})
+  }
+
   const submit = () => {
     const result: Record<string, string> = {}
 
@@ -348,7 +364,7 @@ export function PlanReview({
         <div className="plan-review-footer">
           <button type="button" className="secondary-button" onClick={onCancel}>{pt ? 'Voltar' : 'Back'}</button>
           {details.length > 0 && (
-            <button type="button" className="secondary-button" onClick={() => onConfirm({}, {})}>
+            <button type="button" className="secondary-button" onClick={saveWithoutCompleting}>
               {pt ? 'Guardar sem completar' : 'Save without completing'}
             </button>
           )}
