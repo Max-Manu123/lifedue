@@ -505,7 +505,7 @@ function App() {
       }
 
       const clientNames = Array.from(input.matchAll(/(?:do|da|de|from|for|para o|para a)\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][\p{L}'-]*)/gu)).map(match => match[1])
-      const normalizedName = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+      const normalizedName = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
       const isMissingClient = (value: string) => {
         const normalized = normalizedName(value.trim())
         return !normalized
@@ -767,7 +767,7 @@ function App() {
   }, [user, pendingSaveAfterAuth, plan.length])
 
   const planReviewItems = () => {
-    const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase()
     const isMissingClient = (value: string) => {
       const normalized = normalize(value.trim())
       return !normalized
@@ -884,7 +884,7 @@ function App() {
     decisions: Record<string, string>,
     detailDecisions: Record<string, { client?: string; dueDate?: string; priority?: Priority; amount?: number; currency?: QuickAddItem['currency'] | null }>
   ) => {
-    const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase()
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase()
     const nextPlan = plan.map(task => {
       const details = detailDecisions['task:' + task.id] ?? {}
       return {
