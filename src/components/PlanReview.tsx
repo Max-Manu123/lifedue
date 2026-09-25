@@ -27,6 +27,7 @@ type ReviewDetail = {
   clientName?: string
   paymentAlreadyIncluded?: boolean
   paymentDueDate?: string
+  paymentDueDateProvided?: boolean
 }
 
 type ClientDecision = {
@@ -37,6 +38,7 @@ type ClientDecision = {
 type DetailDecision = {
   client?: string
   dueDate?: string
+  dueDateProvided?: boolean
   priority?: Priority
   amount?: number
   currency?: PaymentCurrency | null
@@ -106,11 +108,13 @@ export function PlanReview({
     return [detail.key, {
       ...(detail.clientName ? { client: detail.clientName } : {}),
       ...(dueDate ? { dueDate } : {}),
+      dueDateProvided: Boolean(dueDate),
       ...(detail.priority ? { priority: detail.priority } : {}),
       ...(detail.amount !== undefined && detail.amount !== null ? { amount: detail.amount } : {}),
       ...(detail.currency ? { currency: detail.currency } : {}),
       ...(detail.kind === 'task' && detail.paymentAlreadyIncluded ? { paymentEnabled: true } : {}),
       ...(paymentDueDate ? { paymentDueDate } : {}),
+      paymentDueDateProvided: Boolean(paymentDueDate),
     } satisfies DetailDecision]
   })) as Record<string, DetailDecision>, [details, today])
 
@@ -174,7 +178,7 @@ export function PlanReview({
 
     for (const detail of details) {
       const decision = detailDecisions[detail.key]
-      if (detail.dueDateMissing && decision?.dueDate && decision.dueDate < today) {
+      if (decision?.dueDateProvided !== false && decision?.dueDate && decision.dueDate < today) {
         setError(pt ? 'Escolha um prazo de hoje ou de uma data futura.' : 'Choose today or a future date.')
         return
       }
@@ -192,8 +196,8 @@ export function PlanReview({
           setError(pt ? 'Escolha a moeda do pagamento.' : 'Choose the payment currency.')
           return
         }
-        if (!decision.paymentDueDate || !isValidReviewDate(decision.paymentDueDate, today)) {
-          setError(pt ? 'Escolha uma data de vencimento válida.' : 'Choose a valid payment due date.')
+        if (decision.paymentDueDateProvided !== false && decision.paymentDueDate && !isValidReviewDate(decision.paymentDueDate, today)) {
+          setError(pt ? 'Escolha um vencimento válido ou selecione sem prazo.' : 'Choose a valid due date or select no due date.')
           return
         }
         const clientName = decision.client?.trim() || detail.clientName?.trim() || ''
@@ -284,14 +288,34 @@ export function PlanReview({
                         <div className="plan-review-field-head">
                           <span><CalendarDays size={14} /> {pt ? 'Prazo' : 'Deadline'}</span>
                         </div>
-                        <input
-                          type="date"
-                          min={today}
-                          value={decision.dueDate ?? ''}
-                          onChange={event => updateDetail(detail.key, { dueDate: event.target.value || undefined })}
-                          aria-label={pt ? `Prazo para ${detail.title}` : `Deadline for ${detail.title}`}
-                        />
-                        <small className="field-help">{detail.dueDate ? (pt ? 'Data entendida pela IA. Você pode ajustar.' : 'Date understood by AI. You can adjust it.') : (pt ? 'Opcional — escolha hoje ou uma data futura se quiser.' : 'Optional — choose today or a future date if you want.')}</small>
+                        <div className="plan-review-priority">
+                          <button
+                            type="button"
+                            className={decision.dueDateProvided !== false ? 'plan-review-choice-button active' : 'plan-review-choice-button'}
+                            onClick={() => updateDetail(detail.key, { dueDateProvided: true })}
+                          >
+                            {pt ? 'Escolher data' : 'Choose date'}
+                          </button>
+                          <button
+                            type="button"
+                            className={decision.dueDateProvided === false ? 'plan-review-choice-button active' : 'plan-review-choice-button'}
+                            onClick={() => updateDetail(detail.key, { dueDateProvided: false, dueDate: undefined })}
+                          >
+                            {pt ? 'Sem prazo' : 'No deadline'}
+                          </button>
+                        </div>
+                        {decision.dueDateProvided !== false && (
+                          <input
+                            type="date"
+                            min={today}
+                            value={decision.dueDate ?? ''}
+                            onChange={event => updateDetail(detail.key, { dueDate: event.target.value || undefined, dueDateProvided: Boolean(event.target.value) })}
+                            aria-label={pt ? `Prazo para ${detail.title}` : `Deadline for ${detail.title}`}
+                          />
+                        )}
+                        <small className="field-help">{decision.dueDateProvided === false
+                          ? (pt ? 'Esta tarefa ficará sem prazo.' : 'This task will have no deadline.')
+                          : (detail.dueDate ? (pt ? 'Data entendida pela IA. Você pode ajustar.' : 'Date understood by AI. You can adjust it.') : (pt ? 'Opcional — escolha uma data ou deixe sem prazo.' : 'Optional — choose a date or leave it without a deadline.'))}</small>
                       </div>
                     )}
 
@@ -359,7 +383,28 @@ export function PlanReview({
                             </div>
                             <div className="plan-review-field">
                               <div className="plan-review-field-head"><span><CalendarDays size={14} /> {pt ? 'Vencimento' : 'Payment due date'}</span></div>
-                              <input type="date" min={today} value={decision.paymentDueDate ?? ''} onChange={event => updateDetail(detail.key, { paymentDueDate: event.target.value || undefined })} />
+                              <div className="plan-review-priority">
+                                <button
+                                  type="button"
+                                  className={decision.paymentDueDateProvided !== false ? 'plan-review-choice-button active' : 'plan-review-choice-button'}
+                                  onClick={() => updateDetail(detail.key, { paymentDueDateProvided: true })}
+                                >
+                                  {pt ? 'Escolher data' : 'Choose date'}
+                                </button>
+                                <button
+                                  type="button"
+                                  className={decision.paymentDueDateProvided === false ? 'plan-review-choice-button active' : 'plan-review-choice-button'}
+                                  onClick={() => updateDetail(detail.key, { paymentDueDateProvided: false, paymentDueDate: undefined })}
+                                >
+                                  {pt ? 'Sem prazo' : 'No due date'}
+                                </button>
+                              </div>
+                              {decision.paymentDueDateProvided !== false && (
+                                <input type="date" min={today} value={decision.paymentDueDate ?? ''} onChange={event => updateDetail(detail.key, { paymentDueDate: event.target.value || undefined, paymentDueDateProvided: Boolean(event.target.value) })} />
+                              )}
+                              <small className="field-help">{decision.paymentDueDateProvided === false
+                                ? (pt ? 'Este pagamento ficará sem data de vencimento.' : 'This payment will have no due date.')
+                                : (detail.paymentDueDate ? (pt ? 'Data entendida pela IA. Você pode ajustar.' : 'Date understood by AI. You can adjust it.') : (pt ? 'Opcional — escolha uma data ou deixe sem prazo.' : 'Optional — choose a date or leave it without a due date.'))}</small>
                             </div>
                             <button type="button" className="plan-review-remove-payment" onClick={() => updateDetail(detail.key, { paymentEnabled: false, amount: undefined, currency: undefined, paymentDueDate: undefined })}>
                               {pt ? 'Remover pagamento' : 'Remove payment'}
