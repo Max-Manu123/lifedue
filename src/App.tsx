@@ -515,6 +515,12 @@ function App() {
           || normalized === 'client not set'
           || normalized === 'no client'
           || normalized === 'no client defined'
+          || normalized.endsWith(' · cliente nao definido')
+          || normalized.endsWith(' · cliente nao informado')
+          || normalized.endsWith(' · sem cliente')
+          || normalized.endsWith(' · client not set')
+          || normalized.endsWith(' · no client')
+          || normalized.endsWith(' · no client defined')
       }
       const exactClient = (value: string) => {
         if (isMissingClient(value)) return ''
@@ -777,6 +783,12 @@ function App() {
         || normalized === 'client not set'
         || normalized === 'no client'
         || normalized === 'no client defined'
+          || normalized.endsWith(' · cliente nao definido')
+          || normalized.endsWith(' · cliente nao informado')
+          || normalized.endsWith(' · sem cliente')
+          || normalized.endsWith(' · client not set')
+          || normalized.endsWith(' · no client')
+          || normalized.endsWith(' · no client defined')
     }
     const items: Array<{ key: string; label: string; originalName?: string; existingName?: string }> = []
     const seenClients = new Set<string>()
