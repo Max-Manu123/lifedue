@@ -101,10 +101,8 @@ export function PlanReview({
 
   const [decisions, setDecisions] = useState<Record<string, ClientDecision>>(initial)
   const initialDetailDecisions = useMemo(() => Object.fromEntries(details.map(detail => {
-    // Use today's local date as the default in Review instead of leaving date
-    // inputs empty (the browser will still display it in the user's locale).
-    const dueDate = detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : today
-    const paymentDueDate = detail.paymentDueDate && isValidReviewDate(detail.paymentDueDate, today) ? detail.paymentDueDate : today
+    const dueDate = detail.dueDate && isValidReviewDate(detail.dueDate, today) ? detail.dueDate : undefined
+    const paymentDueDate = detail.paymentDueDate && isValidReviewDate(detail.paymentDueDate, today) ? detail.paymentDueDate : undefined
     return [detail.key, {
       ...(detail.clientName ? { client: detail.clientName } : {}),
       ...(dueDate ? { dueDate } : {}),
