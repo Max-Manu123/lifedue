@@ -55,8 +55,27 @@ export function PlanReview({
   onCancel: () => void
 }) {
   const pt = language === 'pt'
-  const itemSignature = items.map(item => `${item.key}|${item.originalName ?? ''}|${item.existingName ?? ''}`).join('||')
-  const initial = useMemo(() => Object.fromEntries(items.map(item => [
+  const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase().trim()
+  const isMissingClient = (value: string) => {
+    const normalized = normalize(value)
+    return !normalized
+      || normalized === 'cliente nao definido'
+      || normalized === 'cliente nao informado'
+      || normalized === 'sem cliente'
+      || normalized === 'client not set'
+      || normalized === 'no client'
+      || normalized === 'no client defined'
+      || normalized.endsWith(' · cliente nao definido')
+      || normalized.endsWith(' · cliente nao informado')
+      || normalized.endsWith(' · sem cliente')
+      || normalized.endsWith(' · client not set')
+      || normalized.endsWith(' · no client')
+      || normalized.endsWith(' · no client defined')
+  }
+  // Defensive boundary: a missing AI client is optional and must never become a fake client.
+  const safeItems = items.filter(item => !isMissingClient(item.label) && !isMissingClient(item.originalName ?? ''))
+  const itemSignature = safeItems.map(item => `${item.key}|${item.originalName ?? ''}|${item.existingName ?? ''}`).join('||')
+  const initial = useMemo(() => Object.fromEntries(safeItems.map(item => [
     item.key,
     {
       mode: item.existingName ? 'existing' : 'new',
@@ -104,7 +123,7 @@ export function PlanReview({
   const submit = () => {
     const result: Record<string, string> = {}
 
-    for (const item of items) {
+    for (const item of safeItems) {
       const decision = decisions[item.key]
       const name = decision?.name.trim() ?? ''
       if (!name) {
@@ -167,7 +186,7 @@ export function PlanReview({
                   </div>
                 </div>
               ))
-              : items.map(item => (
+              : safeItems.map(item => (
                 <div className="plan-review-plan-row" key={item.key}>
                   <div className="plan-review-plan-icon"><Check size={16} /></div>
                   <div>
@@ -179,7 +198,7 @@ export function PlanReview({
           </div>
         </div>
 
-        {items.length > 0 && (
+        {safeItems.length > 0 && (
           <section className="plan-review-section">
             <div className="plan-review-section-head">
               <UserRound size={17} />
@@ -189,7 +208,7 @@ export function PlanReview({
               </div>
             </div>
             <div className="plan-review-list">
-              {items.map(item => {
+              {safeItems.map(item => {
                 const decision = decisions[item.key]
                 const hasExisting = Boolean(item.existingName)
                 const useExisting = decision?.mode === 'existing'
