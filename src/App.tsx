@@ -807,15 +807,15 @@ function App() {
     }> = []
 
     for (const task of plan) {
-      if (!task.client.trim() || task.dueDateProvided === false || task.priorityProvided === false) {
+      if (!task.client.trim() || task.dueDateProvided !== true || task.priorityProvided !== true) {
         details.push({
           key: 'task:' + task.id,
           title: task.title,
           kind: 'task',
           clientMissing: !task.client.trim(),
-          dueDateMissing: task.dueDateProvided === false,
-          dueDate: task.dueDateProvided === false ? undefined : task.dueDate,
-          priorityMissing: task.priorityProvided === false,
+          dueDateMissing: task.dueDateProvided !== true,
+          dueDate: task.dueDateProvided === true ? task.dueDate : undefined,
+          priorityMissing: task.priorityProvided !== true,
           priority: task.priority,
           amountMissing: false,
           currencyMissing: false,
@@ -824,14 +824,14 @@ function App() {
     }
 
     planPayments.forEach((payment, index) => {
-      if (!payment.client.trim() || payment.dueDateProvided === false || payment.amount === null || payment.amount === undefined || payment.currency === null || payment.currency === undefined) {
+      if (!payment.client.trim() || payment.dueDateProvided !== true || payment.amount === null || payment.amount === undefined || payment.currency === null || payment.currency === undefined) {
         details.push({
           key: 'payment:' + index,
           title: currentLanguage === 'pt' ? 'Cobrança · ' + (payment.client || 'cliente não definido') : 'Payment · ' + (payment.client || 'client not set'),
           kind: 'payment',
           clientMissing: !payment.client.trim(),
-          dueDateMissing: payment.dueDateProvided === false,
-          dueDate: payment.dueDateProvided === false ? undefined : payment.dueDate,
+          dueDateMissing: payment.dueDateProvided !== true,
+          dueDate: payment.dueDateProvided === true ? payment.dueDate : undefined,
           priorityMissing: false,
           amountMissing: payment.amount === null || payment.amount === undefined,
           amount: payment.amount,
