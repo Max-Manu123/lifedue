@@ -989,7 +989,7 @@ function App() {
 
   const confirmPlanReview = (
     decisions: Record<string, string>,
-    detailDecisions: Record<string, { client?: string; dueDate?: string; priority?: Priority; amount?: number; currency?: QuickAddItem['currency'] | null; paymentEnabled?: boolean; paymentDueDate?: string }>
+    detailDecisions: Record<string, { client?: string; dueDate?: string; dueDateProvided?: boolean; priority?: Priority; amount?: number; currency?: QuickAddItem['currency'] | null; paymentEnabled?: boolean; paymentDueDate?: string; paymentDueDateProvided?: boolean }>
   ) => {
     const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase()
     const nextPlan = plan.map(task => {
@@ -1002,7 +1002,7 @@ function App() {
             ? (decisions['client:' + normalize(task.client)] ?? task.client)
             : task.client),
         dueDate: details.dueDate ?? task.dueDate,
-        dueDateProvided: details.dueDate ? true : task.dueDateProvided,
+        dueDateProvided: details.dueDateProvided !== undefined ? details.dueDateProvided : task.dueDateProvided,
         priority: details.priority ?? task.priority,
         priorityProvided: details.priority ? true : task.priorityProvided,
       }
@@ -1038,8 +1038,8 @@ function App() {
           ? (relatedTaskDetails.paymentDueDate || payment.dueDate)
           : (details.dueDate ?? payment.dueDate),
         dueDateProvided: relatedTaskDetails.paymentEnabled
-          ? Boolean(relatedTaskDetails.paymentDueDate || payment.dueDateProvided)
-          : (details.dueDate ? true : payment.dueDateProvided),
+          ? (relatedTaskDetails.paymentDueDateProvided !== undefined ? relatedTaskDetails.paymentDueDateProvided : payment.dueDateProvided)
+          : (details.dueDateProvided !== undefined ? details.dueDateProvided : payment.dueDateProvided),
         amount: relatedTaskDetails.paymentEnabled && relatedTaskDetails.amount !== undefined
           ? relatedTaskDetails.amount
           : (details.amount ?? payment.amount),
@@ -1055,13 +1055,14 @@ function App() {
       const client = (detail.client?.trim() || task.client.trim())
       if (!client) return []
 
-      const dueDate = detail.paymentDueDate || (task.dueDateProvided !== false ? task.dueDate : currentTodayKey())
+      const dueDate = detail.paymentDueDate || currentTodayKey()
+      const dueDateProvided = detail.paymentDueDateProvided === true
       return [{
         kind: 'payment' as const,
         title: currentLanguage === 'pt' ? 'Cobrança · ' + client : 'Payment · ' + client,
         client,
         dueDate,
-        dueDateProvided: true,
+        dueDateProvided,
         priority: 'medium' as Priority,
         priorityProvided: true,
         amount: detail.amount,
@@ -1099,7 +1100,7 @@ function App() {
   }
 
   const addTask = async (task: Omit<Task, 'id' | 'status'>) => {
-    if (!isValidDueDate(task.dueDate)) {
+    if (task.dueDateProvided !== false && !isValidDueDate(task.dueDate)) {
       const message = currentLanguage === 'pt' ? 'A data de entrega deve ser hoje ou uma data futura válida.' : 'The due date must be today or a valid future date.'
       setTasksError(message)
       throw new Error(message)
