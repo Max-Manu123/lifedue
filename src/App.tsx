@@ -877,6 +877,7 @@ function App() {
       amount?: number
       currencyMissing: boolean
       currency?: QuickAddItem['currency'] | null
+      clientName?: string
     }> = []
 
     for (const task of plan) {
@@ -943,7 +944,7 @@ function App() {
 
   const confirmPlanReview = (
     decisions: Record<string, string>,
-    detailDecisions: Record<string, { client?: string; dueDate?: string; priority?: Priority; amount?: number; currency?: QuickAddItem['currency'] | null }>
+    detailDecisions: Record<string, { client?: string; dueDate?: string; priority?: Priority; amount?: number; currency?: QuickAddItem['currency'] | null; paymentEnabled?: boolean; paymentDueDate?: string }>
   ) => {
     const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase()
     const nextPlan = plan.map(task => {
