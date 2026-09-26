@@ -233,3 +233,99 @@ export const planReviewI18n = {
   "savePlan": "Guardar plano"
 },
 } as const
+
+export const onboardingI18n = {
+  en: {
+  "skipForNow": "Skip for now",
+  "back": "Back",
+  "startInSeconds": "START IN SECONDS",
+  "organizeWork": "Let’s organize your work.",
+  "whatNeedDone": "What do you need to get done?",
+  "examples": "Examples:",
+  "delivery": "Delivery",
+  "deliveryExample": "Deliver Maria's website Friday",
+  "paymentExample": "Collect $200 from John tomorrow",
+  "payment": "Payment",
+  "organizing": "Organizing…",
+  "createMyPlan": "Create my plan",
+  "yourFirstPlan": "YOUR FIRST PLAN",
+  "planReady": "Your plan is ready.",
+  "clientNotSet": "Client not set",
+  "paymentIncludedSingular": "payment included",
+  "paymentIncludedPlural": "payments included",
+  "reviewPayments": "They will be reviewed together with the tasks.",
+  "savePlan": "Save plan",
+  "sameReview": "LifeDue will open the same review used for AI plans inside the app."
+},
+  pt: {
+  "skipForNow": "Pular por agora",
+  "back": "Voltar",
+  "startInSeconds": "COMECE EM SEGUNDOS",
+  "organizeWork": "Vamos organizar seu trabalho.",
+  "whatNeedDone": "O que você precisa fazer?",
+  "examples": "Exemplos:",
+  "delivery": "Entrega",
+  "deliveryExample": "Entregar o site da Maria sexta",
+  "paymentExample": "Cobrar 200 USD do João amanhã",
+  "payment": "Cobrança",
+  "organizing": "A organizar…",
+  "createMyPlan": "Criar meu plano",
+  "yourFirstPlan": "SEU PRIMEIRO PLANO",
+  "planReady": "Seu plano está pronto.",
+  "clientNotSet": "Cliente não definido",
+  "paymentIncludedSingular": "pagamento incluído",
+  "paymentIncludedPlural": "pagamentos incluídos",
+  "reviewPayments": "Serão revistos junto com as tarefas.",
+  "savePlan": "Guardar plano",
+  "sameReview": "O LifeDue vai abrir a mesma revisão usada para criar planos com IA dentro do app."
+},
+} as const
+
+export const financeI18n = {
+  en: {
+  "financialSummary": "Financial summary",
+  "toCollect": "To collect",
+  "alreadyReceived": "Already received"
+},
+  pt: {
+  "financialSummary": "Resumo financeiro",
+  "toCollect": "A receber",
+  "alreadyReceived": "Já recebidos"
+},
+} as const
+
+export const authExtraI18n = {
+  en: {
+  "confirmAccountLink": "We sent the link to {email}. Open it to confirm your account.",
+  "newPassword": "New password",
+  "password": "Password",
+  "waitResend": "Resend in {n}s",
+  "waitForgot": "Wait {n}s before requesting another link."
+},
+  pt: {
+  "confirmAccountLink": "Enviamos o link para {email}. Abra o link para confirmar sua conta.",
+  "newPassword": "Nova senha",
+  "password": "Senha",
+  "waitResend": "Reenviar em {n}s",
+  "waitForgot": "Aguarde {n}s antes de pedir outro link."
+},
+} as const
+
+export const planExtraI18n = {
+  en: {
+  "someDetails": "Some details need confirmation.",
+  "everythingReady": "Everything is ready to save.",
+  "deadlineFor": "Deadline for {title}",
+  "low": "Low",
+  "medium": "Medium",
+  "high": "High"
+},
+  pt: {
+  "someDetails": "Alguns detalhes precisam de confirmação.",
+  "everythingReady": "Tudo está pronto para guardar.",
+  "deadlineFor": "Prazo para {title}",
+  "low": "Baixa",
+  "medium": "Média",
+  "high": "Alta"
+},
+} as const
