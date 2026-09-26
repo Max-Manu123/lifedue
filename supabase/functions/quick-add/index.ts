@@ -356,12 +356,29 @@ Deno.serve(async (req) => {
     if (!result) throw lastError ?? new Error('No AI result.')
     const normalizedResult = result as { items?: unknown[] }
     if (!Array.isArray(normalizedResult.items) || normalizedResult.items.length === 0) {
+      // A non-actionable note is not a successful AI action. Refund the
+      // reserved credit so users are only charged for a usable generation.
+      if (quotaReserved && quotaUserId && quotaAdmin && quotaPeriodStart) {
+        await quotaAdmin.rpc('refund_ai_credit', {
+          p_user_id: quotaUserId,
+          p_period_start: quotaPeriodStart,
+        })
+        quotaReserved = false
+        if (quotaUsage) {
+          quotaUsage = {
+            ...quotaUsage,
+            used: Math.max(quotaUsage.used - 1, 0),
+            remaining: Math.min(quotaUsage.remaining + 1, quotaUsage.limit),
+          }
+        }
+      }
       return Response.json({
         items: [],
         status: 'needs_input',
+        aiUsage: quotaUsage,
         message: language === 'pt'
           ? 'Não encontrei uma tarefa ou cobrança clara. Escreva uma ação concreta, por exemplo: "Entregar o site da Maria sexta".'
-          : 'I could not find a clear task or payment. Describe one concrete action, for example: "Deliver Maria\'s website Friday".',
+          : 'I could not find a clear task or payment. Describe one concrete action, for example: "Deliver Maria\\'s website Friday".',
       }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
     quotaReserved = false
