@@ -266,8 +266,51 @@ export async function createClient(user: User, name: string): Promise<Client> {
 
 export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promise<Task[]> {
   requireSupabaseUser(user)
-  const rows = []
+  if (!tasks.length) return []
+
+  const sourceKeys = tasks
+    .map(task => task.sourceKey)
+    .filter((key): key is string => Boolean(key))
+
+  const existingBySourceKey = new Map<string, Task>()
+  if (sourceKeys.length) {
+    const { data, error } = await supabase!
+      .from('tasks')
+      .select('id, title, due_date, due_date_is_explicit, priority, status, source_key, client_id, clients(name)')
+      .eq('user_id', user.id)
+      .in('source_key', sourceKeys)
+    if (error) throw error
+
+    for (const row of (data ?? []) as Array<{
+      id: string
+      title: string
+      due_date: string
+      due_date_is_explicit: boolean
+      priority: Task['priority']
+      status: Task['status']
+      source_key: string | null
+      clients: { name: string } | { name: string }[] | null
+    }>) {
+      if (row.source_key) {
+        existingBySourceKey.set(row.source_key, {
+          id: row.id,
+          title: row.title,
+          client: clientName(row.clients, ''),
+          dueDate: row.due_date,
+          dueDateProvided: row.due_date_is_explicit,
+          priority: row.priority,
+          sourceKey: row.source_key,
+          status: row.status,
+        })
+      }
+    }
+  }
+
+  const rows: Array<Record<string, unknown>> = []
+  const pendingTasks: Array<Omit<Task, 'id'>> = []
   for (const task of tasks) {
+    if (task.sourceKey && existingBySourceKey.has(task.sourceKey)) continue
+
     const clientId = task.client.trim() ? await getOrCreateClient(user, task.client) : null
     rows.push({
       user_id: user.id,
@@ -279,33 +322,53 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
       source_key: task.sourceKey ?? null,
       status: task.status,
     })
+    pendingTasks.push(task)
   }
-  if (!rows.length) return []
 
-  const { data, error } = await supabase!
-    .from('tasks')
-    .upsert(rows, { onConflict: 'user_id,source_key', ignoreDuplicates: true })
-    .select('id, title, due_date, due_date_is_explicit, priority, status, source_key, client_id')
-  if (error) throw error
+  const createdBySourceKey = new Map<string, Task>()
+  if (rows.length) {
+    const { data, error } = await supabase!
+      .from('tasks')
+      .insert(rows)
+      .select('id, title, due_date, due_date_is_explicit, priority, status, source_key, client_id')
+    if (error) throw error
 
-  return (data as Array<{
-    id: string
-    title: string
-    due_date: string
-    due_date_is_explicit: boolean
-    priority: Task['priority']
-    status: Task['status']
-    source_key: string | null
-    client_id: string | null
-  }>).map((task, index) => ({
-    id: task.id,
-    title: task.title,
-    client: tasks[index]?.client?.trim() ?? '',
-    dueDate: task.due_date,
-    dueDateProvided: task.due_date_is_explicit,
-    priority: task.priority,
-    status: task.status,
-  }))
+    for (let index = 0; index < (data ?? []).length; index += 1) {
+      const row = (data as Array<{
+        id: string
+        title: string
+        due_date: string
+        due_date_is_explicit: boolean
+        priority: Task['priority']
+        status: Task['status']
+        source_key: string | null
+        client_id: string | null
+      }>)[index]
+      const original = pendingTasks[index]
+      const created: Task = {
+        id: row.id,
+        title: row.title,
+        client: original?.client?.trim() ?? '',
+        dueDate: row.due_date,
+        dueDateProvided: row.due_date_is_explicit,
+        priority: row.priority,
+        sourceKey: row.source_key ?? original?.sourceKey,
+        status: row.status,
+      }
+      if (created.sourceKey) createdBySourceKey.set(created.sourceKey, created)
+    }
+  }
+
+  return tasks.map(task => {
+    if (task.sourceKey) {
+      return existingBySourceKey.get(task.sourceKey) ?? createdBySourceKey.get(task.sourceKey) ?? {
+        ...task,
+        id: crypto.randomUUID(),
+      }
+    }
+    const created = createdBySourceKey.get(task.sourceKey ?? '')
+    return created ?? { ...task, id: crypto.randomUUID() }
+  })
 }
 
 export async function updateTaskStatus(user: User, id: string, status: Task['status']) {
