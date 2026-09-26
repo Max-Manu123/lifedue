@@ -473,9 +473,20 @@ export function AuthModal({
         )}
 
         <div className="auth-links">
-          {(mode === 'reset' || mode === 'forgot') && (
+          {mode === 'forgot' && (
             <button onClick={() => { setMode('login'); setPassword(''); setError(''); setSuccess('') }}>
               <ArrowLeft size={14} /> {pt ? 'Voltar para entrar' : 'Back to sign in'}
+            </button>
+          )}
+          {mode === 'reset' && (
+            <button
+              onClick={() => {
+                void supabase?.auth.signOut()
+                onClose()
+              }}
+              disabled={loading}
+            >
+              <ArrowLeft size={14} /> {pt ? 'Cancelar redefinição' : 'Cancel password reset'}
             </button>
           )}
           {mode === 'verify' && (
