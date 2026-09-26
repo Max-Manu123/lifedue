@@ -3932,3 +3932,66 @@ html[data-theme="dark"] .settings-plan-card .settings-plan-badge {
   }
 }
 \n
+
+/* Final coverage for dashboard overview surfaces that historically used
+   hard-coded white backgrounds. Keep these selectors after all legacy rules. */
+:where(.theme-dark, html[data-theme="dark"]) .tasks-overview-main,
+:where(.theme-dark, html[data-theme="dark"]) .task-stat,
+:where(.theme-dark, html[data-theme="dark"]) .clients-overview > div,
+:where(.theme-dark, html[data-theme="dark"]) .payments-overview > div,
+:where(.theme-dark, html[data-theme="dark"]) .planner-overview > div,
+:where(.theme-dark, html[data-theme="dark"]) .today-planner-cta {
+  background: #090d14 !important;
+  color: #f8fafc !important;
+  border-color: #273244 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .tasks-overview-main *,
+:where(.theme-dark, html[data-theme="dark"]) .task-stat *,
+:where(.theme-dark, html[data-theme="dark"]) .clients-overview > div *,
+:where(.theme-dark, html[data-theme="dark"]) .payments-overview > div *,
+:where(.theme-dark, html[data-theme="dark"]) .planner-overview > div *,
+:where(.theme-dark, html[data-theme="dark"]) .today-planner-cta * {
+  color: #f8fafc !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .tasks-overview-main span,
+:where(.theme-dark, html[data-theme="dark"]) .task-stat span,
+:where(.theme-dark, html[data-theme="dark"]) .clients-overview > div span,
+:where(.theme-dark, html[data-theme="dark"]) .payments-overview > div span,
+:where(.theme-dark, html[data-theme="dark"]) .planner-overview > div span,
+:where(.theme-dark, html[data-theme="dark"]) .today-planner-cta p {
+  color: #cbd5e1 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .tasks-overview-main,
+  html[data-theme="system"] .task-stat,
+  html[data-theme="system"] .clients-overview > div,
+  html[data-theme="system"] .payments-overview > div,
+  html[data-theme="system"] .planner-overview > div,
+  html[data-theme="system"] .today-planner-cta {
+    background: #090d14 !important;
+    color: #f8fafc !important;
+    border-color: #273244 !important;
+  }
+
+  html[data-theme="system"] .tasks-overview-main *,
+  html[data-theme="system"] .task-stat *,
+  html[data-theme="system"] .clients-overview > div *,
+  html[data-theme="system"] .payments-overview > div *,
+  html[data-theme="system"] .planner-overview > div *,
+  html[data-theme="system"] .today-planner-cta * {
+    color: #f8fafc !important;
+  }
+
+  html[data-theme="system"] .tasks-overview-main span,
+  html[data-theme="system"] .task-stat span,
+  html[data-theme="system"] .clients-overview > div span,
+  html[data-theme="system"] .payments-overview > div span,
+  html[data-theme="system"] .planner-overview > div span,
+  html[data-theme="system"] .today-planner-cta p {
+    color: #cbd5e1 !important;
+  }
+}
+\n
