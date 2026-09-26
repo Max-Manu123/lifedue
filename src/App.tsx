@@ -31,7 +31,7 @@ import { supabase } from './lib/supabase'
 import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createClient, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 import { PlanReview } from './components/PlanReview'
-import { trMap, type Language, onboardingI18n, financeI18n } from './lib/i18n'
+import { trMap, type Language, onboardingI18n, financeI18n, appInlineI18n } from './lib/i18n'
 
 type View = 'home' | 'onboarding' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner' | 'feedback' | 'settings'
 type AiUsage = { used: number; limit: number; remaining: number }
@@ -410,7 +410,7 @@ function App() {
       })
       .catch(error => {
         console.error('LifeDue client load failed:', error)
-        if (!cancelled && version === dataRefreshVersionRef.current) setClientsError(currentLanguage === 'pt' ? 'Não foi possível carregar seus clientes.' : 'Could not load your clients.')
+        if (!cancelled && version === dataRefreshVersionRef.current) setClientsError(appInlineI18n[language].couldNotLoadYourClients)
       })
       .finally(() => {
         if (!cancelled && version === dataRefreshVersionRef.current) setClientsLoading(false)
@@ -432,7 +432,7 @@ function App() {
       })
       .catch(error => {
         console.error('LifeDue payment load failed:', error)
-        if (!cancelled && version === dataRefreshVersionRef.current) setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível carregar seus pagamentos.' : 'Could not load your payments.')
+        if (!cancelled && version === dataRefreshVersionRef.current) setPaymentsError(appInlineI18n[language].couldNotLoadYourPayments)
       })
       .finally(() => {
         if (!cancelled && version === dataRefreshVersionRef.current) setPaymentsLoading(false)
@@ -455,7 +455,7 @@ function App() {
       })
       .catch(error => {
         console.error('LifeDue task load failed:', error)
-        if (!cancelled && version === dataRefreshVersionRef.current) setTasksError(currentLanguage === 'pt' ? 'Não foi possível carregar suas tarefas.' : 'Could not load your tasks.')
+        if (!cancelled && version === dataRefreshVersionRef.current) setTasksError(appInlineI18n[language].couldNotLoadYourTasks)
       })
       .finally(() => {
         if (!cancelled && version === dataRefreshVersionRef.current) setTasksLoading(false)
@@ -557,7 +557,7 @@ function App() {
     if (!input) {
       setPlan([])
       setPlanPayments([])
-      setAiError(currentLanguage === 'pt' ? 'Escreva pelo menos uma tarefa ou pagamento para criar um plano.' : 'Describe at least one task or payment to create a plan.')
+      setAiError(appInlineI18n[language].describeAtLeastOneTaskOrPaymentToCreateAPlan)
       return
     }
 
@@ -1132,7 +1132,7 @@ function App() {
 
       details.push({
         key: 'task:' + task.id,
-        title: task.title.trim() || (currentLanguage === 'pt' ? 'Tarefa sem título' : 'Untitled task'),
+        title: task.title.trim() || (appInlineI18n[language].untitledTask),
         kind: 'task',
         clientMissing,
         dueDateMissing,
@@ -1312,7 +1312,7 @@ function App() {
 
   const addTask = async (task: Omit<Task, 'id' | 'status'>) => {
     if (task.dueDateProvided !== false && !isValidDueDate(task.dueDate)) {
-      const message = currentLanguage === 'pt' ? 'A data de entrega deve ser hoje ou uma data futura válida.' : 'The due date must be today or a valid future date.'
+      const message = appInlineI18n[language].theDueDateMustBeTodayOrAValidFutureDate
       setTasksError(message)
       throw new Error(message)
     }
@@ -1335,7 +1335,7 @@ function App() {
       else setNextStep(null)
     } catch (error) {
       console.error('LifeDue task creation failed:', error)
-      setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar a tarefa.' : 'Could not save the task.')
+      setTasksError(appInlineI18n[language].couldNotSaveTheTask)
       throw error instanceof Error ? error : new Error('Could not save the task.')
     }
   }
@@ -1350,14 +1350,14 @@ function App() {
       } catch (error) {
         console.error('LifeDue payment update failed:', error)
         setPayments(current => current.map(payment => payment.id === id ? currentPayment : payment))
-        setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível atualizar o pagamento.' : 'Could not update the payment.')
+        setPaymentsError(appInlineI18n[language].couldNotUpdateThePayment)
       }
     }
   }
   const addPayment = async (payment: Omit<Payment, 'id' | 'status'>) => {
     const normalizedClient = payment.client.trim().toLocaleLowerCase()
     if (!normalizedClient) {
-      const message = currentLanguage === 'pt' ? 'Informe o cliente antes de adicionar o pagamento.' : 'Enter the client before adding the payment.'
+      const message = appInlineI18n[language].enterTheClientBeforeAddingThePayment
       setPaymentsError(message)
       throw new Error(message)
     }
@@ -1384,7 +1384,7 @@ function App() {
         else setNextStep({ type: 'task', client: payment.client })
       } catch (error) {
         console.error('LifeDue payment creation failed:', error)
-        setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível adicionar o pagamento.' : 'Could not add the payment.')
+        setPaymentsError(appInlineI18n[language].couldNotAddThePayment)
       }
     } else {
       setPaymentsError('')
@@ -1435,7 +1435,7 @@ function App() {
       return
     }
     if (!user || !supabase || waitlistSaving) {
-      if (!user || !supabase) setWaitlistError(currentLanguage === 'pt' ? 'Entre na sua conta para entrar na lista.' : 'Sign in to join the waitlist.')
+      if (!user || !supabase) setWaitlistError(appInlineI18n[language].signInToJoinTheWaitlist)
       return
     }
 
@@ -1524,7 +1524,7 @@ function App() {
               <h2 id="upgrade-title">{proLimitReached ? tr('aiLimitReachedTitle') : tr('upgradeTitle')}</h2>
               <p className="upgrade-description">{proLimitReached ? tr('aiLimitReachedDesc') : tr('upgradeDesc')}</p>
               <div className="upgrade-benefits"><strong>{tr('proBenefits')}</strong><ul><li>{tr('proBenefit1')}</li><li>{tr('proBenefit2')}</li><li>{tr('proBenefit3')}</li></ul></div>
-              {!waitlistSent ? <div className="upgrade-form"><label htmlFor="pro-waitlist-email">{tr('notifyEmail')}</label><input id="pro-waitlist-email" type="email" value={waitlistEmail || user?.email || ''} onChange={event => { setWaitlistEmail(event.target.value); setWaitlistError('') }} placeholder={tr('notifyEmailPlaceholder')} autoComplete="email" /><p className="upgrade-note">{tr('notifyMe')}</p>{waitlistError && <div className="form-error" role="alert">{waitlistError}</div>}<button className="primary-button" type="button" onClick={joinProWaitlist} disabled={waitlistSaving}>{waitlistSaving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('joinWaitlist')}</button></div> : <div className="upgrade-success"><CheckCircle size={18} /><div><strong>{tr('proComingSoon')}</strong><span>{tr('proComingSoonDesc')}</span></div></div>}
+              {!waitlistSent ? <div className="upgrade-form"><label htmlFor="pro-waitlist-email">{tr('notifyEmail')}</label><input id="pro-waitlist-email" type="email" value={waitlistEmail || user?.email || ''} onChange={event => { setWaitlistEmail(event.target.value); setWaitlistError('') }} placeholder={tr('notifyEmailPlaceholder')} autoComplete="email" /><p className="upgrade-note">{tr('notifyMe')}</p>{waitlistError && <div className="form-error" role="alert">{waitlistError}</div>}<button className="primary-button" type="button" onClick={joinProWaitlist} disabled={waitlistSaving}>{waitlistSaving ? (appInlineI18n[language].saving) : tr('joinWaitlist')}</button></div> : <div className="upgrade-success"><CheckCircle size={18} /><div><strong>{tr('proComingSoon')}</strong><span>{tr('proComingSoonDesc')}</span></div></div>}
             </section>
           </div>}
           <main className="main-content">
@@ -1541,9 +1541,9 @@ function App() {
             {view === 'tasks' && tasksError && <div className="error-banner" role="alert">{tasksError}</div>}
             {view === 'clients' && clientsError && <div className="error-banner" role="alert">{clientsError}</div>}
             {view === 'payments' && paymentsError && <div className="error-banner" role="alert">{paymentsError}</div>}
-            {view === 'tasks' && tasksLoading && <div className="loading-banner" aria-live="polite">{currentLanguage === 'pt' ? 'A carregar tarefas…' : 'Loading tasks…'}</div>}
-            {view === 'clients' && clientsLoading && <div className="loading-banner" aria-live="polite">{currentLanguage === 'pt' ? 'A carregar clientes…' : 'Loading clients…'}</div>}
-            {view === 'payments' && paymentsLoading && <div className="loading-banner" aria-live="polite">{currentLanguage === 'pt' ? 'A carregar pagamentos…' : 'Loading payments…'}</div>}
+            {view === 'tasks' && tasksLoading && <div className="loading-banner" aria-live="polite">{appInlineI18n[language].loadingTasks}</div>}
+            {view === 'clients' && clientsLoading && <div className="loading-banner" aria-live="polite">{appInlineI18n[language].loadingClients}</div>}
+            {view === 'payments' && paymentsLoading && <div className="loading-banner" aria-live="polite">{appInlineI18n[language].loadingPayments}</div>}
             {view === 'quick-add' && (
               <TodayView
                 tasks={tasks}
@@ -1727,7 +1727,7 @@ function App() {
                   } catch (error) {
                     if (requestId !== plannerRequestId.current) return
                     console.error('LifeDue AI Planner failed:', error)
-                    setPlannerError(currentLanguage === 'pt' ? 'A IA não respondeu a tempo. Mostramos uma ordem segura por prazo e prioridade.' : 'AI did not respond in time. We are showing a safe order by due date and priority.')
+                    setPlannerError(appInlineI18n[language].aiDidNotRespondInTimeWeAreShowingASafeOrderByDueDateAndPriority)
                     setPlan(candidates)
                     setPlanPayments([])
                     setPlannerSource('local')
@@ -1843,10 +1843,10 @@ function FeedbackView({ type, rating, message, sent, saving, error, canSubmit, o
         <span className={error ? 'feedback-status error' : 'feedback-status'}>{error ? error : sent ? <><CheckCircle size={15} /> {tr('feedbackSent')}</> : !canSubmit ? tr('feedbackSignIn') : ''}</span>
         {canSubmit ? (
           <button className="primary-button" disabled={!message.trim() || saving} onClick={onSubmit}>
-            <MessageSquareText size={16} /> {saving ? (currentLanguage === 'pt' ? 'A enviar…' : 'Sending…') : tr('sendFeedback')}
+            <MessageSquareText size={16} /> {saving ? (appInlineI18n[language].sending) : tr('sendFeedback')}
           </button>
         ) : (
-          <button className="secondary-button" onClick={onSignIn}>{currentLanguage === 'pt' ? 'Entrar' : 'Sign in'}</button>
+          <button className="secondary-button" onClick={onSignIn}>{appInlineI18n[language].signIn}</button>
         )}
       </div>
     </section>
@@ -1879,7 +1879,7 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
       <div className="settings-section-head"><div className="settings-icon"><UserCircle2 size={19} /></div><div><h3>{tr('account')}</h3><p>{tr('accountDesc')}</p></div></div>
       <div className="account-summary">
         <div className="account-avatar">{(user?.email?.[0] || 'L').toUpperCase()}</div>
-        <div className="account-details"><strong>{user?.email || (currentLanguage === 'pt' ? 'Conta local' : 'Local account')}</strong><span>{tr('plan')} · {tr('freePlanDesc')}</span></div>
+        <div className="account-details"><strong>{user?.email || (appInlineI18n[language].localAccount)}</strong><span>{tr('plan')} · {tr('freePlanDesc')}</span></div>
         <span className="settings-plan-badge">{tr('freePlan')}</span><button className="upgrade-button" type="button" onClick={onUpgrade}><Sparkles size={14} /> {tr('upgrade')}</button>
       </div>
     </section>
@@ -1895,7 +1895,7 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
       <div className="settings-action-row">
         <div>
           <strong>{aiUsage.used}/{aiUsage.limit}</strong>
-          <span>{currentLanguage === 'pt' ? 'usos de IA utilizados neste mês' : 'AI uses used this month'}</span>
+          <span>{appInlineI18n[language].aiUsesUsedThisMonth}</span>
         </div>
         <span className="settings-plan-badge">{tr('freePlan')}</span>
       </div>
@@ -1908,13 +1908,13 @@ function SettingsView({ user, language, setLanguage, theme, setTheme, onSignOut,
     <section className="settings-card">
       <div className="settings-section-head"><div className="settings-icon"><Sparkles size={19} /></div><div><h3>{tr('upgradeTitle')}</h3><p>{tr('upgradeDesc')}</p></div></div>
       {waitlistSent ? (
-        <div className="settings-action-row"><div><strong>{tr('proComingSoon')}</strong><span>{tr('proComingSoonDesc')}</span></div><span className="settings-plan-badge">{currentLanguage === 'pt' ? 'Na lista' : 'On the list'}</span></div>
+        <div className="settings-action-row"><div><strong>{tr('proComingSoon')}</strong><span>{tr('proComingSoonDesc')}</span></div><span className="settings-plan-badge">{appInlineI18n[language].onTheList}</span></div>
       ) : (
         <div className="settings-waitlist">
           <div><strong>{tr('notifyMe')}</strong><span>{tr('proLimitEmail')}</span></div>
           <div className="settings-waitlist-form">
             <input type="email" value={waitlistEmail || user?.email || ''} onChange={event => setWaitlistEmail(event.target.value)} placeholder={tr('notifyEmailPlaceholder')} autoComplete="email" />
-            <button className="primary-button" type="button" onClick={onJoinWaitlist} disabled={waitlistSaving}>{waitlistSaving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('joinWaitlist')}</button>
+            <button className="primary-button" type="button" onClick={onJoinWaitlist} disabled={waitlistSaving}>{waitlistSaving ? (appInlineI18n[language].saving) : tr('joinWaitlist')}</button>
           </div>
           {waitlistError && <div className="form-error" role="alert">{waitlistError}</div>}
         </div>
@@ -2338,17 +2338,17 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
       </section>
 
       <section className="today-metrics" aria-label={tr('focusTitle')}>
-        <button type="button" className="today-metric today-metric-action" onClick={onViewTasks} aria-label={currentLanguage === 'pt' ? 'Abrir tarefas abertas' : 'Open tasks'}>
-          <span>{tr('openWork')}</span><strong>{openTasks.length}</strong><small>{currentLanguage === 'pt' ? 'tarefas abertas' : 'open tasks'}</small><ArrowRight size={14} aria-hidden="true" />
+        <button type="button" className="today-metric today-metric-action" onClick={onViewTasks} aria-label={appInlineI18n[language].openTasks}>
+          <span>{tr('openWork')}</span><strong>{openTasks.length}</strong><small>{appInlineI18n[language].openTasks2}</small><ArrowRight size={14} aria-hidden="true" />
         </button>
-        <button type="button" className={todayTasks.length ? 'today-metric today-metric-action attention' : 'today-metric today-metric-action'} onClick={onViewTasks} aria-label={currentLanguage === 'pt' ? 'Abrir tarefas que vencem hoje' : 'Open tasks due today'}>
-          <span>{tr('dueToday')}</span><strong>{todayTasks.length}</strong><small>{currentLanguage === 'pt' ? 'para entregar' : 'to deliver'}</small><ArrowRight size={14} aria-hidden="true" />
+        <button type="button" className={todayTasks.length ? 'today-metric today-metric-action attention' : 'today-metric today-metric-action'} onClick={onViewTasks} aria-label={appInlineI18n[language].openTasksDueToday}>
+          <span>{tr('dueToday')}</span><strong>{todayTasks.length}</strong><small>{appInlineI18n[language].toDeliver}</small><ArrowRight size={14} aria-hidden="true" />
         </button>
-        <button type="button" className={overdue.length ? 'today-metric today-metric-action danger' : 'today-metric today-metric-action'} onClick={onViewTasks} aria-label={currentLanguage === 'pt' ? 'Abrir tarefas atrasadas' : 'Open overdue tasks'}>
-          <span>{tr('overdue')}</span><strong>{overdue.length}</strong><small>{currentLanguage === 'pt' ? 'precisam de ação' : 'need action'}</small><ArrowRight size={14} aria-hidden="true" />
+        <button type="button" className={overdue.length ? 'today-metric today-metric-action danger' : 'today-metric today-metric-action'} onClick={onViewTasks} aria-label={appInlineI18n[language].openOverdueTasks}>
+          <span>{tr('overdue')}</span><strong>{overdue.length}</strong><small>{appInlineI18n[language].needAction}</small><ArrowRight size={14} aria-hidden="true" />
         </button>
-        <button type="button" className="today-metric today-metric-action money" onClick={onViewPayments} aria-label={currentLanguage === 'pt' ? 'Abrir pagamentos pendentes' : 'Open pending payments'}>
-          <span>{tr('toCollect')}</span><strong>{totalPending}</strong><small>{currentLanguage === 'pt' ? 'pagamentos pendentes' : 'pending payments'}</small><ArrowRight size={14} aria-hidden="true" />
+        <button type="button" className="today-metric today-metric-action money" onClick={onViewPayments} aria-label={appInlineI18n[language].openPendingPayments}>
+          <span>{tr('toCollect')}</span><strong>{totalPending}</strong><small>{appInlineI18n[language].pendingPayments}</small><ArrowRight size={14} aria-hidden="true" />
         </button>
       </section>
 
@@ -2389,7 +2389,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
 
       <section className="today-focus-section">
         <div className="section-heading today-section-heading">
-          <div><p className="section-kicker">{tr('focusTitle')}</p><h2>{hasAttention ? (currentLanguage === 'pt' ? 'Resolva primeiro o que está pendente.' : 'Handle the important things first.') : tr('allClearToday')}</h2></div>
+          <div><p className="section-kicker">{tr('focusTitle')}</p><h2>{hasAttention ? (appInlineI18n[language].handleTheImportantThingsFirst) : tr('allClearToday')}</h2></div>
           <span className="today-urgent-count">{urgentCount > 0 ? `${urgentCount} ${tr('urgent').toLowerCase()}` : '✓'}</span>
         </div>
 
@@ -2409,7 +2409,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
             {paymentAttention.slice(0, 4).map(payment => (
               <div className="today-payment-row" key={payment.id}>
                 <div className={payment.dueDateProvided !== false && payment.dueDate < todayKey ? 'today-payment-icon overdue' : 'today-payment-icon'}><CircleDollarSign size={17} /></div>
-                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDateProvided !== false && payment.dueDate < currentTodayKey() ? (currentLanguage === 'pt' ? 'Atrasado' : 'Overdue') : (currentLanguage === 'pt' ? 'Vence hoje' : 'Due today')}</span></div>
+                <div className="today-payment-info"><strong>{payment.client}</strong><span>{formatMoney(payment.amount, payment.currency)} · {payment.dueDateProvided !== false && payment.dueDate < currentTodayKey() ? (appInlineI18n[language].overdue) : (appInlineI18n[language].dueToday)}</span></div>
                 <button className="secondary-button compact" onClick={() => onMarkPaid(payment.id)}>{tr('markPaidToday')}</button>
               </div>
             ))}
@@ -2444,7 +2444,7 @@ function TaskSection({ title, tone, tasks, onToggle }: { title: string; tone?: '
 function TaskRow({ task, onToggle, disabled }: { task: Task; onToggle: (id: string) => void; disabled?: boolean }) {
   return (
     <div className="task-row">
-      <button type="button" disabled={disabled} className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={task.status === 'completed' ? (currentLanguage === 'pt' ? 'Reabrir tarefa' : 'Reopen task') : (currentLanguage === 'pt' ? 'Concluir tarefa' : 'Complete task')} aria-busy={disabled}>
+      <button type="button" disabled={disabled} className={task.status === 'completed' ? 'check-box checked' : 'check-box'} onClick={() => onToggle(task.id)} aria-label={task.status === 'completed' ? (appInlineI18n[language].reopenTask) : (appInlineI18n[language].completeTask)} aria-busy={disabled}>
         {task.status === 'completed' && <Check size={14} />}
       </button>
       <div className="task-info"><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate, task.dueDateProvided !== false)}</span></div>
@@ -2463,7 +2463,7 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
   const overdueCount = openTasks.filter(t => t.dueDateProvided !== false && t.dueDate < todayKey).length
   const todayCount = openTasks.filter(t => t.dueDateProvided !== false && t.dueDate === todayKey).length
   const completionRate = tasks.length ? Math.round((completedTasks.length / tasks.length) * 100) : 0
-  const progressLabel = tasks.length ? `${completedTasks.length} ${currentLanguage === 'pt' ? 'de' : 'of'} ${tasks.length} ${currentLanguage === 'pt' ? 'tarefas concluídas' : 'tasks completed'}` : (currentLanguage === 'pt' ? 'Nenhuma tarefa criada ainda' : 'No tasks created yet')
+  const progressLabel = tasks.length ? `${completedTasks.length} ${appInlineI18n[language].of} ${tasks.length} ${appInlineI18n[language].tasksCompleted}` : (appInlineI18n[language].noTasksCreatedYet)
 
   const filtered = tasks
     .filter(t => filter === 'all' || t.status === filter)
@@ -2495,7 +2495,7 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
 
     <section className="tasks-overview">
       <div className="tasks-overview-main">
-        <div><span>{currentLanguage === 'pt' ? 'Progresso geral' : 'Overall progress'}</span><strong>{completionRate}%</strong></div>
+        <div><span>{appInlineI18n[language].overallProgress}</span><strong>{completionRate}%</strong></div>
         <div className="tasks-progress-track"><span style={{width: completionRate + '%'}} /></div>
         <small>{progressLabel}</small>
       </div>
@@ -2560,21 +2560,21 @@ function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: T
     </div>
 
     <section className="clients-overview">
-      <div><span>{tr('clients')}</span><strong>{clients.length}</strong><small>{currentLanguage === 'pt' ? 'clientes ativos' : 'active clients'}</small></div>
-      <div><span>{tr('openWork')}</span><strong>{totalOpen}</strong><small>{currentLanguage === 'pt' ? 'tarefas abertas' : 'open tasks'}</small></div>
-      <div className={totalOverdue ? 'danger' : ''}><span>{tr('overdueTasks')}</span><strong>{totalOverdue}</strong><small>{currentLanguage === 'pt' ? 'precisam de atenção' : 'need attention'}</small></div>
-      <div className={clientsWithMoney ? 'money' : ''}><span>{currentLanguage === 'pt' ? 'Pagamentos pendentes' : 'Pending payments'}</span><strong>{clientsWithMoney}</strong><small>{currentLanguage === 'pt' ? 'clientes com valores a receber' : 'clients with money due'}</small></div>
+      <div><span>{tr('clients')}</span><strong>{clients.length}</strong><small>{appInlineI18n[language].activeClients}</small></div>
+      <div><span>{tr('openWork')}</span><strong>{totalOpen}</strong><small>{appInlineI18n[language].openTasks2}</small></div>
+      <div className={totalOverdue ? 'danger' : ''}><span>{tr('overdueTasks')}</span><strong>{totalOverdue}</strong><small>{appInlineI18n[language].needAttention}</small></div>
+      <div className={clientsWithMoney ? 'money' : ''}><span>{appInlineI18n[language].pendingPayments2}</span><strong>{clientsWithMoney}</strong><small>{appInlineI18n[language].clientsWithMoneyDue}</small></div>
     </section>
 
     {clients.length > 0 && <div className="clients-toolbar">
-      <div className="client-search"><span>⌕</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder={currentLanguage === 'pt' ? 'Pesquisar clientes' : 'Search clients'} aria-label={currentLanguage === 'pt' ? 'Pesquisar clientes' : 'Search clients'} />{search && <button type="button" onClick={() => setSearch('')} aria-label={currentLanguage === 'pt' ? 'Limpar pesquisa' : 'Clear search'}>×</button>}</div>
+      <div className="client-search"><span>⌕</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder={appInlineI18n[language].searchClients} aria-label={appInlineI18n[language].searchClients} />{search && <button type="button" onClick={() => setSearch('')} aria-label={appInlineI18n[language].clearSearch}>×</button>}</div>
       <span className="client-count">{rows.length} / {clients.length}</span>
     </div>}
 
     {clients.length === 0 ? (
-      <div className="empty-card clients-empty"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente ainda' : 'No clients yet'}</strong><p>{currentLanguage === 'pt' ? 'Os clientes aparecem aqui quando você os associa a uma tarefa ou pagamento.' : 'Clients appear here when you associate them with a task or payment.'}</p></div></div>
+      <div className="empty-card clients-empty"><Users size={23} /><div><strong>{appInlineI18n[language].noClientsYet}</strong><p>{appInlineI18n[language].clientsAppearHereWhenYouAssociateThemWithATaskOrPayment}</p></div></div>
     ) : rows.length === 0 ? (
-      <div className="empty-card clients-empty"><Users size={23} /><div><strong>{currentLanguage === 'pt' ? 'Nenhum cliente encontrado' : 'No clients found'}</strong><p>{currentLanguage === 'pt' ? 'Tente outro nome de cliente.' : 'Try a different client name.'}</p></div></div>
+      <div className="empty-card clients-empty"><Users size={23} /><div><strong>{appInlineI18n[language].noClientsFound}</strong><p>{appInlineI18n[language].tryADifferentClientName}</p></div></div>
     ) : (
       <div className="client-grid">{rows.map(row => {
         const initials = row.client.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()
@@ -2583,12 +2583,12 @@ function ClientsView({ clients, tasks, payments }: { clients: Client[]; tasks: T
           <div className="client-metrics">
             <div><span>{tr('open')}</span><strong>{row.openTasks.length}</strong></div>
             <div><span>{tr('overdueTasks')}</span><strong className={row.overdueTasks.length ? 'danger-text' : ''}>{row.overdueTasks.length}</strong></div>
-            <div><span>{tr('completed')}</span><strong>{row.completion}%</strong><small>{row.clientTasks.length ? (row.clientTasks.filter(task => task.status === 'completed').length + '/' + row.clientTasks.length) : (currentLanguage === 'pt' ? 'Sem tarefas' : 'No tasks')}</small></div>
+            <div><span>{tr('completed')}</span><strong>{row.completion}%</strong><small>{row.clientTasks.length ? (row.clientTasks.filter(task => task.status === 'completed').length + '/' + row.clientTasks.length) : (appInlineI18n[language].noTasks)}</small></div>
           </div>
           <div className="client-progress"><span style={{ width: row.completion + '%' }} /></div>
           <div className="client-card-footer">
-            <span className={row.pendingPayments.length ? 'client-money pending' : 'client-money'}><CircleDollarSign size={14} />{row.pendingPayments.length ? row.pendingByCurrency.map(item => formatMoney(item.amount, item.currency)).join(' · ') : (currentLanguage === 'pt' ? 'Sem pagamentos pendentes' : 'No pending payments')}</span>
-            {row.overdueTasks.length > 0 && <span className="client-alert">{currentLanguage === 'pt' ? 'Atenção' : 'Needs attention'}</span>}
+            <span className={row.pendingPayments.length ? 'client-money pending' : 'client-money'}><CircleDollarSign size={14} />{row.pendingPayments.length ? row.pendingByCurrency.map(item => formatMoney(item.amount, item.currency)).join(' · ') : (appInlineI18n[language].noPendingPayments)}</span>
+            {row.overdueTasks.length > 0 && <span className="client-alert">{appInlineI18n[language].needsAttention}</span>}
           </div>
         </article>
       })}</div>
@@ -2614,7 +2614,7 @@ function AddClientModal({ onClose, onAdd }: { onClose: () => void; onAdd: (name:
       onClose()
     } catch (err) {
       console.error('LifeDue client creation failed:', err)
-      setError(currentLanguage === 'pt' ? 'Não foi possível adicionar este cliente.' : 'Could not add this client.')
+      setError(appInlineI18n[language].couldNotAddThisClient)
     } finally {
       setSaving(false)
     }
@@ -2624,7 +2624,7 @@ function AddClientModal({ onClose, onAdd }: { onClose: () => void; onAdd: (name:
     <div className="modal-head"><div><p className="section-kicker">{tr('addClient')}</p><h2>{tr('addClientTitle')}</h2></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div>
     <label>{tr('clientName')}<input value={name} onChange={e => { setName(e.target.value); setError('') }} placeholder={tr('clientNamePlaceholder')} autoFocus onKeyDown={e => { if (e.key === 'Enter') void submit() }} /></label>
     {error && <div className="auth-error">{error}</div>}
-    <div className="modal-actions"><button className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button><button className="primary-button" onClick={() => void submit()} disabled={saving || !name.trim()}>{saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addClient')}</button></div>
+    <div className="modal-actions"><button className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button><button className="primary-button" onClick={() => void submit()} disabled={saving || !name.trim()}>{saving ? (appInlineI18n[language].saving) : tr('addClient')}</button></div>
   </div></div>
 }
 
@@ -2695,16 +2695,16 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
     <section className="payments-overview">
       <div className="payment-overview-main"><span>{tr('paymentPendingAmount')}</span><strong>{pendingByCurrency.length ? pendingByCurrency.map(item => formatMoney(item.amount, item.currency)).join(' · ') : formatMoney(0, 'USD')}</strong><small>{pending.length} {currentLanguage === 'pt' ? (pending.length === 1 ? 'pendente' : 'pendentes') : (pending.length === 1 ? 'pending' : 'pending')}</small></div>
       <div><span>{tr('paymentPendingCount')}</span><strong>{pending.length}</strong><small>{currentLanguage === 'pt' ? (pending.length === 1 ? 'pagamento em aberto' : 'pagamentos em aberto') : (pending.length === 1 ? 'open payment' : 'open payments')}</small></div>
-      <div className={overdue.length ? 'danger' : ''}><span>{tr('paymentOverdueCount')}</span><strong>{overdue.length}</strong><small>{currentLanguage === 'pt' ? 'precisam de atenção' : 'need attention'}</small></div>
-      <div><span>{tr('paymentPaidCount')}</span><strong>{paid.length}</strong><small>{currentLanguage === 'pt' ? 'já recebidos' : 'already received'}</small></div>
+      <div className={overdue.length ? 'danger' : ''}><span>{tr('paymentOverdueCount')}</span><strong>{overdue.length}</strong><small>{appInlineI18n[language].needAttention}</small></div>
+      <div><span>{tr('paymentPaidCount')}</span><strong>{paid.length}</strong><small>{appInlineI18n[language].alreadyReceived}</small></div>
     </section>
 
     {clientsWithoutPendingPayment.length > 0 && (
       <section className="pending-payment-gaps" aria-labelledby="pending-payment-gaps-title">
         <div className="pending-payment-gaps-head">
           <div>
-            <p className="section-kicker">{currentLanguage === 'pt' ? 'ACOMPANHAR PAGAMENTOS' : 'PAYMENT FOLLOW-UPS'}</p>
-            <h3 id="pending-payment-gaps-title">{currentLanguage === 'pt' ? 'Clientes sem pagamento pendente' : 'Clients without a pending payment'}</h3>
+            <p className="section-kicker">{appInlineI18n[language].paymentFollowUps}</p>
+            <h3 id="pending-payment-gaps-title">{appInlineI18n[language].clientsWithoutAPendingPayment}</h3>
             <p>{currentLanguage === 'pt'
               ? 'Estes clientes têm trabalho registado, mas ainda não têm uma cobrança em aberto.'
               : 'These clients have work recorded, but no open payment is being tracked yet.'}</p>
@@ -2719,7 +2719,7 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
                 <div className="pending-payment-gap-icon"><Users size={16} /></div>
                 <div className="pending-payment-gap-info">
                   <strong>{client}</strong>
-                  <span>{currentLanguage === 'pt' ? 'Nenhum pagamento pendente' : 'No pending payment'}</span>
+                  <span>{appInlineI18n[language].noPendingPayment}</span>
                 </div>
                 <button
                   type="button"
@@ -2727,7 +2727,7 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
                   disabled={!canAdd}
                   onClick={() => canAdd && onAddForClient(client)}
                 >
-                  <Plus size={14} /> {currentLanguage === 'pt' ? 'Adicionar pagamento' : 'Add payment'}
+                  <Plus size={14} /> {appInlineI18n[language].addPayment}
                 </button>
               </div>
             )
@@ -2745,7 +2745,7 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
     {filtered.length ? <div className="payment-list">{filtered.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div> : <div className="empty-card payment-empty"><CheckCircle2 size={23} /><div><strong>{payments.length ? tr('paymentNoResults') : tr('clear')}</strong><p>{payments.length ? tr('paymentNoResultsDesc') : tr('noPending')}</p>{!payments.length && <button className="secondary-button" onClick={onAdd}><Plus size={15} /> {tr('addPayment')}</button>}</div></div>}
 
     {payments.length > 0 && <section className="payment-currency-summary">
-      <div><strong>{currentLanguage === 'pt' ? 'Resumo financeiro' : 'Financial summary'}</strong>{pendingByCurrency.map(item => <span key={item.currency}>{financeI18n[language].toCollect}: {formatMoney(item.amount, item.currency)}</span>)}{paidByCurrency.map(item => <span key={'paid-'+item.currency}>{financeI18n[language].alreadyReceived}: {formatMoney(item.amount, item.currency)}</span>)}</div>
+      <div><strong>{appInlineI18n[language].financialSummary}</strong>{pendingByCurrency.map(item => <span key={item.currency}>{financeI18n[language].toCollect}: {formatMoney(item.amount, item.currency)}</span>)}{paidByCurrency.map(item => <span key={'paid-'+item.currency}>{financeI18n[language].alreadyReceived}: {formatMoney(item.amount, item.currency)}</span>)}</div>
     </section>}
   </div>
 }
@@ -2769,7 +2769,7 @@ function PlannerView({ plan, openTasks, plannerLoading, isAuthenticated, planner
   const readyDesc = plannerSource === 'ai' ? tr('plannerAiDesc') : tr('plannerLocalDesc')
 
   return <div className="content-stack planner-page">
-    <div className="page-intro"><div><p className="section-kicker">{tr('aiPlanner')}</p><h2>{tr('calmer')}</h2><p className="page-description">{tr('plannerDesc')}</p><div className="planner-how-it-works"><span className="planner-how-icon">i</span><div><strong>{tr('plannerHowItWorks')}</strong><p>{tr('plannerHowItWorksDesc')}</p></div><span className="planner-info-tooltip" tabIndex={0} title={tr('plannerPlannerInfo')} aria-label={tr('plannerPlannerInfo')}>i</span></div></div><button className="primary-button" onClick={onGenerate} disabled={plannerLoading}><Sparkles size={16} className={plannerLoading ? 'spin' : ''} /> {plannerLoading ? (currentLanguage === 'pt' ? 'A organizar…' : 'Organizing…') : tr('generatePlan')}</button></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('aiPlanner')}</p><h2>{tr('calmer')}</h2><p className="page-description">{tr('plannerDesc')}</p><div className="planner-how-it-works"><span className="planner-how-icon">i</span><div><strong>{tr('plannerHowItWorks')}</strong><p>{tr('plannerHowItWorksDesc')}</p></div><span className="planner-info-tooltip" tabIndex={0} title={tr('plannerPlannerInfo')} aria-label={tr('plannerPlannerInfo')}>i</span></div></div><button className="primary-button" onClick={onGenerate} disabled={plannerLoading}><Sparkles size={16} className={plannerLoading ? 'spin' : ''} /> {plannerLoading ? (appInlineI18n[language].organizing) : tr('generatePlan')}</button></div>
     <div className="planner-credit-note" role="status"><Sparkles size={14} /><div><strong>{aiUsage.remaining > 0 ? tr('aiUsesRemaining').replace('{n}', String(aiUsage.remaining)) : tr('aiUsageExhausted')}</strong><span>{tr('aiUsageShared')} · {tr('aiUsageReset')}</span></div></div>
     <div className="planner-overview"><div><span>{tr('plannerOpen')}</span><strong>{openTasks.length}</strong></div><div className={overdueCount ? 'danger' : ''}><span>{tr('plannerOverdue')}</span><strong>{overdueCount}</strong></div><div className={todayCount ? 'attention' : ''}><span>{tr('plannerToday')}</span><strong>{todayCount}</strong></div><div><span>{tr('plannerUpcoming')}</span><strong>{upcomingCount}</strong></div></div>
     {plannerError && <div className="planner-error" role="alert"><Bot size={16} /><span>{plannerError}</span></div>}
@@ -2789,8 +2789,8 @@ function NextStepCard({ type, client, onAction, onDismiss }: { type: 'payment' |
   return <div className="next-step-card" role="status">
     <div className="next-step-icon">{isPayment ? <CircleDollarSign size={18} /> : <ListTodo size={18} />}</div>
     <div className="next-step-copy"><strong>{title}</strong><span>{message}</span></div>
-    <div className="next-step-actions"><button className="primary-button" onClick={onAction}>{isPayment ? (currentLanguage === 'pt' ? 'Adicionar pagamento' : 'Add payment') : (currentLanguage === 'pt' ? 'Adicionar tarefa' : 'Add task')}</button><button className="text-button" onClick={onDismiss}>{currentLanguage === 'pt' ? 'Agora não' : 'Not now'}</button></div>
-    <button className="icon-button next-step-close" onClick={onDismiss} aria-label={currentLanguage === 'pt' ? 'Fechar sugestão' : 'Dismiss suggestion'}><X size={16} /></button>
+    <div className="next-step-actions"><button className="primary-button" onClick={onAction}>{isPayment ? (appInlineI18n[language].addPayment) : (appInlineI18n[language].addTask)}</button><button className="text-button" onClick={onDismiss}>{appInlineI18n[language].notNow}</button></div>
+    <button className="icon-button next-step-close" onClick={onDismiss} aria-label={appInlineI18n[language].dismissSuggestion}><X size={16} /></button>
   </div>
 }
 function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialClient = '' }: { onClose: () => void; onAdd: (payment: Omit<Payment, 'id' | 'status'>) => void; clients: Client[]; existingPayments: Payment[]; initialClient?: string }) {
@@ -2814,18 +2814,18 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
     const cleanClient = client.trim()
     const normalizedAmount = amount.trim().replace(',', '.')
     const value = Number(normalizedAmount)
-    if (!cleanClient) return setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
+    if (!cleanClient) return setError(appInlineI18n[language].enterTheClientName)
     if (hasPendingPayment) {
       return setError(currentLanguage === 'pt'
         ? 'Este cliente já tem um pagamento pendente. Use o pagamento existente.'
         : 'This client already has a pending payment. Use the existing payment.')
     }
     if (!normalizedAmount || !Number.isFinite(value) || value <= 0 || !/^\d+(?:\.\d{1,2})?$/.test(normalizedAmount)) {
-      return setError(currentLanguage === 'pt' ? 'Digite um valor positivo com no máximo 2 casas decimais.' : 'Enter a positive amount with up to 2 decimal places.')
+      return setError(appInlineI18n[language].enterAPositiveAmountWithUpTo2DecimalPlaces)
     }
-    if (value > 999999999) return setError(currentLanguage === 'pt' ? 'O valor é demasiado alto.' : 'The amount is too large.')
+    if (value > 999999999) return setError(appInlineI18n[language].theAmountIsTooLarge)
     if (dueDateProvided && !isValidDueDate(dueDate)) {
-      return setError(currentLanguage === 'pt' ? 'Escolha uma data de vencimento válida a partir de hoje.' : 'Choose a valid payment due date from today onward.')
+      return setError(appInlineI18n[language].chooseAValidPaymentDueDateFromTodayOnward)
     }
 
     setError('')
@@ -2834,7 +2834,7 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
       onAdd({ client: clientName, amount: value, currency, dueDate: dueDateProvided ? dueDate : currentTodayKey(), dueDateProvided })
     } catch (submitError) {
       console.error('LifeDue add payment modal failed:', submitError)
-      setError(currentLanguage === 'pt' ? 'Não foi possível adicionar o pagamento. Tente novamente.' : 'Could not add the payment. Please try again.')
+      setError(appInlineI18n[language].couldNotAddThePaymentPleaseTryAgain)
     } finally {
       setSaving(false)
     }
@@ -2844,26 +2844,26 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
     <div className="modal" onMouseDown={e => e.stopPropagation()}>
       <div className="modal-head">
         <div><p className="section-kicker">{tr('newPayment')}</p><h2>{tr('addPaymentTitle')}</h2></div>
-        <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={currentLanguage === 'pt' ? 'Fechar' : 'Close'}><X size={20} /></button>
+        <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={appInlineI18n[language].close}><X size={20} /></button>
       </div>
       <label>{tr('client')}<input list="lifedue-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={currentLanguage==='pt'?'ex.: Maria':'e.g. Maria'} autoFocus disabled={saving} /><datalist id="lifedue-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
       <div className="form-grid">
-        <label>{tr('amount')}<input type="text" inputMode="decimal" value={amount} onChange={e => { setAmount(e.target.value); setError('') }} placeholder={currentLanguage === 'pt' ? 'ex.: 200,00' : 'e.g. 200.00'} disabled={saving} aria-describedby="lifedue-payment-amount-help" /><small id="lifedue-payment-amount-help" className="field-help">{currentLanguage === 'pt' ? 'Use um valor positivo, até 2 casas decimais.' : 'Use a positive amount, up to 2 decimal places.'}</small></label>
+        <label>{tr('amount')}<input type="text" inputMode="decimal" value={amount} onChange={e => { setAmount(e.target.value); setError('') }} placeholder={appInlineI18n[language].eG20000} disabled={saving} aria-describedby="lifedue-payment-amount-help" /><small id="lifedue-payment-amount-help" className="field-help">{appInlineI18n[language].useAPositiveAmountUpTo2DecimalPlaces}</small></label>
         <label>{tr('currency')}<select value={currency} onChange={e => setCurrency(e.target.value)} disabled={saving}><option value="USD">{tr('usd')} · US$</option><option value="EUR">{tr('eur')} · €</option><option value="AOA">{tr('aoa')} · Kz</option></select></label>
       </div>
       <div className="plan-review-field">
         <div className="plan-review-field-head"><span>{tr('dueDate')}</span></div>
         <div className="plan-review-priority">
-          <button type="button" className={dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(true); setError('') }} disabled={saving}>{currentLanguage === 'pt' ? 'Escolher data' : 'Choose date'}</button>
+          <button type="button" className={dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(true); setError('') }} disabled={saving}>{appInlineI18n[language].chooseDate}</button>
           <button type="button" className={!dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(false); setError('') }} disabled={saving}>{tr('noDueDate')}</button>
         </div>
         {dueDateProvided && <input type="date" value={dueDate} min={currentTodayKey()} onChange={e => { setDueDate(e.target.value); setError('') }} disabled={saving} aria-describedby="lifedue-payment-date-help" />}
-        <small id="lifedue-payment-date-help" className="field-help">{dueDateProvided ? (currentLanguage === 'pt' ? 'Hoje ou uma data futura.' : 'Today or a future date.') : (currentLanguage === 'pt' ? 'Este pagamento ficará sem data de vencimento.' : 'This payment will have no due date.')}</small>
+        <small id="lifedue-payment-date-help" className="field-help">{dueDateProvided ? (appInlineI18n[language].todayOrAFutureDate) : (appInlineI18n[language].thisPaymentWillHaveNoDueDate)}</small>
       </div>
       {error && <div className="form-error" role="alert">{error}</div>}
       <div className="modal-actions">
         <button type="button" className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button>
-        <button type="button" className="primary-button" onClick={submit} disabled={saving || !client.trim() || !amount.trim() || hasPendingPayment}>{saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addPayment')}</button>
+        <button type="button" className="primary-button" onClick={submit} disabled={saving || !client.trim() || !amount.trim() || hasPendingPayment}>{saving ? (appInlineI18n[language].saving) : tr('addPayment')}</button>
       </div>
     </div>
   </div>
@@ -2884,15 +2884,15 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
     const matchedClient = clients.find(item => item.name.trim().toLocaleLowerCase() === cleanClient.toLocaleLowerCase())
     const canonicalClient = matchedClient?.name ?? cleanClient
     if (!cleanTitle) {
-      setError(currentLanguage === 'pt' ? 'Digite o que precisa ser feito.' : 'Enter the task you need to complete.')
+      setError(appInlineI18n[language].enterTheTaskYouNeedToComplete)
       return
     }
     if (!cleanClient) {
-      setError(currentLanguage === 'pt' ? 'Digite o nome do cliente.' : 'Enter the client name.')
+      setError(appInlineI18n[language].enterTheClientName)
       return
     }
     if (dueDateProvided && !isValidDueDate(dueDate)) {
-      setError(currentLanguage === 'pt' ? 'Escolha uma data de entrega válida a partir de hoje.' : 'Choose a valid due date from today onward.')
+      setError(appInlineI18n[language].chooseAValidDueDateFromTodayOnward)
       return
     }
     if (saving) return
@@ -2903,7 +2903,7 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
       await onAdd({ title: cleanTitle, client: canonicalClient, dueDate: dueDateProvided ? dueDate : currentTodayKey(), dueDateProvided, priority })
     } catch (error) {
       console.error('LifeDue add task modal failed:', error)
-      setError(currentLanguage === 'pt' ? 'Não foi possível adicionar a tarefa. Tente novamente.' : 'Could not add the task. Please try again.')
+      setError(appInlineI18n[language].couldNotAddTheTaskPleaseTryAgain)
     } finally {
       setSaving(false)
     }
@@ -2913,7 +2913,7 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
     <div className="modal task-modal" onMouseDown={e => e.stopPropagation()}>
       <div className="modal-head">
         <div><p className="section-kicker">{tr('newTask')}</p><h2>{tr('addTaskTitle')}</h2></div>
-        <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={currentLanguage === 'pt' ? 'Fechar' : 'Close'}><X size={20} /></button>
+        <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={appInlineI18n[language].close}><X size={20} /></button>
       </div>
       <label>{tr('task')}<input value={title} onChange={e => { setTitle(e.target.value); setError('') }} placeholder={tr('finishHomepage')} autoFocus disabled={saving} /></label>
       <label>{tr('client')}<input list="lifedue-task-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={tr('john')} disabled={saving} /><datalist id="lifedue-task-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
@@ -2921,11 +2921,11 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
         <div className="plan-review-field">
           <div className="plan-review-field-head"><span>{tr('dueDate')}</span></div>
           <div className="plan-review-priority">
-            <button type="button" className={dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(true); setError('') }} disabled={saving}>{currentLanguage === 'pt' ? 'Escolher data' : 'Choose date'}</button>
+            <button type="button" className={dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(true); setError('') }} disabled={saving}>{appInlineI18n[language].chooseDate}</button>
             <button type="button" className={!dueDateProvided ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => { setDueDateProvided(false); setError('') }} disabled={saving}>{tr('noDueDate')}</button>
           </div>
           {dueDateProvided && <input type="date" value={dueDate} onChange={e => { setDueDate(e.target.value); setError('') }} min={currentTodayKey()} disabled={saving} />}
-          <small className="field-help">{dueDateProvided ? (currentLanguage === 'pt' ? 'Hoje ou uma data futura.' : 'Today or a future date.') : (currentLanguage === 'pt' ? 'Esta tarefa ficará sem prazo.' : 'This task will have no deadline.')}</small>
+          <small className="field-help">{dueDateProvided ? (appInlineI18n[language].todayOrAFutureDate) : (appInlineI18n[language].thisTaskWillHaveNoDeadline)}</small>
         </div>
         <label>{tr('priority')}<select value={priority} onChange={e => setPriority(e.target.value as Priority)} disabled={saving}><option value="low">{tr('low')}</option><option value="medium">{tr('medium')}</option><option value="high">{tr('high')}</option></select></label>
       </div>
@@ -2933,7 +2933,7 @@ function AddTaskModal({ onClose, onAdd, clients, initialClient = '' }: { onClose
       <div className="modal-actions">
         <button type="button" className="secondary-button" onClick={onClose} disabled={saving}>{tr('cancel')}</button>
         <button type="button" className="primary-button" onClick={() => void submit()} disabled={saving}>
-          {saving ? (currentLanguage === 'pt' ? 'A guardar…' : 'Saving…') : tr('addTask')}
+          {saving ? (appInlineI18n[language].saving) : tr('addTask')}
         </button>
       </div>
     </div>
