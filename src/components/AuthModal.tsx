@@ -28,6 +28,7 @@ export function AuthModal({
   const [resendCooldown, setResendCooldown] = useState(0)
   const [resending, setResending] = useState(false)
   const pt = language === 'pt'
+  const confirmationEmailKey = 'lifedue-confirmation-email'
 
   const passwordStrength = useMemo(() => {
     if (mode !== 'signup' || !password) return { score: 0, label: '', tone: '' }
@@ -92,6 +93,7 @@ export function AuthModal({
 
     setError('')
     setSuccess('')
+    localStorage.setItem(confirmationEmailKey, cleanEmail)
     setResending(true)
     try {
       const { error: authError } = await supabase.auth.resend({
@@ -150,6 +152,7 @@ export function AuthModal({
       }
 
       if (mode === 'login') {
+        localStorage.setItem(confirmationEmailKey, cleanEmail)
         const { error: authError } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password,
@@ -164,11 +167,13 @@ export function AuthModal({
           }
           throw authError
         }
+        localStorage.removeItem(confirmationEmailKey)
         onAuthenticated()
         return
       }
 
       if (mode === 'signup') {
+        localStorage.setItem(confirmationEmailKey, cleanEmail)
         const { data, error: authError } = await supabase.auth.signUp({
           email: cleanEmail,
           password,
@@ -191,6 +196,7 @@ export function AuthModal({
         }
 
         if (data.session) {
+          localStorage.removeItem(confirmationEmailKey)
           onAuthenticated()
         } else {
           setSuccess(pt ? 'Conta criada. Enviamos um link de confirmação para seu email.' : 'Account created. We sent a confirmation link to your email.')
