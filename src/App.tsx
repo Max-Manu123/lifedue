@@ -234,6 +234,11 @@ function App() {
       const sessionUser = data.session?.user ?? null
       setUser(sessionUser)
       if (sessionUser) {
+        const hasPendingDraft = Boolean(localStorage.getItem(authDraftKey))
+        if (hasPendingDraft) {
+          setPendingSaveAfterAuth(true)
+          return
+        }
         if (pendingOnboardingSkipRef.current) setView('home')
         else setView('quick-add')
       }
@@ -791,9 +796,15 @@ function App() {
       }
     } catch (error) {
       console.error('LifeDue pending onboarding persistence failed:', error)
+      const detail = error instanceof Error ? error.message : ''
+      const schemaProblem = /source_key|created_at|schema cache|column .* does not exist|PGRST204|PGRST2/i.test(detail)
       setTasksError(currentLanguage === 'pt'
-        ? 'Não foi possível guardar o seu plano. Ele continua seguro e vamos tentar novamente.'
-        : 'We could not save your plan. It is still safe and we will try again.')
+        ? schemaProblem
+          ? 'O banco do LifeDue ainda não tem a estrutura mais recente. Aplique as migrações do Supabase e tente novamente; o seu plano continua guardado.'
+          : 'Não foi possível guardar o seu plano. Ele continua seguro e vamos tentar novamente.'
+        : schemaProblem
+          ? 'The LifeDue database is missing the latest schema. Apply the Supabase migrations and try again; your plan is still saved.'
+          : 'We could not save your plan. It is still safe and we will try again.')
       setPendingSaveAfterAuth(true)
     } finally {
       persistingPlanRef.current = false
