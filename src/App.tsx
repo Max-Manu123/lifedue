@@ -1915,10 +1915,23 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
     setInstalled(isStandalone)
 
     const handleBeforeInstall = (event: Event) => {
+      // Keep the browser's install prompt under our control so every
+      // "Baixar LifeDue" button can trigger the same native dialog.
       event.preventDefault()
       setInstallEvent(event as BeforeInstallPromptEvent)
+      setHelp('')
     }
+
     const handleInstalled = () => {
+      // Broadcast the installed state so every mounted install button
+      // disappears immediately, not only the button that was clicked.
+      setInstalled(true)
+      setInstallEvent(null)
+      setHelp('')
+      window.dispatchEvent(new Event('lifedue-pwa-installed'))
+    }
+
+    const handleSharedInstalled = () => {
       setInstalled(true)
       setInstallEvent(null)
       setHelp('')
@@ -1926,9 +1939,12 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall)
     window.addEventListener('appinstalled', handleInstalled)
+    window.addEventListener('lifedue-pwa-installed', handleSharedInstalled)
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
       window.removeEventListener('appinstalled', handleInstalled)
+      window.removeEventListener('lifedue-pwa-installed', handleSharedInstalled)
     }
   }, [])
 
@@ -1939,9 +1955,30 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
   const install = async () => {
     const event = installEvent
     if (event) {
-      await event.prompt()
-      await event.userChoice
-      setInstallEvent(null)
+      setHelp('')
+
+      try {
+        await event.prompt()
+        const choice = await event.userChoice
+
+        if (choice.outcome === 'accepted') {
+          // Do not wait for appinstalled: some browsers report the user's
+          // accepted choice before dispatching appinstalled.
+          setInstalled(true)
+          setInstallEvent(null)
+          window.dispatchEvent(new Event('lifedue-pwa-installed'))
+        } else {
+          // Cancelled: keep the deferred event. The button must remain
+          // usable and must be able to open the install prompt again.
+          setHelp('')
+        }
+      } catch (error) {
+        // A failed native prompt should never remove the install button.
+        console.error('LifeDue PWA install prompt failed:', error)
+        setHelp(language === 'pt'
+          ? 'Não foi possível abrir a instalação agora. Tente novamente.'
+          : 'The install prompt could not open. Please try again.')
+      }
       return
     }
 
