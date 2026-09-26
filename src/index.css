@@ -3438,3 +3438,343 @@ html[data-theme="dark"] .payment-summary-card svg {
   .payment-currency-summary,
   .pending-payment-gaps { padding: 12px; }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Final black-card contract + mobile-first polish                            */
+/* -------------------------------------------------------------------------- */
+
+/* These are intentionally near-black in dark mode so primary numbers never
+   inherit a light/white card background from older component rules. */
+.theme-dark .payment-currency-summary,
+html[data-theme="dark"] .payment-currency-summary,
+.theme-dark .pending-payment-gaps,
+html[data-theme="dark"] .pending-payment-gaps,
+.theme-dark .payment-summary-card,
+html[data-theme="dark"] .payment-summary-card,
+.theme-dark .settings-plan-card,
+html[data-theme="dark"] .settings-plan-card,
+.theme-dark .plan-card,
+html[data-theme="dark"] .plan-card {
+  background: #090d14 !important;
+  color: #ffffff !important;
+  border-color: #273244 !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.24) !important;
+}
+
+.theme-dark .payment-currency-summary *,
+html[data-theme="dark"] .payment-currency-summary *,
+.theme-dark .pending-payment-gaps *,
+html[data-theme="dark"] .pending-payment-gaps *,
+.theme-dark .payment-summary-card *,
+html[data-theme="dark"] .payment-summary-card *,
+.theme-dark .settings-plan-card *,
+html[data-theme="dark"] .settings-plan-card *,
+.theme-dark .plan-card *,
+html[data-theme="dark"] .plan-card * {
+  color: #ffffff !important;
+}
+
+.theme-dark .payment-currency-summary span,
+.theme-dark .payment-currency-summary small,
+html[data-theme="dark"] .payment-currency-summary span,
+html[data-theme="dark"] .payment-currency-summary small,
+.theme-dark .pending-payment-gaps span,
+html[data-theme="dark"] .pending-payment-gaps span,
+.theme-dark .payment-summary-card span,
+html[data-theme="dark"] .payment-summary-card span,
+.theme-dark .settings-plan-card span,
+html[data-theme="dark"] .settings-plan-card span {
+  color: #cbd5e1 !important;
+}
+
+.theme-dark .payment-currency-summary strong,
+html[data-theme="dark"] .payment-currency-summary strong,
+.theme-dark .pending-payment-gaps strong,
+html[data-theme="dark"] .pending-payment-gaps strong,
+.theme-dark .payment-summary-card strong,
+html[data-theme="dark"] .payment-summary-card strong,
+.theme-dark .settings-plan-card strong,
+html[data-theme="dark"] .settings-plan-card strong {
+  color: #ffffff !important;
+}
+
+.theme-dark .payment-currency-summary svg,
+html[data-theme="dark"] .payment-currency-summary svg,
+.theme-dark .pending-payment-gaps svg,
+html[data-theme="dark"] .pending-payment-gaps svg,
+.theme-dark .payment-summary-card svg,
+html[data-theme="dark"] .payment-summary-card svg,
+.theme-dark .settings-plan-card svg {
+  color: #aeb0ff !important;
+  stroke: currentColor;
+}
+
+/* Today's metrics and AI planner metrics share the same visual language. */
+.theme-dark .today-metric,
+html[data-theme="dark"] .today-metric,
+.theme-dark .planner-stat,
+html[data-theme="dark"] .planner-stat,
+.theme-dark .planner-metric,
+html[data-theme="dark"] .planner-metric,
+.theme-dark .planner-overview > *,
+html[data-theme="dark"] .planner-overview > *,
+.theme-dark .planner-stats > *,
+html[data-theme="dark"] .planner-stats > * {
+  background: #121a2a !important;
+  color: #f7f9fc !important;
+  border-color: #30405a !important;
+}
+
+.theme-dark .today-metric strong,
+html[data-theme="dark"] .today-metric strong,
+.theme-dark .planner-stat strong,
+html[data-theme="dark"] .planner-stat strong,
+.theme-dark .planner-metric strong,
+html[data-theme="dark"] .planner-metric strong {
+  color: #f7f9fc !important;
+}
+
+.theme-dark .today-metric span,
+html[data-theme="dark"] .today-metric span,
+.theme-dark .planner-stat span,
+html[data-theme="dark"] .planner-stat span,
+.theme-dark .planner-metric span,
+html[data-theme="dark"] .planner-metric span {
+  color: #b9c4d3 !important;
+}
+
+/* AI generated plan items: never use a white card in dark mode. */
+.theme-dark .plan-item,
+html[data-theme="dark"] .plan-item,
+.theme-dark .ai-plan-item,
+html[data-theme="dark"] .ai-plan-item,
+.theme-dark .ai-plan-list > *,
+html[data-theme="dark"] .ai-plan-list > * {
+  background: #121a2a !important;
+  color: #f7f9fc !important;
+  border-color: #30405a !important;
+}
+
+.theme-dark .plan-item strong,
+html[data-theme="dark"] .plan-item strong,
+.theme-dark .ai-plan-item strong,
+html[data-theme="dark"] .ai-plan-item strong,
+.theme-dark .plan-item .priority,
+html[data-theme="dark"] .plan-item .priority {
+  color: #f7f9fc !important;
+}
+
+.theme-dark .plan-item span,
+html[data-theme="dark"] .plan-item span,
+.theme-dark .plan-item small,
+html[data-theme="dark"] .plan-item small,
+.theme-dark .ai-plan-item span,
+html[data-theme="dark"] .ai-plan-item span {
+  color: #b9c4d3 !important;
+}
+
+/* "medium" and other priority pills stay readable against dark surfaces. */
+.theme-dark .priority.medium,
+html[data-theme="dark"] .priority.medium {
+  background: #3a2d16 !important;
+  border-color: #715629 !important;
+  color: #f5cf7a !important;
+}
+.theme-dark .priority.high,
+html[data-theme="dark"] .priority.high {
+  background: #351b24 !important;
+  border-color: #713544 !important;
+  color: #ffb0bc !important;
+}
+.theme-dark .priority.low,
+html[data-theme="dark"] .priority.low {
+  background: #202c40 !important;
+  border-color: #3a4b65 !important;
+  color: #c0cad8 !important;
+}
+
+/* Pro/account card: intentionally matches the dark black-card family. */
+.theme-dark .settings-plan-card,
+html[data-theme="dark"] .settings-plan-card {
+  background: #090d14 !important;
+  color: #ffffff !important;
+}
+.theme-dark .settings-plan-card *,
+html[data-theme="dark"] .settings-plan-card * {
+  color: #ffffff !important;
+}
+.theme-dark .settings-plan-card .settings-plan-badge,
+html[data-theme="dark"] .settings-plan-card .settings-plan-badge {
+  background: #1b2140 !important;
+  color: #c5c6ff !important;
+}
+
+/* System dark must behave exactly like the explicit dark theme. */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .payment-currency-summary,
+  html[data-theme="system"] .pending-payment-gaps,
+  html[data-theme="system"] .payment-summary-card,
+  html[data-theme="system"] .settings-plan-card,
+  html[data-theme="system"] .plan-card {
+    background: #090d14 !important;
+    color: #ffffff !important;
+    border-color: #273244 !important;
+  }
+
+  html[data-theme="system"] .payment-currency-summary *,
+  html[data-theme="system"] .pending-payment-gaps *,
+  html[data-theme="system"] .payment-summary-card *,
+  html[data-theme="system"] .settings-plan-card *,
+  html[data-theme="system"] .plan-card * {
+    color: #ffffff !important;
+  }
+
+  html[data-theme="system"] .payment-currency-summary span,
+  html[data-theme="system"] .payment-currency-summary small,
+  html[data-theme="system"] .pending-payment-gaps span,
+  html[data-theme="system"] .payment-summary-card span,
+  html[data-theme="system"] .settings-plan-card span {
+    color: #cbd5e1 !important;
+  }
+
+  html[data-theme="system"] .today-metric,
+  html[data-theme="system"] .planner-stat,
+  html[data-theme="system"] .planner-metric,
+  html[data-theme="system"] .planner-overview > *,
+  html[data-theme="system"] .planner-stats > *,
+  html[data-theme="system"] .plan-item,
+  html[data-theme="system"] .ai-plan-item,
+  html[data-theme="system"] .ai-plan-list > * {
+    background: #121a2a !important;
+    color: #f7f9fc !important;
+    border-color: #30405a !important;
+  }
+
+  html[data-theme="system"] .today-metric strong,
+  html[data-theme="system"] .planner-stat strong,
+  html[data-theme="system"] .planner-metric strong,
+  html[data-theme="system"] .plan-item strong,
+  html[data-theme="system"] .ai-plan-item strong {
+    color: #f7f9fc !important;
+  }
+
+  html[data-theme="system"] .today-metric span,
+  html[data-theme="system"] .planner-stat span,
+  html[data-theme="system"] .planner-metric span,
+  html[data-theme="system"] .plan-item span,
+  html[data-theme="system"] .plan-item small,
+  html[data-theme="system"] .ai-plan-item span {
+    color: #b9c4d3 !important;
+  }
+
+  html[data-theme="system"] .priority.medium {
+    background: #3a2d16 !important;
+    border-color: #715629 !important;
+    color: #f5cf7a !important;
+  }
+}
+
+/* Mobile-first: compact controls and single-column content are the default
+   experience at phone widths; desktop simply gets additional space. */
+@media (max-width: 640px) {
+  .main-content {
+    padding: 12px 10px calc(84px + env(safe-area-inset-bottom));
+  }
+
+  .topbar,
+  .welcome-row,
+  .page-intro,
+  .section-heading {
+    width: 100%;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-actions,
+  .page-actions,
+  .section-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .topbar-actions > button,
+  .page-actions > button,
+  .section-actions > button,
+  .primary-button,
+  .secondary-button {
+    min-height: 44px;
+  }
+
+  .stats-grid,
+  .today-metrics,
+  .planner-overview,
+  .planner-stats,
+  .clients-overview,
+  .payments-overview {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  .today-metric,
+  .planner-stat,
+  .planner-metric {
+    min-height: 78px;
+  }
+
+  .payment-currency-summary,
+  .pending-payment-gaps,
+  .payment-summary-card {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .payment-currency-summary strong,
+  .pending-payment-gaps strong {
+    font-size: clamp(20px, 7vw, 26px);
+  }
+
+  .card-list,
+  .quick-card,
+  .planner-card,
+  .settings-card,
+  .feedback-card,
+  .today-panel,
+  .today-hero {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .task-row,
+  .payment-row,
+  .client-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .task-info,
+  .payment-info,
+  .client-card > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .quick-main textarea {
+    width: 100%;
+    min-height: 118px;
+  }
+
+  .modal,
+  .auth-modal,
+  .upgrade-modal,
+  .plan-review-modal {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+}
