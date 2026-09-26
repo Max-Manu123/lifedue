@@ -177,6 +177,8 @@ function App() {
   const [planReviewConfirmed, setPlanReviewConfirmed] = useState(false)
   const [plannerError, setPlannerError] = useState('')
   const [plannerSource, setPlannerSource] = useState<'ai' | 'local' | null>(null)
+  const [plannerLoading, setPlannerLoading] = useState(false)
+  const plannerLoadingRef = useRef(false)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
   const quickAddRequestId = useRef(0)
@@ -1592,13 +1594,16 @@ function App() {
               <PlannerView
                 plan={plan}
                 openTasks={openTasks}
-                aiLoading={aiLoading}
+                plannerLoading={plannerLoading}
                 isAuthenticated={Boolean(user)}
                 plannerError={plannerError}
                 plannerSource={plannerSource}
                 aiUsage={aiUsage}
                 onGenerate={async () => {
+                  if (plannerLoadingRef.current) return
+
                   const candidates = [...openTasks]
+                    .filter(task => task.status === 'open')
                     .sort((a, b) => (a.dueDateProvided === false ? '9999-12-31' : a.dueDate).localeCompare(b.dueDateProvided === false ? '9999-12-31' : b.dueDate) || ({ high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority]))
                     .slice(0, 12)
 
@@ -1607,11 +1612,16 @@ function App() {
                   if (!candidates.length) {
                     setPlan([])
                     setPlanPayments([])
+                    setPlannerError(currentLanguage === 'pt'
+                      ? 'Não há tarefas abertas para o Planejador organizar. Adicione ou reabra uma tarefa e tente novamente.'
+                      : 'There are no open tasks for the Planner to organize. Add or reopen a task and try again.')
                     setView('planner')
                     return
                   }
 
-                  if (aiUsage.remaining <= 0) {
+                  /* The server is authoritative for AI credits. Do not block
+                     the button using possibly stale client-side usage state. */
+                  if (false && aiUsage.remaining <= 0) {
                     setPlannerError(currentLanguage === 'pt'
                       ? 'Os seus créditos de IA acabaram neste mês. Tente novamente no próximo mês.'
                       : 'Your AI credits are used up for this month. Try again next month.')
@@ -1630,7 +1640,8 @@ function App() {
                   }
 
                   const requestId = ++plannerRequestId.current
-                  setAiLoading(true)
+                  plannerLoadingRef.current = true
+                  setPlannerLoading(true)
                   setPlannerError('')
                   setPlan([])
                   try {
@@ -1696,7 +1707,10 @@ function App() {
                     setPlannerSource('local')
                     setView('planner')
                   } finally {
-                    setAiLoading(false)
+                    if (requestId === plannerRequestId.current) {
+                      plannerLoadingRef.current = false
+                      setPlannerLoading(false)
+                    }
                   }
                 }}
                 onAddTask={() => { setShowAdd(true); setTaskDraftClient('') }}
@@ -2712,7 +2726,7 @@ function PaymentRow({ payment, onMarkPaid }: { payment: Payment; onMarkPaid: (id
 }
 
 
-function PlannerView({ plan, openTasks, aiLoading, isAuthenticated, plannerError, plannerSource, aiUsage, onGenerate, onAddTask, onViewTasks }: { plan: Task[]; openTasks: Task[]; aiLoading: boolean; isAuthenticated: boolean; plannerError: string; plannerSource: 'ai' | 'local' | null; aiUsage: AiUsage; onGenerate: () => void; onAddTask: () => void; onViewTasks: () => void }) {
+function PlannerView({ plan, openTasks, plannerLoading, isAuthenticated, plannerError, plannerSource, aiUsage, onGenerate, onAddTask, onViewTasks }: { plan: Task[]; openTasks: Task[]; plannerLoading: boolean; isAuthenticated: boolean; plannerError: string; plannerSource: 'ai' | 'local' | null; aiUsage: AiUsage; onGenerate: () => void; onAddTask: () => void; onViewTasks: () => void }) {
   const todayKey = currentTodayKey()
   const overdueCount = openTasks.filter(task => task.dueDateProvided !== false && task.dueDate < todayKey).length
   const todayCount = openTasks.filter(task => task.dueDateProvided !== false && task.dueDate === todayKey).length
@@ -2721,7 +2735,7 @@ function PlannerView({ plan, openTasks, aiLoading, isAuthenticated, plannerError
   const readyDesc = plannerSource === 'ai' ? tr('plannerAiDesc') : tr('plannerLocalDesc')
 
   return <div className="content-stack planner-page">
-    <div className="page-intro"><div><p className="section-kicker">{tr('aiPlanner')}</p><h2>{tr('calmer')}</h2><p className="page-description">{tr('plannerDesc')}</p><div className="planner-how-it-works"><span className="planner-how-icon">i</span><div><strong>{tr('plannerHowItWorks')}</strong><p>{tr('plannerHowItWorksDesc')}</p></div><span className="planner-info-tooltip" tabIndex={0} title={tr('plannerPlannerInfo')} aria-label={tr('plannerPlannerInfo')}>i</span></div></div><button className="primary-button" onClick={onGenerate} disabled={aiLoading || !openTasks.length}><Sparkles size={16} className={aiLoading ? 'spin' : ''} /> {aiLoading ? (currentLanguage === 'pt' ? 'A organizar…' : 'Organizing…') : tr('generatePlan')}</button></div>
+    <div className="page-intro"><div><p className="section-kicker">{tr('aiPlanner')}</p><h2>{tr('calmer')}</h2><p className="page-description">{tr('plannerDesc')}</p><div className="planner-how-it-works"><span className="planner-how-icon">i</span><div><strong>{tr('plannerHowItWorks')}</strong><p>{tr('plannerHowItWorksDesc')}</p></div><span className="planner-info-tooltip" tabIndex={0} title={tr('plannerPlannerInfo')} aria-label={tr('plannerPlannerInfo')}>i</span></div></div><button className="primary-button" onClick={onGenerate} disabled={plannerLoading}><Sparkles size={16} className={plannerLoading ? 'spin' : ''} /> {plannerLoading ? (currentLanguage === 'pt' ? 'A organizar…' : 'Organizing…') : tr('generatePlan')}</button></div>
     <div className="planner-credit-note" role="status"><Sparkles size={14} /><div><strong>{aiUsage.remaining > 0 ? tr('aiUsesRemaining').replace('{n}', String(aiUsage.remaining)) : tr('aiUsageExhausted')}</strong><span>{tr('aiUsageShared')} · {tr('aiUsageReset')}</span></div></div>
     <div className="planner-overview"><div><span>{tr('plannerOpen')}</span><strong>{openTasks.length}</strong></div><div className={overdueCount ? 'danger' : ''}><span>{tr('plannerOverdue')}</span><strong>{overdueCount}</strong></div><div className={todayCount ? 'attention' : ''}><span>{tr('plannerToday')}</span><strong>{todayCount}</strong></div><div><span>{tr('plannerUpcoming')}</span><strong>{upcomingCount}</strong></div></div>
     {plannerError && <div className="planner-error" role="alert"><Bot size={16} /><span>{plannerError}</span></div>}
