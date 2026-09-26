@@ -326,6 +326,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
   }
 
   const createdBySourceKey = new Map<string, Task>()
+  const createdByPendingIndex = new Map<number, Task>()
   if (rows.length) {
     const { data, error } = await supabase!
       .from('tasks')
@@ -355,18 +356,20 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
         sourceKey: row.source_key ?? original?.sourceKey,
         status: row.status,
       }
+      createdByPendingIndex.set(index, created)
       if (created.sourceKey) createdBySourceKey.set(created.sourceKey, created)
     }
   }
 
+  let pendingIndex = 0
   return tasks.map(task => {
     if (task.sourceKey) {
-      return existingBySourceKey.get(task.sourceKey) ?? createdBySourceKey.get(task.sourceKey) ?? {
-        ...task,
-        id: crypto.randomUUID(),
-      }
+      return existingBySourceKey.get(task.sourceKey)
+        ?? createdBySourceKey.get(task.sourceKey)
+        ?? { ...task, id: crypto.randomUUID() }
     }
-    const created = createdBySourceKey.get(task.sourceKey ?? '')
+    const created = createdByPendingIndex.get(pendingIndex)
+    pendingIndex += 1
     return created ?? { ...task, id: crypto.randomUUID() }
   })
 }
