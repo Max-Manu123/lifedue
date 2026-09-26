@@ -422,7 +422,7 @@ export function AuthModal({
               </span>
               {(mode === 'signup' || mode === 'reset') && (
                 <>
-                  <div className={`password-strength ${passwordStrength.tone}` aria-live="polite">
+                  <div className={`password-strength ${passwordStrength.tone}`} aria-live="polite">
                     <div className="password-strength-track">
                       <span style={{ width: `${Math.min(100, passwordStrength.score * 20)}%` }} />
                     </div>
