@@ -22,6 +22,7 @@ export interface Task {
   dueDateProvided?: boolean
   priority: Priority
   priorityProvided?: boolean
+  sourceKey?: string
   status: TaskStatus
 }
 
