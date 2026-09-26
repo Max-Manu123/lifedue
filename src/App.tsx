@@ -213,9 +213,36 @@ function App() {
   useEffect(() => {
     if (!supabase) return
 
+    let cancelled = false
+
+    // Handle confirmation links that use Supabase's token_hash format
+    // explicitly. This guarantees the email link creates the browser
+    // session before the normal auth-state routing runs.
+    const queryParams = new URLSearchParams(window.location.search)
+    const tokenHash = queryParams.get('token_hash')
+    const tokenType = queryParams.get('type')
+
+    const cleanAuthUrl = () => {
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+
+    if (tokenHash) {
+      void supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: tokenType === 'recovery' ? 'recovery' : 'email',
+      }).then(({ error: verifyError }) => {
+        if (cancelled) return
+        cleanAuthUrl()
+        if (verifyError) {
+          console.error('LifeDue email link verification failed:', verifyError)
+          setAuthMode(tokenType === 'recovery' ? 'reset' : 'verify')
+          setAuthOpen(true)
+        }
+      })
+    }
+
     // Supabase redirects auth errors back to the app as URL fragments.
-    // Surface expired/invalid confirmation links inside the same professional
-    // verification UI instead of leaving the user on a blank/error state.
+    // Surface expired/invalid confirmation links inside the same verification UI.
     const authParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
     const authError = authParams.get('error')
     const authErrorCode = authParams.get('error_code') || ''
@@ -231,6 +258,7 @@ function App() {
     }
 
     supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return
       const sessionUser = data.session?.user ?? null
       setUser(sessionUser)
       if (sessionUser) {
@@ -243,7 +271,9 @@ function App() {
         else setView('quick-add')
       }
     })
+
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (cancelled) return
       setUser(session?.user ?? null)
       if (event === 'PASSWORD_RECOVERY') {
         passwordRecoveryRef.current = true
@@ -273,7 +303,11 @@ function App() {
         }
       }
     })
-    return () => listener.subscription.unsubscribe()
+
+    return () => {
+      cancelled = true
+      listener.subscription.unsubscribe()
+    }
   }, [])
 
   useEffect(() => {
