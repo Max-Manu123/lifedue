@@ -1729,3 +1729,852 @@ button, input, textarea, select { transition: background-color .2s ease, border-
     height: 34px;
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* LifeDue visual system v2                                                   */
+/* -------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+  --ld-bg: #f5f7fb;
+  --ld-surface: #ffffff;
+  --ld-surface-soft: #f8fafc;
+  --ld-surface-raised: #ffffff;
+  --ld-border: #e2e8f0;
+  --ld-border-strong: #cbd5e1;
+  --ld-text: #111827;
+  --ld-text-secondary: #475569;
+  --ld-text-muted: #94a3b8;
+  --ld-brand: #5b5bd6;
+  --ld-brand-hover: #4c4cc5;
+  --ld-brand-soft: #eef0ff;
+  --ld-success: #0f9f8c;
+  --ld-success-soft: #ecfdf7;
+  --ld-warning: #b7791f;
+  --ld-warning-soft: #fff8e7;
+  --ld-danger: #d84b63;
+  --ld-danger-soft: #fff1f3;
+  --ld-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 10px 30px rgba(15, 23, 42, .05);
+  --ld-shadow-hover: 0 2px 5px rgba(15, 23, 42, .05), 0 18px 40px rgba(15, 23, 42, .08);
+}
+
+html[data-theme="light"] { color-scheme: light; }
+
+body {
+  background: var(--ld-bg);
+  color: var(--ld-text);
+}
+
+.app-shell {
+  background: var(--ld-bg);
+  color: var(--ld-text);
+}
+
+.sidebar {
+  background: var(--ld-surface);
+  border-right-color: var(--ld-border);
+  box-shadow: 4px 0 24px rgba(15, 23, 42, .025);
+}
+
+.main-content { color: var(--ld-text); }
+
+.topbar {
+  padding-bottom: 2px;
+}
+
+.topbar h1,
+.welcome-row h2,
+.page-intro h2,
+.quick-main h3,
+.section-heading h2 {
+  color: var(--ld-text);
+}
+
+.eyebrow,
+.section-kicker {
+  color: #7b8798;
+}
+
+.page-description,
+.stat-card span,
+.task-info span,
+.client-meta,
+.payment-info span,
+.planner-hero p,
+.plan-item span,
+.plan-item small {
+  color: var(--ld-text-secondary);
+}
+
+.stat-card,
+.quick-card,
+.ai-result-card,
+.planner-card,
+.card-list,
+.client-card,
+.payment-row,
+.today-panel,
+.today-metric,
+.tasks-overview-main,
+.task-stat,
+.clients-overview > div,
+.payments-overview > div,
+.payment-currency-summary,
+.pending-payment-gaps,
+.feedback-card,
+.settings-card {
+  background: var(--ld-surface);
+  border-color: var(--ld-border);
+  box-shadow: var(--ld-shadow);
+}
+
+.stat-card:hover,
+.client-card:hover,
+.payment-row:hover,
+.quick-card:hover,
+.planner-card:hover,
+.feedback-card:hover,
+.settings-card:hover {
+  border-color: var(--ld-border-strong);
+  box-shadow: var(--ld-shadow-hover);
+}
+
+.nav-item {
+  color: #667085;
+}
+
+.nav-item:hover {
+  background: var(--ld-surface-soft);
+  color: var(--ld-text);
+}
+
+.nav-item.active {
+  color: var(--ld-brand);
+  background: var(--ld-brand-soft);
+  box-shadow: inset 3px 0 0 var(--ld-brand);
+}
+
+.sidebar-add,
+.secondary-button,
+.icon-button,
+.account-button {
+  background: var(--ld-surface);
+  border-color: var(--ld-border-strong);
+  color: #344054;
+}
+
+.sidebar-add:hover,
+.secondary-button:hover,
+.icon-button:hover,
+.account-button:hover {
+  background: var(--ld-surface-soft);
+  border-color: #b8c2d1;
+}
+
+.primary-button,
+.hero-cta {
+  background: var(--ld-brand);
+  box-shadow: 0 7px 18px rgba(91, 91, 214, .16);
+}
+
+.primary-button:hover:not(:disabled),
+.hero-cta:hover:not(:disabled) {
+  background: var(--ld-brand-hover);
+  box-shadow: 0 10px 24px rgba(91, 91, 214, .22);
+}
+
+.quick-icon,
+.planner-bot,
+.settings-icon,
+.feedback-icon,
+.feature-icon {
+  background: var(--ld-brand-soft);
+  color: var(--ld-brand);
+  border-color: #dfe2ff;
+}
+
+.quick-label,
+.section-heading .text-button,
+.text-button,
+.auth-links button,
+.auth-inline-link {
+  color: var(--ld-brand);
+}
+
+.quick-main textarea,
+.task-search,
+.tasks-toolbar select,
+.client-search,
+.payment-search,
+.modal input,
+.modal select,
+.auth-form input,
+.settings-waitlist-form input,
+.upgrade-form input {
+  background: var(--ld-surface);
+  color: var(--ld-text);
+  border-color: var(--ld-border-strong);
+}
+
+.quick-main textarea:focus,
+.task-search:focus-within,
+.client-search:focus-within,
+.payment-search:focus-within,
+.modal input:focus,
+.modal select:focus,
+.auth-form input:focus,
+.settings-waitlist-form input:focus,
+.upgrade-form input:focus {
+  border-color: #8d8de8;
+  box-shadow: 0 0 0 3px rgba(91, 91, 214, .10);
+}
+
+.quick-main textarea::placeholder,
+.task-search input::placeholder,
+.client-search input::placeholder,
+.payment-search input::placeholder {
+  color: var(--ld-text-muted);
+}
+
+.filter-tabs {
+  border-bottom-color: var(--ld-border);
+}
+
+.filter-tab {
+  color: #667085;
+}
+
+.filter-tab.active {
+  color: var(--ld-brand);
+  border-color: var(--ld-brand);
+}
+
+.check-box {
+  background: var(--ld-surface);
+  border-color: var(--ld-border-strong);
+}
+
+.task-row {
+  border-bottom-color: var(--ld-border);
+}
+
+.task-row:hover {
+  background: var(--ld-surface-soft);
+}
+
+.priority.high {
+  color: #b4233d;
+  background: var(--ld-danger-soft);
+}
+.priority.medium {
+  color: #9a6700;
+  background: var(--ld-warning-soft);
+}
+.priority.low {
+  color: #596579;
+  background: #f1f4f8;
+}
+
+.empty-card {
+  color: var(--ld-success);
+}
+
+.today-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #f7f8ff 100%);
+  border-color: var(--ld-border);
+  box-shadow: var(--ld-shadow);
+}
+
+.today-metric.money {
+  background: linear-gradient(135deg, #f1fcf8 0%, #ffffff 100%);
+  border-color: #c7eee4;
+}
+
+.today-metric.attention {
+  background: var(--ld-warning-soft);
+  border-color: #f1d69a;
+}
+
+.today-metric.danger {
+  background: var(--ld-danger-soft);
+  border-color: #f3c2cb;
+}
+
+.planner-how-it-works,
+.pending-payment-gaps-count,
+.client-metrics > div,
+.tasks-group-head strong,
+.payment-search button,
+.client-search button {
+  background: var(--ld-surface-soft);
+  border-color: var(--ld-border);
+}
+
+.planner-how-it-works {
+  color: var(--ld-text-secondary);
+}
+
+.modal-backdrop,
+.upgrade-modal-backdrop {
+  background: rgba(15, 23, 42, .52);
+  backdrop-filter: blur(8px);
+}
+
+.modal,
+.auth-modal,
+.upgrade-modal,
+.plan-review-modal {
+  background: var(--ld-surface);
+  color: var(--ld-text);
+  border-color: var(--ld-border);
+  box-shadow: 0 30px 90px rgba(15, 23, 42, .18);
+}
+
+.modal h2,
+.auth-head h2,
+.upgrade-modal h2,
+.plan-review-head h2 {
+  color: var(--ld-text);
+}
+
+.modal label,
+.auth-form label,
+.upgrade-form label {
+  color: #344054;
+}
+
+.form-error,
+.auth-error,
+.quick-error {
+  color: #b4233d;
+  background: var(--ld-danger-soft);
+  border-color: #f3c2cb;
+}
+
+.auth-success,
+.upgrade-success {
+  background: var(--ld-success-soft);
+  border-color: #bde8de;
+  color: #087f6e;
+}
+
+.language-switcher,
+.segmented-control,
+.theme-options {
+  background: #f1f4f8;
+  border-color: var(--ld-border);
+}
+
+.language-switcher button.active,
+.segmented-control button.active,
+.theme-options button.active {
+  background: var(--ld-surface);
+  color: var(--ld-brand);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, .08);
+}
+
+.mobile-nav {
+  background: rgba(255, 255, 255, .96);
+  border-top-color: var(--ld-border);
+  box-shadow: 0 -8px 25px rgba(15, 23, 42, .05);
+  backdrop-filter: blur(14px);
+}
+
+.mobile-nav-item.active {
+  color: var(--ld-brand);
+}
+
+.install-pwa-button {
+  background: var(--ld-brand-soft);
+  border-color: #d8dcff;
+  color: var(--ld-brand);
+}
+
+.install-pwa-button:hover {
+  background: #e3e6ff;
+  border-color: #c4c9ff;
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, #6969e4 0%, #4f4fc6 100%);
+  box-shadow: 0 8px 20px rgba(79, 79, 198, .20);
+}
+
+@media (max-width: 700px) {
+  .main-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .today-hero,
+  .quick-card,
+  .planner-card,
+  .settings-card,
+  .feedback-card {
+    border-radius: 15px;
+  }
+}
+
+/* Dark theme: neutral navy surfaces, restrained indigo accent, high contrast text. */
+.theme-dark,
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --ld-bg: #0b1020;
+  --ld-surface: #121a2a;
+  --ld-surface-soft: #182235;
+  --ld-surface-raised: #1b263a;
+  --ld-border: #2a3850;
+  --ld-border-strong: #3a4b65;
+  --ld-text: #f4f7fb;
+  --ld-text-secondary: #b2bdcc;
+  --ld-text-muted: #7f8ca0;
+  --ld-brand: #9b9cf5;
+  --ld-brand-hover: #b0b1ff;
+  --ld-brand-soft: rgba(111, 112, 235, .16);
+  --ld-success: #45c9b5;
+  --ld-success-soft: rgba(25, 157, 136, .14);
+  --ld-warning: #f2c46d;
+  --ld-warning-soft: rgba(196, 145, 48, .14);
+  --ld-danger: #ff879b;
+  --ld-danger-soft: rgba(216, 75, 99, .14);
+  --ld-shadow: 0 1px 2px rgba(0, 0, 0, .18), 0 14px 34px rgba(0, 0, 0, .18);
+  --ld-shadow-hover: 0 2px 5px rgba(0, 0, 0, .2), 0 20px 44px rgba(0, 0, 0, .25);
+}
+
+.theme-dark body,
+html[data-theme="dark"] body,
+.theme-dark .app-shell {
+  background: var(--ld-bg);
+  color: var(--ld-text);
+}
+
+.theme-dark .sidebar {
+  background: #0e1626;
+  border-right-color: var(--ld-border);
+  box-shadow: 6px 0 28px rgba(0, 0, 0, .16);
+}
+
+.theme-dark .topbar h1,
+.theme-dark .welcome-row h2,
+.theme-dark .page-intro h2,
+.theme-dark .quick-main h3,
+.theme-dark .section-heading h2,
+.theme-dark .today-hero h2,
+.theme-dark .today-panel-head h3,
+.theme-dark .tasks-overview-main strong,
+.theme-dark .task-stat strong,
+.theme-dark .client-card strong,
+.theme-dark .payments-overview strong,
+.theme-dark .planner-overview strong,
+.theme-dark .planner-hero strong,
+.theme-dark .plan-main strong,
+.theme-dark .settings-card strong,
+.theme-dark .feedback-card strong,
+.theme-dark .modal h2,
+.theme-dark .auth-head h2,
+.theme-dark .upgrade-modal h2,
+.theme-dark .plan-review-head h2 {
+  color: var(--ld-text);
+}
+
+.theme-dark .eyebrow,
+.theme-dark .section-kicker {
+  color: #8f9cb0;
+}
+
+.theme-dark .page-description,
+.theme-dark .today-hero-copy > p:last-child,
+.theme-dark .today-panel-head p,
+.theme-dark .task-info span,
+.theme-dark .client-meta,
+.theme-dark .payment-info span,
+.theme-dark .planner-hero p,
+.theme-dark .plan-item span,
+.theme-dark .plan-item small,
+.theme-dark .feedback-card-header p,
+.theme-dark .settings-section-head p {
+  color: var(--ld-text-secondary);
+}
+
+.theme-dark .nav-item {
+  color: #9aa7ba;
+}
+
+.theme-dark .nav-item:hover {
+  background: #172136;
+  color: #f4f7fb;
+}
+
+.theme-dark .nav-item.active {
+  color: var(--ld-brand);
+  background: var(--ld-brand-soft);
+  box-shadow: inset 3px 0 0 #8b8ce9;
+}
+
+.theme-dark .sidebar-add,
+.theme-dark .secondary-button,
+.theme-dark .icon-button,
+.theme-dark .account-button {
+  background: var(--ld-surface);
+  border-color: var(--ld-border-strong);
+  color: #e6ebf2;
+}
+
+.theme-dark .sidebar-add:hover,
+.theme-dark .secondary-button:hover,
+.theme-dark .icon-button:hover,
+.theme-dark .account-button:hover {
+  background: var(--ld-surface-raised);
+  border-color: #52657f;
+}
+
+.theme-dark .primary-button,
+.theme-dark .hero-cta {
+  background: #7778df;
+  color: #0b1020;
+  box-shadow: 0 8px 22px rgba(89, 90, 214, .20);
+}
+
+.theme-dark .primary-button:hover:not(:disabled),
+.theme-dark .hero-cta:hover:not(:disabled) {
+  background: #8d8eea;
+}
+
+.theme-dark .stat-card,
+.theme-dark .quick-card,
+.theme-dark .ai-result-card,
+.theme-dark .planner-card,
+.theme-dark .card-list,
+.theme-dark .client-card,
+.theme-dark .payment-row,
+.theme-dark .today-panel,
+.theme-dark .today-metric,
+.theme-dark .tasks-overview-main,
+.theme-dark .task-stat,
+.theme-dark .clients-overview > div,
+.theme-dark .payments-overview > div,
+.theme-dark .payment-currency-summary,
+.theme-dark .pending-payment-gaps,
+.theme-dark .feedback-card,
+.theme-dark .settings-card,
+.theme-dark .empty-card {
+  background: var(--ld-surface);
+  border-color: var(--ld-border);
+  box-shadow: var(--ld-shadow);
+}
+
+.theme-dark .stat-card:hover,
+.theme-dark .client-card:hover,
+.theme-dark .payment-row:hover,
+.theme-dark .quick-card:hover,
+.theme-dark .planner-card:hover,
+.theme-dark .feedback-card:hover,
+.theme-dark .settings-card:hover {
+  border-color: var(--ld-border-strong);
+  box-shadow: var(--ld-shadow-hover);
+}
+
+.theme-dark .quick-icon,
+.theme-dark .planner-bot,
+.theme-dark .settings-icon,
+.theme-dark .feedback-icon,
+.theme-dark .feature-icon {
+  background: var(--ld-brand-soft);
+  color: var(--ld-brand);
+  border-color: rgba(155, 156, 245, .22);
+}
+
+.theme-dark .quick-main textarea,
+.theme-dark .task-search,
+.theme-dark .tasks-toolbar select,
+.theme-dark .client-search,
+.theme-dark .payment-search,
+.theme-dark .modal input,
+.theme-dark .modal select,
+.theme-dark .auth-form input,
+.theme-dark .settings-waitlist-form input,
+.theme-dark .upgrade-form input {
+  background: #0d1524;
+  color: var(--ld-text);
+  border-color: var(--ld-border-strong);
+}
+
+.theme-dark .quick-main textarea::placeholder,
+.theme-dark .task-search input::placeholder,
+.theme-dark .client-search input::placeholder,
+.theme-dark .payment-search input::placeholder,
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder {
+  color: var(--ld-text-muted);
+}
+
+.theme-dark .filter-tabs,
+.theme-dark .task-row,
+.theme-dark .ai-plan-list,
+.theme-dark .planner-hero,
+.theme-dark .today-payment-row {
+  border-color: var(--ld-border);
+}
+
+.theme-dark .filter-tab {
+  color: var(--ld-text-secondary);
+}
+
+.theme-dark .filter-tab.active {
+  color: var(--ld-brand);
+  border-color: var(--ld-brand);
+  background: transparent;
+}
+
+.theme-dark .task-row:hover {
+  background: #172136;
+}
+
+.theme-dark .check-box {
+  background: #0d1524;
+  border-color: #52657f;
+}
+
+.theme-dark .priority.high {
+  color: #ffb2bd;
+  background: var(--ld-danger-soft);
+}
+.theme-dark .priority.medium {
+  color: #f4cf83;
+  background: var(--ld-warning-soft);
+}
+.theme-dark .priority.low {
+  color: #b8c2d0;
+  background: #202c40;
+}
+
+.theme-dark .today-hero {
+  background: linear-gradient(135deg, #141d30 0%, #111a2b 100%);
+  border-color: var(--ld-border);
+}
+
+.theme-dark .today-metric.money {
+  background: linear-gradient(135deg, rgba(25, 157, 136, .13), #121a2a);
+  border-color: rgba(69, 201, 181, .28);
+}
+
+.theme-dark .today-metric.attention {
+  background: var(--ld-warning-soft);
+  border-color: rgba(242, 196, 109, .28);
+}
+
+.theme-dark .today-metric.danger {
+  background: var(--ld-danger-soft);
+  border-color: rgba(255, 135, 155, .25);
+}
+
+.theme-dark .planner-how-it-works,
+.theme-dark .pending-payment-gaps-count,
+.theme-dark .client-metrics > div,
+.theme-dark .tasks-group-head strong,
+.theme-dark .payment-search button,
+.theme-dark .client-search button,
+.theme-dark .language-switcher,
+.theme-dark .segmented-control,
+.theme-dark .theme-options {
+  background: var(--ld-surface-soft);
+  border-color: var(--ld-border);
+}
+
+.theme-dark .planner-how-it-works strong {
+  color: var(--ld-text);
+}
+
+.theme-dark .planner-how-it-works p {
+  color: var(--ld-text-secondary);
+}
+
+.theme-dark .modal-backdrop,
+.theme-dark .upgrade-modal-backdrop {
+  background: rgba(3, 7, 18, .70);
+}
+
+.theme-dark .modal,
+.theme-dark .auth-modal,
+.theme-dark .upgrade-modal,
+.theme-dark .plan-review-modal {
+  background: #121a2a;
+  border-color: var(--ld-border);
+  color: var(--ld-text);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .42);
+}
+
+.theme-dark .modal label,
+.theme-dark .auth-form label,
+.theme-dark .upgrade-form label {
+  color: #d6deea;
+}
+
+.theme-dark .auth-close,
+.theme-dark .google-button {
+  background: #0d1524;
+  border-color: var(--ld-border-strong);
+  color: #e6ebf2;
+}
+
+.theme-dark .auth-close:hover,
+.theme-dark .google-button:hover {
+  background: #182235;
+}
+
+.theme-dark .form-error,
+.theme-dark .auth-error,
+.theme-dark .quick-error {
+  color: #ffb2bd;
+  background: var(--ld-danger-soft);
+  border-color: rgba(255, 135, 155, .28);
+}
+
+.theme-dark .auth-success,
+.theme-dark .upgrade-success {
+  background: var(--ld-success-soft);
+  border-color: rgba(69, 201, 181, .28);
+  color: #8ce1d3;
+}
+
+.theme-dark .mobile-nav {
+  background: rgba(14, 22, 38, .94);
+  border-top-color: var(--ld-border);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, .24);
+}
+
+.theme-dark .mobile-nav-item {
+  color: #7f8ca0;
+}
+
+.theme-dark .mobile-nav-item.active {
+  color: var(--ld-brand);
+}
+
+.theme-dark .install-pwa-button {
+  background: var(--ld-brand-soft);
+  border-color: rgba(155, 156, 245, .25);
+  color: var(--ld-brand);
+}
+
+.theme-dark .install-pwa-button:hover {
+  background: rgba(111, 112, 235, .24);
+}
+
+.theme-dark .brand-mark {
+  background: linear-gradient(135deg, #8586e9 0%, #5e5fcf 100%);
+  color: #0b1020;
+}
+
+.theme-dark .pill,
+.theme-dark .preview-badge {
+  background: var(--ld-brand-soft);
+  border-color: rgba(155, 156, 245, .22);
+  color: #c5c6ff;
+}
+
+.theme-dark .preview-badge.payment {
+  background: var(--ld-success-soft);
+  border-color: rgba(69, 201, 181, .22);
+  color: #8ce1d3;
+}
+
+.theme-dark .hero-preview {
+  background: #121a2a;
+  border-color: var(--ld-border);
+  box-shadow: 0 28px 75px rgba(0, 0, 0, .34);
+}
+
+.theme-dark .preview-task {
+  border-color: var(--ld-border);
+}
+
+.theme-dark .preview-task strong,
+.theme-dark .preview-footer {
+  color: var(--ld-text);
+}
+
+.theme-dark .preview-task small,
+.theme-dark .preview-title,
+.theme-dark .preview-status {
+  color: var(--ld-text-secondary);
+}
+
+.theme-dark .preview-balance {
+  background: linear-gradient(135deg, rgba(25, 157, 136, .13), #121a2a);
+  border-color: rgba(69, 201, 181, .24);
+}
+
+.theme-dark .preview-balance span {
+  color: var(--ld-text-secondary);
+}
+
+.theme-dark .preview-balance strong {
+  color: #8ce1d3;
+}
+
+.theme-dark .feature-row {
+  border-color: var(--ld-border);
+}
+
+.theme-dark .feature p,
+.theme-dark .microcopy {
+  color: var(--ld-text-secondary);
+}
+
+.theme-dark .language-switcher button,
+.theme-dark .segmented-control button,
+.theme-dark .theme-options button {
+  color: var(--ld-text-secondary);
+}
+
+.theme-dark .language-switcher button.active,
+.theme-dark .segmented-control button.active,
+.theme-dark .theme-options button.active {
+  background: var(--ld-surface-raised);
+  color: var(--ld-brand);
+}
+
+.theme-dark .settings-row,
+.theme-dark .settings-action-row {
+  border-top-color: var(--ld-border);
+}
+
+.theme-dark .settings-row strong,
+.theme-dark .settings-action-row strong {
+  color: var(--ld-text);
+}
+
+.theme-dark .settings-row span,
+.theme-dark .settings-action-row span {
+  color: var(--ld-text-secondary);
+}
+
+.theme-dark .settings-plan-badge {
+  background: var(--ld-brand-soft);
+  color: #c5c6ff;
+}
+
+.theme-dark .upgrade-button {
+  background: var(--ld-brand-soft);
+  border-color: rgba(155, 156, 245, .25);
+  color: #c5c6ff;
+}
+
+.theme-dark .upgrade-button:hover {
+  background: rgba(111, 112, 235, .24);
+}
+
+/* System mode follows the OS while keeping the explicit light/dark modes stable. */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    color-scheme: dark;
+  }
+
+  html[data-theme="system"] body,
+  html[data-theme="system"] .app-shell {
+    background: #0b1020;
+    color: #f4f7fb;
+  }
+}
