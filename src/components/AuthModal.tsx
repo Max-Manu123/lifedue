@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, MouseEvent } from 'react'
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { authI18n } from '../lib/i18n'
+import { authI18n, authExtraI18n } from '../lib/i18n'
 
 type Language = 'en' | 'pt'
 type Mode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify'
@@ -106,7 +106,7 @@ export function AuthModal({
     : (t.resetYourPassword)
   const submitLabel = mode === 'login' ? (t.signIn)
     : mode === 'signup' ? (t.createAccount)
-    : mode === 'forgot' ? (forgotCooldown > 0 ? (pt ? `Aguarde ${forgotCooldown}s` : `Wait ${forgotCooldown}s`) : (t.sendResetLink)) : mode === 'verify' ? (t.resendEmail) : (t.saveNewPassword)
+    : mode === 'forgot' ? (forgotCooldown > 0 ? (authExtraI18n[language].waitForgot.replace('{n}', String(forgotCooldown))) : (t.sendResetLink)) : mode === 'verify' ? (t.resendEmail) : (t.saveNewPassword)
 
   const friendlyAuthError = (authError: unknown) => {
     const message = authError instanceof Error ? authError.message.toLowerCase() : ''
@@ -252,7 +252,7 @@ export function AuthModal({
 
       if (mode === 'forgot') {
         if (forgotCooldown > 0) {
-          setError(pt ? `Aguarde ${forgotCooldown}s antes de pedir outro link.` : `Wait ${forgotCooldown}s before requesting another link.`)
+          setError(authExtraI18n[language].waitForgot.replace('{n}', String(forgotCooldown)))
           return
         }
         const { error: authError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
@@ -388,7 +388,7 @@ export function AuthModal({
             <div className="auth-verification-icon"><Mail size={18} /></div>
             <div>
               <strong>{t.checkYourInbox}</strong>
-              <p>{pt ? `Enviamos o link para ${email.trim() || 'seu email'}. Abra o link para confirmar sua conta.` : `We sent the link to ${email.trim() || 'your email'}. Open it to confirm your account.`}</p>
+              <p>{authExtraI18n[language].confirmAccountLink.replace('{email}', email.trim() || (pt ? 'seu email' : 'your email'))}</p>
             </div>
           </div>
         )}
@@ -416,7 +416,7 @@ export function AuthModal({
 
           {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
             <label>
-              {pt ? (mode === 'reset' ? 'Nova senha' : 'Senha') : (mode === 'reset' ? 'New password' : 'Password')}
+              {mode === 'reset' ? authExtraI18n[language].newPassword : authExtraI18n[language].password}
               <span className="auth-password">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -499,7 +499,7 @@ export function AuthModal({
           <div className="auth-verification-actions">
             <button type="button" className="primary-button auth-submit" onClick={() => void resendConfirmation()} disabled={resending || resendCooldown > 0} aria-busy={resending}>
               {resending ? <Loader2 size={17} className="spin" /> : <Mail size={17} />}
-              {resendCooldown > 0 ? (pt ? `Reenviar em ${resendCooldown}s` : `Resend in ${resendCooldown}s`) : (t.resendConfirmationEmail)}
+              {resendCooldown > 0 ? authExtraI18n[language].waitResend.replace('{n}', String(resendCooldown)) : t.resendConfirmationEmail}
             </button>
             <button type="button" className="secondary-button auth-change-email" onClick={() => { setMode('signup'); setPassword(''); setConfirmPassword(''); setError(''); setSuccess('') }}>
               {t.useAnotherEmail}
