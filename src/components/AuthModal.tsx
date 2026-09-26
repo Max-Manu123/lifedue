@@ -113,6 +113,7 @@ export function AuthModal({
     if (message.includes('invalid login credentials')) return t.incorrectEmailOrPasswordCheckYourDetailsAndTryAgain
     if (message.includes('email not confirmed')) return t.confirmYourEmailBeforeSigningInCheckYourSpamFolderToo
     if (message.includes('user already registered')) return t.thisEmailAlreadyHasAnAccountSignInInsteadOfCreatingAnotherOne
+    if (message.includes('new password should be different from the old password') || message.includes('password should be different from the old password')) return t.newPasswordMustBeDifferentFromYourCurrentPassword
     if (message.includes('password should be at least')) return t.yourPasswordMustBeAtLeast8Characters
     if (message.includes('rate limit') || message.includes('too many requests') || message.includes('429')) return t.theEmailServiceHasTemporarilyReachedItsRequestLimitWaitAFewMinutesBeforeRequestingAnotherLink
     if (message.includes('failed to fetch') || message.includes('network') || message.includes('cors')) return t.theAuthenticationServiceIsTemporarilyUnavailableWaitAMomentAndTryAgain
@@ -447,7 +448,7 @@ export function AuthModal({
                     <span className={passwordRequirements.number ? 'met' : ''}>{t.number}</span>
                     <span className={passwordRequirements.symbol ? 'met' : ''}>{t.symbol}</span>
                   </div>
-                  {mode === 'signup' && <button type="button" className="password-suggestion" onClick={suggestPassword}>
+                  {(mode === 'signup' || mode === 'reset') && <button type="button" className="password-suggestion" onClick={suggestPassword}>
                     {t.suggestAStrongPassword}
                   </button>}
                 </>
