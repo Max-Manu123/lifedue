@@ -203,6 +203,7 @@ function App() {
     return queryType === 'recovery' || hashType === 'recovery'
   })
   const passwordRecoveryRef = useRef(false)
+  const [passwordRecoveryLoginRequired, setPasswordRecoveryLoginRequired] = useState(false)
   const [tasksLoading, setTasksLoading] = useState(false)
   const [tasksError, setTasksError] = useState('')
   const [clientsLoading, setClientsLoading] = useState(false)
@@ -1474,7 +1475,7 @@ function App() {
 
   return (
     <div className="app-shell" data-theme={resolvedTheme}>
-      {passwordRecoveryActive ? null : view === 'home' ? (
+      {passwordRecoveryActive || passwordRecoveryLoginRequired ? null : view === 'home' ? (
         <Landing onStart={() => navigate('onboarding')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} language={language} setLanguage={setLanguage} user={user} />
       ) : view === 'onboarding' ? (
         <OnboardingView
@@ -1769,6 +1770,8 @@ function App() {
       {authOpen && <AuthModal
         language={language}
         initialMode={authMode}
+        lockClose={passwordRecoveryLoginRequired}
+        onPasswordReset={() => setPasswordRecoveryLoginRequired(true)}
         onClose={() => {
           if (passwordRecoveryRef.current) {
             void supabase?.auth.signOut()
@@ -1776,6 +1779,7 @@ function App() {
           setAuthOpen(false)
         }}
         onAuthenticated={() => {
+          setPasswordRecoveryLoginRequired(false)
           setAuthOpen(false)
           if (!localStorage.getItem(authDraftKey)) setView('quick-add')
           else setPendingSaveAfterAuth(true)
