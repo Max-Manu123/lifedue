@@ -2578,3 +2578,373 @@ html[data-theme="dark"] body,
     color: #f4f7fb;
   }
 }
+
+
+/* Theme QA hardening: keep every shared surface/text token readable. */
+.theme-dark,
+html[data-theme="dark"],
+html[data-theme="system"].ld-system-dark {
+  --surface: var(--ld-surface);
+  --surface-soft: var(--ld-surface-soft);
+  --surface-raised: var(--ld-surface-raised);
+  --border-color: var(--ld-border);
+  --text-primary: var(--ld-text);
+  --text-secondary: var(--ld-text-secondary);
+  --text-muted: var(--ld-text-muted);
+  --primary: var(--ld-brand);
+  --primary-hover: var(--ld-brand-hover);
+  --brand-soft: var(--ld-brand-soft);
+  --ink: var(--ld-text);
+}
+
+.theme-dark .page-title,
+.theme-dark .page-intro h2,
+.theme-dark .section-title,
+.theme-dark .section-heading h2,
+.theme-dark .section-heading h3,
+.theme-dark .today-hero h2,
+.theme-dark .today-panel-head h3,
+.theme-dark .task-summary strong,
+.theme-dark .task-stat strong,
+.theme-dark .client-card strong,
+.theme-dark .payment-info strong,
+.theme-dark .payment-row strong,
+.theme-dark .payments-overview strong,
+.theme-dark .planner-overview strong,
+.theme-dark .planner-card strong,
+.theme-dark .planner-hero strong,
+.theme-dark .plan-main strong,
+.theme-dark .plan-review-detail-card strong,
+.theme-dark .settings-section-head h3,
+.theme-dark .feedback-card-header strong {
+  color: #f4f7fb !important;
+}
+
+.theme-dark .page-description,
+.theme-dark .page-intro p,
+.theme-dark .section-description,
+.theme-dark .today-hero p,
+.theme-dark .today-panel-head p,
+.theme-dark .task-summary span,
+.theme-dark .task-stat span,
+.theme-dark .client-card span,
+.theme-dark .client-meta,
+.theme-dark .payment-info span,
+.theme-dark .planner-hero p,
+.theme-dark .plan-main span,
+.theme-dark .plan-item small,
+.theme-dark .settings-section-head p,
+.theme-dark .feedback-card-header p,
+.theme-dark .field-help {
+  color: #b2bdcc !important;
+}
+
+.theme-dark .card,
+.theme-dark .card-list,
+.theme-dark .task-row,
+.theme-dark .task-summary,
+.theme-dark .task-stat,
+.theme-dark .client-card,
+.theme-dark .payment-row,
+.theme-dark .payment-currency-summary,
+.theme-dark .planner-card,
+.theme-dark .planner-hero,
+.theme-dark .plan-item,
+.theme-dark .plan-review-detail-card,
+.theme-dark .plan-review-payment-box,
+.theme-dark .feedback-card,
+.theme-dark .settings-card,
+.theme-dark .today-panel,
+.theme-dark .today-metric,
+.theme-dark .empty-card,
+.theme-dark .quick-card,
+.theme-dark .ai-result-card {
+  background: #121a2a;
+  border-color: #2a3850;
+  color: #f4f7fb;
+}
+
+.theme-dark .task-row:hover,
+.theme-dark .client-card:hover,
+.theme-dark .payment-row:hover,
+.theme-dark .plan-item:hover {
+  background: #182235;
+  border-color: #3a4b65;
+}
+
+.theme-dark .plan-review-field,
+.theme-dark .plan-review-confirmed-value,
+.theme-dark .plan-review-ready-badge,
+.theme-dark .plan-review-count,
+.theme-dark .plan-review-payment-fields,
+.theme-dark .plan-review-payment-box {
+  background: #0d1524;
+  border-color: #3a4b65;
+  color: #f4f7fb;
+}
+
+.theme-dark .plan-review-field label,
+.theme-dark .plan-review-payment-head strong,
+.theme-dark .plan-review-payment-head span {
+  color: #d6deea;
+}
+
+.theme-dark .summary-line,
+.theme-dark .payment-currency-summary span,
+.theme-dark .payment-currency-summary small,
+.theme-dark .task-stat small,
+.theme-dark .client-metric small {
+  color: #b2bdcc;
+}
+
+.theme-dark .modal input,
+.theme-dark .modal textarea,
+.theme-dark .modal select,
+.theme-dark .plan-review-field input,
+.theme-dark .plan-review-field textarea,
+.theme-dark .plan-review-field select {
+  background: #0d1524 !important;
+  color: #f4f7fb !important;
+  border-color: #3a4b65 !important;
+}
+
+.theme-dark .modal input::placeholder,
+.theme-dark .modal textarea::placeholder,
+.theme-dark .plan-review-field input::placeholder,
+.theme-dark .plan-review-field textarea::placeholder {
+  color: #7f8ca0 !important;
+}
+
+.theme-dark .dropdown-menu,
+.theme-dark .menu,
+.theme-dark .popover,
+.theme-dark .tooltip {
+  background: #121a2a;
+  border-color: #2a3850;
+  color: #f4f7fb;
+  box-shadow: 0 20px 50px rgba(0,0,0,.30);
+}
+
+.theme-dark .dropdown-menu button,
+.theme-dark .menu button {
+  color: #d6deea;
+}
+
+.theme-dark .dropdown-menu button:hover,
+.theme-dark .menu button:hover {
+  background: #182235;
+  color: #fff;
+}
+
+.theme-dark .danger-button {
+  background: #2a1720;
+  border-color: #6a3543;
+  color: #ffb2bd;
+}
+
+.theme-dark .danger-button:hover {
+  background: #351c27;
+}
+
+.theme-dark .form-error,
+.theme-dark .auth-error,
+.theme-dark .plan-review-error {
+  background: #2a1720;
+  border-color: #6a3543;
+  color: #ffb2bd;
+}
+
+.theme-dark .auth-verification-panel {
+  background: #0d1524;
+  border-color: #2a3850;
+}
+
+.theme-dark .auth-verification-panel strong {
+  color: #f4f7fb;
+}
+
+.theme-dark .auth-verification-panel p {
+  color: #b2bdcc;
+}
+
+.theme-dark .password-strength,
+.theme-dark .password-requirements span {
+  color: #b2bdcc;
+}
+
+.theme-dark .password-requirements span.met {
+  background: rgba(25,157,136,.14);
+  border-color: rgba(69,201,181,.28);
+  color: #8ce1d3;
+}
+
+.theme-dark .settings-waitlist,
+.theme-dark .settings-usage-notice,
+.theme-dark .upgrade-benefits {
+  background: #182235;
+  border-color: #2a3850;
+  color: #d6deea;
+}
+
+.theme-dark .settings-waitlist > div:first-child span,
+.theme-dark .settings-usage-notice small,
+.theme-dark .upgrade-note,
+.theme-dark .upgrade-description {
+  color: #b2bdcc;
+}
+
+.theme-dark .text-button,
+.theme-dark .auth-inline-link,
+.theme-dark .auth-links button,
+.theme-dark .quick-label {
+  color: #aeb0ff;
+}
+
+.theme-dark .text-button:hover,
+.theme-dark .auth-inline-link:hover,
+.theme-dark .auth-links button:hover {
+  color: #c5c6ff;
+}
+
+.theme-dark .close-button,
+.theme-dark .icon-button {
+  color: #b2bdcc;
+}
+
+.theme-dark .close-button:hover,
+.theme-dark .icon-button:hover {
+  color: #f4f7fb;
+}
+
+/* If the app resolves "system" to an explicit dark class, these rules are inherited.
+   If it keeps the system attribute, mirror the same palette here. */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    --ld-bg: #0b1020;
+    --ld-surface: #121a2a;
+    --ld-surface-soft: #182235;
+    --ld-surface-raised: #1b263a;
+    --ld-border: #2a3850;
+    --ld-border-strong: #3a4b65;
+    --ld-text: #f4f7fb;
+    --ld-text-secondary: #b2bdcc;
+    --ld-text-muted: #7f8ca0;
+    --ld-brand: #9b9cf5;
+    --ld-brand-hover: #b0b1ff;
+    --ld-brand-soft: rgba(111,112,235,.16);
+    --ld-success: #45c9b5;
+    --ld-success-soft: rgba(25,157,136,.14);
+    --ld-warning: #f2c46d;
+    --ld-warning-soft: rgba(196,145,48,.14);
+    --ld-danger: #ff879b;
+    --ld-danger-soft: rgba(216,75,99,.14);
+  }
+
+  html[data-theme="system"] body,
+  html[data-theme="system"] .app-shell,
+  html[data-theme="system"] .main-content {
+    background: #0b1020;
+    color: #f4f7fb;
+  }
+
+  html[data-theme="system"] .sidebar {
+    background: #0e1626;
+    border-color: #2a3850;
+  }
+
+  html[data-theme="system"] .card-list,
+  html[data-theme="system"] .task-row,
+  html[data-theme="system"] .task-summary,
+  html[data-theme="system"] .task-stat,
+  html[data-theme="system"] .client-card,
+  html[data-theme="system"] .payment-row,
+  html[data-theme="system"] .payment-currency-summary,
+  html[data-theme="system"] .planner-card,
+  html[data-theme="system"] .planner-hero,
+  html[data-theme="system"] .feedback-card,
+  html[data-theme="system"] .settings-card,
+  html[data-theme="system"] .today-panel,
+  html[data-theme="system"] .today-metric,
+  html[data-theme="system"] .quick-card,
+  html[data-theme="system"] .ai-result-card,
+  html[data-theme="system"] .empty-card {
+    background: #121a2a;
+    border-color: #2a3850;
+    color: #f4f7fb;
+  }
+
+  html[data-theme="system"] .page-title,
+  html[data-theme="system"] .page-intro h2,
+  html[data-theme="system"] .section-title,
+  html[data-theme="system"] .section-heading h2,
+  html[data-theme="system"] .today-hero h2,
+  html[data-theme="system"] .settings-card strong,
+  html[data-theme="system"] .feedback-card strong {
+    color: #f4f7fb;
+  }
+
+  html[data-theme="system"] .page-description,
+  html[data-theme="system"] .page-intro p,
+  html[data-theme="system"] .section-description,
+  html[data-theme="system"] .task-info span,
+  html[data-theme="system"] .client-meta,
+  html[data-theme="system"] .payment-info span,
+  html[data-theme="system"] .planner-hero p,
+  html[data-theme="system"] .plan-item small,
+  html[data-theme="system"] .settings-section-head p,
+  html[data-theme="system"] .feedback-card-header p {
+    color: #b2bdcc;
+  }
+
+  html[data-theme="system"] input,
+  html[data-theme="system"] textarea,
+  html[data-theme="system"] select {
+    background: #0d1524;
+    color: #f4f7fb;
+    border-color: #3a4b65;
+  }
+
+  html[data-theme="system"] input::placeholder,
+  html[data-theme="system"] textarea::placeholder {
+    color: #7f8ca0;
+  }
+
+  html[data-theme="system"] .secondary-button,
+  html[data-theme="system"] .account-button,
+  html[data-theme="system"] .icon-button {
+    background: #121a2a;
+    border-color: #3a4b65;
+    color: #e6ebf2;
+  }
+
+  html[data-theme="system"] .secondary-button:hover,
+  html[data-theme="system"] .account-button:hover,
+  html[data-theme="system"] .icon-button:hover {
+    background: #1b263a;
+  }
+
+  html[data-theme="system"] .nav-item {
+    color: #9aa7ba;
+  }
+
+  html[data-theme="system"] .nav-item:hover {
+    background: #172136;
+    color: #f4f7fb;
+  }
+
+  html[data-theme="system"] .nav-item.active {
+    color: #9b9cf5;
+    background: rgba(111,112,235,.16);
+  }
+
+  html[data-theme="system"] .mobile-nav {
+    background: rgba(14,22,38,.94);
+    border-color: #2a3850;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  html[data-theme="system"] {
+    color-scheme: light;
+  }
+}
