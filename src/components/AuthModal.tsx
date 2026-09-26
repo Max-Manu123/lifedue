@@ -11,11 +11,15 @@ export function AuthModal({
   initialMode = 'login',
   onClose,
   onAuthenticated,
+  onPasswordReset,
+  lockClose = false,
 }: {
   language: Language
   initialMode?: Mode
   onClose: () => void
   onAuthenticated: () => void
+  onPasswordReset?: () => void
+  lockClose?: boolean
 }) {
   const [mode, setMode] = useState<Mode>(initialMode)
   const [email, setEmail] = useState('')
@@ -29,9 +33,17 @@ export function AuthModal({
   const [resending, setResending] = useState(false)
   const pt = language === 'pt'
   const confirmationEmailKey = 'lifedue-confirmation-email'
+  const passwordRequirements = {
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    symbol: /[^A-Za-z0-9]/.test(password),
+  }
+  const passwordIsStrong = Object.values(passwordRequirements).every(Boolean)
 
   const passwordStrength = useMemo(() => {
-    if (mode !== 'signup' || !password) return { score: 0, label: '', tone: '' }
+    if ((mode !== 'signup' && mode !== 'reset') || !password) return { score: 0, label: '', tone: '' }
     let score = 0
     if (password.length >= 8) score++
     if (password.length >= 12) score++
@@ -55,6 +67,15 @@ export function AuthModal({
     setError('')
     setSuccess('')
   }
+
+  useEffect(() => {
+    if (mode !== 'reset' || email || !supabase) return
+    let cancelled = false
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!cancelled && data.user?.email) setEmail(data.user.email)
+    })
+    return () => { cancelled = true }
+  }, [mode, email])
 
   useEffect(() => {
     if (mode !== 'verify' || email) return
@@ -135,7 +156,7 @@ export function AuthModal({
       return
     }
 
-    if ((mode === 'signup' || mode === 'reset') && (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password) || !/[^A-Za-z0-9]/.test(password))) {
+    if ((mode === 'signup' || mode === 'reset') && !passwordIsStrong) {
       setError(pt ? 'Escolha uma senha forte: use 8+ caracteres, maiúsculas, minúsculas, número e símbolo.' : 'Choose a strong password: use 8+ characters, upper/lowercase letters, a number, and a symbol.')
       return
     }
@@ -172,6 +193,10 @@ export function AuthModal({
             return
           }
           throw authError
+        }
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError || !sessionData.session?.user) {
+          throw sessionError ?? new Error('Authentication session was not established.')
         }
         localStorage.removeItem(confirmationEmailKey)
         onAuthenticated()
@@ -224,18 +249,12 @@ export function AuthModal({
         return
       }
 
-      const cleanPassword = password.trim()
-      if (cleanPassword.length < 8) {
-        setError(pt ? 'A nova senha precisa ter pelo menos 8 caracteres.' : 'Your new password must have at least 8 characters.')
-        return
-      }
-      const { error: authError } = await supabase.auth.updateUser({ password: cleanPassword })
+      const { error: authError } = await supabase.auth.updateUser({ password })
       if (authError) throw authError
+      onPasswordReset?.()
       await supabase.auth.signOut()
-      setPassword('')
-      setConfirmPassword('')
       setMode('login')
-      setSuccess(pt ? 'Senha redefinida com sucesso. Agora entre com a nova senha.' : 'Password reset successfully. Now sign in with your new password.')
+      setSuccess(pt ? 'Senha redefinida com sucesso. Confirme abaixo para entrar novamente.' : 'Password reset successfully. Confirm below to sign in again.')
       return
     } catch (authError) {
       console.error('LifeDue authentication failed:', authError)
@@ -278,9 +297,10 @@ export function AuthModal({
   }
 
   const isPasswordRecovery = mode === 'reset'
+  const isCloseLocked = isPasswordRecovery || lockClose
 
   const handleClose = () => {
-    if (isPasswordRecovery) return
+    if (isCloseLocked) return
     onClose()
   }
 
@@ -294,7 +314,7 @@ export function AuthModal({
       role="presentation"
       onMouseDown={handleBackdropMouseDown}
       onKeyDown={event => {
-        if (isPasswordRecovery && event.key === 'Escape') {
+        if (isCloseLocked && event.key === 'Escape') {
           event.preventDefault()
           event.stopPropagation()
         }
@@ -305,8 +325,8 @@ export function AuthModal({
           className="auth-close"
           onClick={handleClose}
           aria-label={pt ? 'Fechar' : 'Close'}
-          disabled={isPasswordRecovery}
-          aria-disabled={isPasswordRecovery}
+          disabled={isCloseLocked}
+          aria-disabled={isCloseLocked}
         >
           <X size={18} />
         </button>
@@ -400,23 +420,23 @@ export function AuthModal({
                   {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </span>
-              {mode === 'signup' && (
+              {(mode === 'signup' || mode === 'reset') && (
                 <>
-                  <div className={`password-strength ${passwordStrength.tone}`} aria-live="polite">
+                  <div className={`password-strength ${passwordStrength.tone}` aria-live="polite">
                     <div className="password-strength-track">
                       <span style={{ width: `${Math.min(100, passwordStrength.score * 20)}%` }} />
                     </div>
                     <span>{passwordStrength.label || (pt ? 'Use uma senha forte' : 'Use a strong password')}</span>
                   </div>
                   <div className="password-requirements">
-                    <span className={password.length >= 8 ? 'met' : ''}>{pt ? '8+ caracteres' : '8+ characters'}</span>
-                    <span className={/[A-Z]/.test(password) && /[a-z]/.test(password) ? 'met' : ''}>{pt ? 'Maiúscula + minúscula' : 'Upper + lowercase'}</span>
-                    <span className={/\d/.test(password) ? 'met' : ''}>{pt ? 'Número' : 'Number'}</span>
-                    <span className={/[^A-Za-z0-9]/.test(password) ? 'met' : ''}>{pt ? 'Símbolo' : 'Symbol'}</span>
+                    <span className={passwordRequirements.length ? 'met' : ''}>{pt ? '8+ caracteres' : '8+ characters'}</span>
+                    <span className={passwordRequirements.upper && passwordRequirements.lower ? 'met' : ''}>{pt ? 'Maiúscula + minúscula' : 'Upper + lowercase'}</span>
+                    <span className={passwordRequirements.number ? 'met' : ''}>{pt ? 'Número' : 'Number'}</span>
+                    <span className={passwordRequirements.symbol ? 'met' : ''}>{pt ? 'Símbolo' : 'Symbol'}</span>
                   </div>
-                  <button type="button" className="password-suggestion" onClick={suggestPassword}>
+                  {mode === 'signup' && <button type="button" className="password-suggestion" onClick={suggestPassword}>
                     {pt ? 'Sugerir uma senha forte' : 'Suggest a strong password'}
-                  </button>
+                  </button>}
                 </>
               )}
             </label>
