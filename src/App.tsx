@@ -528,9 +528,7 @@ function App() {
       } catch (error) {
         console.error('LifeDue task update failed:', error)
         setTasks(current => current.map(task => task.id === id ? currentTask : task))
-        setTasksError(currentLanguage === 'pt'
-          ? 'Não foi possível guardar esta tarefa. Tente novamente.'
-          : 'Could not save this task. Please try again.')
+        setTasksError(appInlineI18n[language].couldNotSaveThisTaskPleaseTryAgain)
       } finally {
         taskUpdateInFlightRef.current.delete(id)
         setUpdatingTaskId(current => current === id ? null : current)
@@ -594,9 +592,7 @@ function App() {
           }
         } catch {}
         if (code === 'AI_LIMIT_REACHED') {
-          setAiError(currentLanguage === 'pt'
-            ? 'Os seus créditos de IA acabaram. Eles serão renovados no próximo mês.'
-            : 'Your AI credits are used up. They will reset next month.')
+          setAiError(appInlineI18n[language].yourAiCreditsAreUsedUpTheyWillResetNextMonth)
           setProLimitReached(true)
           setUpgradeOpen(true)
           return
@@ -618,9 +614,7 @@ function App() {
       if (requestId !== quickAddRequestId.current) return
 
       if (!items.length) {
-        setAiError(typeof data?.message === 'string' ? data.message : (currentLanguage === 'pt'
-          ? 'Não encontrei nenhuma tarefa ou cobrança clara. Escreva uma ação concreta.'
-          : 'I could not find a clear task or payment. Describe one concrete action.'))
+        setAiError(typeof data?.message === 'string' ? data.message : (appInlineI18n[language].iCouldNotFindAClearTaskOrPaymentDescribeOneConcreteAction))
         return
       }
 
@@ -781,9 +775,7 @@ function App() {
       draft = JSON.parse(raw)
     } catch {
       console.error('LifeDue pending onboarding draft is invalid.')
-      setTasksError(currentLanguage === 'pt'
-        ? 'O plano pendente não pôde ser recuperado. Gere o plano novamente.'
-        : 'The pending plan could not be recovered. Please generate it again.')
+      setTasksError(appInlineI18n[language].thePendingPlanCouldNotBeRecoveredPleaseGenerateItAgain)
       return
     }
 
@@ -933,9 +925,7 @@ function App() {
         // Keep the flag true only when this save actually completed.
       } catch (error) {
         console.error('LifeDue AI task save failed:', error)
-        setTasksError(currentLanguage === 'pt'
-          ? 'A tarefa não foi guardada. Tente novamente.'
-          : 'The task was not saved. Please try again.')
+        setTasksError(appInlineI18n[language].theTaskWasNotSavedPleaseTryAgain)
         tasksSaved = false
       }
     }
@@ -952,9 +942,7 @@ function App() {
         // Keep the flag true only when this save actually completed.
       } catch (error) {
         console.error('LifeDue AI payment save failed:', error)
-        setPaymentsError(currentLanguage === 'pt'
-          ? 'O pagamento não foi guardado. Tente novamente.'
-          : 'The payment was not saved. Please try again.')
+        setPaymentsError(appInlineI18n[language].thePaymentWasNotSavedPleaseTryAgain)
         paymentsSaved = false
       }
     }
@@ -986,9 +974,7 @@ function App() {
       } catch (error) {
         console.error('LifeDue post-save refresh failed:', error)
         if (refreshVersion === dataRefreshVersionRef.current) {
-          setTasksError(currentLanguage === 'pt'
-            ? 'A tarefa foi guardada, mas a lista está a atualizar. Recarregue se necessário.'
-            : 'The task was saved, but the list is still refreshing. Reload if needed.')
+          setTasksError(appInlineI18n[language].theTaskWasSavedButTheListIsStillRefreshingReloadIfNeeded)
         }
       }
 
@@ -1009,9 +995,7 @@ function App() {
       }
       setView('tasks')
       } else {
-        setTasksError(currentLanguage === 'pt'
-          ? 'Não foi possível guardar todo o plano. O que faltou continua guardado para tentar novamente.'
-          : 'The whole plan could not be saved. Anything missing is still preserved so you can try again.')
+        setTasksError(appInlineI18n[language].theWholePlanCouldNotBeSavedAnythingMissingIsStillPreservedSoYouCanTryAgain)
       }
     } finally {
     persistingPlanRef.current = false
@@ -1367,9 +1351,7 @@ function App() {
       existing.client.trim().toLocaleLowerCase() === normalizedClient
     )
     if (alreadyPending) {
-      const message = currentLanguage === 'pt'
-        ? 'Este cliente já tem um pagamento pendente. Edite o pagamento existente em vez de criar outro.'
-        : 'This client already has a pending payment. Edit the existing payment instead of creating another one.'
+      const message = appInlineI18n[language].thisClientAlreadyHasAPendingPaymentEditTheExistingPaymentInsteadOfCreatingAnotherOne
       setPaymentsError(message)
       throw new Error(message)
     }
@@ -1534,7 +1516,7 @@ function App() {
                 <div className="eyebrow">{tr('workspace')}</div>
                 <h1>{view === 'quick-add' ? tr('today') : view === 'tasks' ? tr('tasks') : view === 'clients' ? tr('clients') : view === 'payments' ? tr('payments') : view === 'planner' ? tr('planner') : view === 'feedback' ? tr('feedback') : tr('settings')}</h1>
               </div>
-              <div className="topbar-actions">{user ? <button className="account-button" title={user.email ?? ''} onClick={() => navigate('settings')}><UserCircle2 size={17} /> <span className="account-button-label">{user.email?.split('@')[0] || (currentLanguage==='pt' ? 'Conta' : 'Account')}</span></button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{currentLanguage==='pt' ? 'Entrar' : 'Sign in'}</button>}<InstallPwaButton language={language} /><div className="language-switcher desktop-language" aria-label={tr('language')}><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div></div>
+              <div className="topbar-actions">{user ? <button className="account-button" title={user.email ?? ''} onClick={() => navigate('settings')}><UserCircle2 size={17} /> <span className="account-button-label">{user.email?.split('@')[0] || (appInlineI18n[language].account)}</span></button> : <button className="ghost-button" onClick={() => { setAuthMode('login'); setAuthOpen(true) }}>{appInlineI18n[language].signIn}</button>}<InstallPwaButton language={language} /><div className="language-switcher desktop-language" aria-label={tr('language')}><button className={language==='en'?'active':''} onClick={()=>setLanguage('en')}>EN</button><button className={language==='pt'?'active':''} onClick={()=>setLanguage('pt')}>PT</button></div></div>
             </header>
 
             <div key={view} className={"route-view route-" + view}>
@@ -1647,9 +1629,7 @@ function App() {
                   if (!candidates.length) {
                     setPlan([])
                     setPlanPayments([])
-                    setPlannerError(currentLanguage === 'pt'
-                      ? 'Não há tarefas abertas para o Planejador organizar. Adicione ou reabra uma tarefa e tente novamente.'
-                      : 'There are no open tasks for the Planner to organize. Add or reopen a task and try again.')
+                    setPlannerError(appInlineI18n[language].thereAreNoOpenTasksForThePlannerToOrganizeAddOrReopenATaskAndTryAgain)
                     setView('planner')
                     return
                   }
@@ -1697,9 +1677,7 @@ function App() {
                       if (code === 'AI_LIMIT_REACHED') {
                         setProLimitReached(true)
                         setUpgradeOpen(true)
-                        setPlannerError(currentLanguage === 'pt'
-                          ? 'Os seus créditos de IA acabaram. Eles serão renovados no próximo mês.'
-                          : 'Your AI credits are used up. They will reset next month.')
+                        setPlannerError(appInlineI18n[language].yourAiCreditsAreUsedUpTheyWillResetNextMonth)
                         return
                       }
                       throw new Error(detail || error.message)
@@ -2174,9 +2152,7 @@ function OnboardingView({
           <p className="section-kicker">{onboardingI18n[language].startInSeconds}</p>
           <h1>{onboardingI18n[language].organizeWork}</h1>
           <p>
-            {pt
-              ? 'Diga ao LifeDue o que você precisa fazer. A IA transforma isso em um plano simples — sem configurar nada antes.'
-              : 'Tell LifeDue what you need to get done. AI turns it into a simple plan — no setup required.'}
+            {appInlineI18n[language].tellLifedueWhatYouNeedToGetDoneAiTurnsItIntoASimplePlanNoSetupRequired}
           </p>
         </div>
 
@@ -2250,9 +2226,7 @@ function OnboardingView({
             <p className="onboarding-save-note">
               {user
                 ? (onboardingI18n[language].sameReview)
-                : (pt
-                  ? 'Ao guardar, o LifeDue abre a revisão do plano. Se confirmar, pediremos sua conta e manteremos o plano intacto até o login terminar.'
-                  : 'When you save, LifeDue opens the plan review. Once you confirm, we ask for your account and keep the plan intact until sign-in finishes.')}
+                : (appInlineI18n[language].whenYouSaveLifedueOpensThePlanReviewOnceYouConfirmWeAskForYourAccountAndKeepThePlanIntactUntilSignInFinishes)}
             </p>
           </section>
         )}
@@ -2359,7 +2333,7 @@ function TodayView({ tasks, overdue, todayTasks, pendingPayments, quickText, aiE
           <h3>{tr('quickQuestion')}</h3>
           <textarea value={quickText} onChange={e => onQuickTextChange(e.target.value)} placeholder={currentLanguage === 'pt' ? 'ex.: Entregar o site da Maria sexta, cobrar 200 USD amanhã e enviar a proposta ao Carlos segunda.' : "e.g. Deliver Maria's website Friday, collect $200 tomorrow, and send Carlos the proposal Monday."} />
           <div className="quick-actions">
-            <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (currentLanguage==='pt' ? 'A analisar…' : 'Analyzing…') : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
+            <button className="primary-button" onClick={onCreatePlan} disabled={aiLoading}>{aiLoading ? (appInlineI18n[language].analyzing) : tr('createPlan')} {!aiLoading && <ArrowRight size={17} />}</button>
             <span>{tr('aiUsesRemaining').replace('{n}', String(aiUsage.remaining))}</span>
           </div>
           {aiError && <div className="quick-error" role="alert">{aiError}</div>}
@@ -2705,9 +2679,7 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
           <div>
             <p className="section-kicker">{appInlineI18n[language].paymentFollowUps}</p>
             <h3 id="pending-payment-gaps-title">{appInlineI18n[language].clientsWithoutAPendingPayment}</h3>
-            <p>{currentLanguage === 'pt'
-              ? 'Estes clientes têm trabalho registado, mas ainda não têm uma cobrança em aberto.'
-              : 'These clients have work recorded, but no open payment is being tracked yet.'}</p>
+            <p>{appInlineI18n[language].theseClientsHaveWorkRecordedButNoOpenPaymentIsBeingTrackedYet}</p>
           </div>
           <span className="pending-payment-gaps-count">{clientsWithoutPendingPayment.length}</span>
         </div>
@@ -2816,9 +2788,7 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
     const value = Number(normalizedAmount)
     if (!cleanClient) return setError(appInlineI18n[language].enterTheClientName)
     if (hasPendingPayment) {
-      return setError(currentLanguage === 'pt'
-        ? 'Este cliente já tem um pagamento pendente. Use o pagamento existente.'
-        : 'This client already has a pending payment. Use the existing payment.')
+      return setError(appInlineI18n[language].thisClientAlreadyHasAPendingPaymentUseTheExistingPayment)
     }
     if (!normalizedAmount || !Number.isFinite(value) || value <= 0 || !/^\d+(?:\.\d{1,2})?$/.test(normalizedAmount)) {
       return setError(appInlineI18n[language].enterAPositiveAmountWithUpTo2DecimalPlaces)
@@ -2846,7 +2816,7 @@ function AddPaymentModal({ onClose, onAdd, clients, existingPayments, initialCli
         <div><p className="section-kicker">{tr('newPayment')}</p><h2>{tr('addPaymentTitle')}</h2></div>
         <button type="button" className="icon-button" onClick={onClose} disabled={saving} aria-label={appInlineI18n[language].close}><X size={20} /></button>
       </div>
-      <label>{tr('client')}<input list="lifedue-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={currentLanguage==='pt'?'ex.: Maria':'e.g. Maria'} autoFocus disabled={saving} /><datalist id="lifedue-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
+      <label>{tr('client')}<input list="lifedue-client-suggestions" value={client} onChange={e => { setClient(e.target.value); setError('') }} placeholder={appInlineI18n[language].eGMaria} autoFocus disabled={saving} /><datalist id="lifedue-client-suggestions">{clients.map(item => <option key={item.id} value={item.name} />)}</datalist></label>
       <div className="form-grid">
         <label>{tr('amount')}<input type="text" inputMode="decimal" value={amount} onChange={e => { setAmount(e.target.value); setError('') }} placeholder={appInlineI18n[language].eG20000} disabled={saving} aria-describedby="lifedue-payment-amount-help" /><small id="lifedue-payment-amount-help" className="field-help">{appInlineI18n[language].useAPositiveAmountUpTo2DecimalPlaces}</small></label>
         <label>{tr('currency')}<select value={currency} onChange={e => setCurrency(e.target.value)} disabled={saving}><option value="USD">{tr('usd')} · US$</option><option value="EUR">{tr('eur')} · €</option><option value="AOA">{tr('aoa')} · Kz</option></select></label>
