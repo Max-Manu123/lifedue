@@ -159,6 +159,7 @@ export const planReviewI18n = {
   "chooseDate": "Choose date",
   "noDeadline": "No deadline",
   "thisTaskWillHaveNoDeadline": "This task will have no deadline.",
+  "yourDataIsAssociatedWithYourAccountAndProtectedByLifedueAccessControls": "Your data is associated with your account and protected by LifeDue access controls.",
   "dateUnderstoodByAiYouCanAdjustIt": "Date understood by AI. You can adjust it.",
   "optionalChooseADateOrLeaveItWithoutADeadline": "Optional — choose a date or leave it without a deadline.",
   "priority": "Priority",
@@ -210,6 +211,7 @@ export const planReviewI18n = {
   "chooseDate": "Escolher data",
   "noDeadline": "Sem prazo",
   "thisTaskWillHaveNoDeadline": "Esta tarefa ficará sem prazo.",
+  "yourDataIsAssociatedWithYourAccountAndProtectedByLifedueAccessControls": "Os seus dados estão associados à sua conta e protegidos pelos controlos de acesso do LifeDue.",
   "dateUnderstoodByAiYouCanAdjustIt": "Data entendida pela IA. Você pode ajustar.",
   "optionalChooseADateOrLeaveItWithoutADeadline": "Opcional — escolha uma data ou deixe sem prazo.",
   "priority": "Prioridade",
@@ -300,14 +302,16 @@ export const authExtraI18n = {
   "newPassword": "New password",
   "password": "Password",
   "waitResend": "Resend in {n}s",
-  "waitForgot": "Wait {n}s before requesting another link."
+  "waitForgot": "Wait {n}s before requesting another link.",
+  "yourEmailFallback": "your email"
 },
   pt: {
   "confirmAccountLink": "Enviamos o link para {email}. Abra o link para confirmar sua conta.",
   "newPassword": "Nova senha",
   "password": "Senha",
   "waitResend": "Reenviar em {n}s",
-  "waitForgot": "Aguarde {n}s antes de pedir outro link."
+  "waitForgot": "Aguarde {n}s antes de pedir outro link.",
+  "yourEmailFallback": "seu email"
 },
 } as const
 
