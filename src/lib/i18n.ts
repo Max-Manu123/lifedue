@@ -429,7 +429,8 @@ export const appInlineI18n = {
   "enterTheTaskYouNeedToComplete": "Enter the task you need to complete.",
   "chooseAValidDueDateFromTodayOnward": "Choose a valid due date from today onward.",
   "couldNotAddTheTaskPleaseTryAgain": "Could not add the task. Please try again.",
-  "thisTaskWillHaveNoDeadline": "This task will have no deadline."
+  "thisTaskWillHaveNoDeadline": "This task will have no deadline.",
+  "yourDataIsAssociatedWithYourAccountAndProtectedByLifedueAccessControls": "Your data is associated with your account and protected by LifeDue access controls."
 },
   pt: {
   "couldNotLoadYourClients": "Não foi possível carregar seus clientes.",
@@ -525,6 +526,7 @@ export const appInlineI18n = {
   "enterTheTaskYouNeedToComplete": "Digite o que precisa ser feito.",
   "chooseAValidDueDateFromTodayOnward": "Escolha uma data de entrega válida a partir de hoje.",
   "couldNotAddTheTaskPleaseTryAgain": "Não foi possível adicionar a tarefa. Tente novamente.",
-  "thisTaskWillHaveNoDeadline": "Esta tarefa ficará sem prazo."
+  "thisTaskWillHaveNoDeadline": "Esta tarefa ficará sem prazo.",
+  "yourDataIsAssociatedWithYourAccountAndProtectedByLifedueAccessControls": "Os seus dados estão associados à sua conta e protegidos pelos controlos de acesso do LifeDue."
 },
 } as const
