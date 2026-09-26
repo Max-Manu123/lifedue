@@ -378,7 +378,7 @@ Deno.serve(async (req) => {
         aiUsage: quotaUsage,
         message: language === 'pt'
           ? 'Não encontrei uma tarefa ou cobrança clara. Escreva uma ação concreta, por exemplo: "Entregar o site da Maria sexta".'
-          : 'I could not find a clear task or payment. Describe one concrete action, for example: "Deliver Maria\\'s website Friday".',
+          : 'I could not find a clear task or payment. Describe one concrete action, for example: "Deliver Maria\'s website Friday".',
       }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
     quotaReserved = false
