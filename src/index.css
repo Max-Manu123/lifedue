@@ -3998,3 +3998,157 @@ html[data-theme="dark"] .settings-plan-card .settings-plan-badge {
   }
 }
 
+
+
+/* FINAL DARK READABILITY CONTRACT — all remaining light surfaces and controls. */
+:where(.theme-dark, html[data-theme="dark"]) .account-button,
+:where(.theme-dark, html[data-theme="dark"]) .today-panel,
+:where(.theme-dark, html[data-theme="dark"]) .task-search,
+:where(.theme-dark, html[data-theme="dark"]) .client-search,
+:where(.theme-dark, html[data-theme="dark"]) .payment-search,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-rating-option,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-option,
+:where(.theme-dark, html[data-theme="dark"]) .today-urgent-count,
+:where(.theme-dark, html[data-theme="dark"]) .danger-button,
+:where(.theme-dark, html[data-theme="dark"]) .overdue-row,
+:where(.theme-dark, html[data-theme="dark"]) .task-stat,
+:where(.theme-dark, html[data-theme="dark"]) .auth-modal,
+:where(.theme-dark, html[data-theme="dark"]) .auth-close {
+  background: #090d14 !important;
+  color: #f8fafc !important;
+  border-color: #273244 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .account-button:hover,
+:where(.theme-dark, html[data-theme="dark"]) .auth-close:hover,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-option:hover,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-rating-option:hover {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border-color: #3b4a63 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .account-button,
+:where(.theme-dark, html[data-theme="dark"]) .auth-close,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-option,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-rating-option,
+:where(.theme-dark, html[data-theme="dark"]) .danger-button {
+  color: #f8fafc !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .today-panel *,
+:where(.theme-dark, html[data-theme="dark"]) .task-stat *,
+:where(.theme-dark, html[data-theme="dark"]) .auth-modal * {
+  color: #f8fafc !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .today-panel p,
+:where(.theme-dark, html[data-theme="dark"]) .today-panel span,
+:where(.theme-dark, html[data-theme="dark"]) .today-panel small,
+:where(.theme-dark, html[data-theme="dark"]) .task-stat span,
+:where(.theme-dark, html[data-theme="dark"]) .auth-modal p,
+:where(.theme-dark, html[data-theme="dark"]) .auth-modal label {
+  color: #cbd5e1 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .task-search input,
+:where(.theme-dark, html[data-theme="dark"]) .client-search input,
+:where(.theme-dark, html[data-theme="dark"]) .payment-search input,
+:where(.theme-dark, html[data-theme="dark"]) .auth-modal input,
+:where(.theme-dark, html[data-theme="dark"]) .auth-modal select {
+  background: transparent !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .task-search input::placeholder,
+:where(.theme-dark, html[data-theme="dark"]) .client-search input::placeholder,
+:where(.theme-dark, html[data-theme="dark"]) .payment-search input::placeholder,
+:where(.theme-dark, html[data-theme="dark"]) .auth-modal input::placeholder {
+  color: #94a3b8 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .task-search button,
+:where(.theme-dark, html[data-theme="dark"]) .client-search button,
+:where(.theme-dark, html[data-theme="dark"]) .payment-search button {
+  background: #1e293b !important;
+  color: #cbd5e1 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.attention {
+  background: #332a12 !important;
+  border-color: #6b5720 !important;
+  color: #f8fafc !important;
+}
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.danger,
+:where(.theme-dark, html[data-theme="dark"]) .overdue-row {
+  background: #32171f !important;
+  border-color: #69313d !important;
+  color: #f8fafc !important;
+}
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.money {
+  background: #10251d !important;
+  border-color: #24543e !important;
+  color: #f8fafc !important;
+}
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.attention strong,
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.danger strong,
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.money strong {
+  color: #ffffff !important;
+}
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.attention small,
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.danger small,
+:where(.theme-dark, html[data-theme="dark"]) .today-metric.money small {
+  color: #cbd5e1 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .feedback-option.active,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-rating-option.active {
+  background: #1b2140 !important;
+  border-color: #6366f1 !important;
+  color: #c7d2fe !important;
+}
+:where(.theme-dark, html[data-theme="dark"]) .feedback-option.active *,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-rating-option.active * {
+  color: #c7d2fe !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .danger-button {
+  background: #32171f !important;
+  border-color: #69313d !important;
+  color: #ffb0bc !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .account-button,
+  html[data-theme="system"] .today-panel,
+  html[data-theme="system"] .task-search,
+  html[data-theme="system"] .client-search,
+  html[data-theme="system"] .payment-search,
+  html[data-theme="system"] .feedback-rating-option,
+  html[data-theme="system"] .feedback-option,
+  html[data-theme="system"] .today-urgent-count,
+  html[data-theme="system"] .danger-button,
+  html[data-theme="system"] .overdue-row,
+  html[data-theme="system"] .task-stat,
+  html[data-theme="system"] .auth-modal,
+  html[data-theme="system"] .auth-close {
+    background: #090d14 !important;
+    color: #f8fafc !important;
+    border-color: #273244 !important;
+  }
+  html[data-theme="system"] .today-panel *,
+  html[data-theme="system"] .task-stat *,
+  html[data-theme="system"] .auth-modal * { color: #f8fafc !important; }
+  html[data-theme="system"] .today-panel p,
+  html[data-theme="system"] .today-panel span,
+  html[data-theme="system"] .today-panel small,
+  html[data-theme="system"] .task-stat span,
+  html[data-theme="system"] .auth-modal p,
+  html[data-theme="system"] .auth-modal label { color: #cbd5e1 !important; }
+  html[data-theme="system"] .task-search input,
+  html[data-theme="system"] .client-search input,
+  html[data-theme="system"] .payment-search input,
+  html[data-theme="system"] .auth-modal input,
+  html[data-theme="system"] .auth-modal select { background: transparent !important; color: #f8fafc !important; }
+}
