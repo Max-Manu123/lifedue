@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 type Language = 'en' | 'pt'
-type Mode = 'login' | 'signup' | 'forgot' | 'reset'
+type Mode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify'
 
 export function AuthModal({
   language,
@@ -25,6 +25,8 @@ export function AuthModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [resending, setResending] = useState(false)
   const pt = language === 'pt'
 
   const passwordStrength = useMemo(() => {
@@ -53,12 +55,21 @@ export function AuthModal({
     setSuccess('')
   }
 
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = window.setInterval(() => setResendCooldown(value => Math.max(0, value - 1)), 1000)
+    return () => window.clearInterval(timer)
+  }, [resendCooldown])
+
+  const verificationTitle = pt ? 'Confirme seu email' : 'Confirm your email'
   const title = mode === 'login' ? (pt ? 'Entrar no LifeDue' : 'Sign in to LifeDue')
     : mode === 'signup' ? (pt ? 'Criar sua conta' : 'Create your account')
-    : mode === 'forgot' ? (pt ? 'Esqueci minha senha' : 'Forgot your password?') : (pt ? 'Redefinir senha' : 'Reset your password')
+    : mode === 'forgot' ? (pt ? 'Esqueci minha senha' : 'Forgot your password?')
+    : mode === 'verify' ? verificationTitle
+    : (pt ? 'Redefinir senha' : 'Reset your password')
   const submitLabel = mode === 'login' ? (pt ? 'Entrar' : 'Sign in')
     : mode === 'signup' ? (pt ? 'Criar conta' : 'Create account')
-    : mode === 'forgot' ? (pt ? 'Enviar link' : 'Send reset link') : (pt ? 'Guardar nova senha' : 'Save new password')
+    : mode === 'forgot' ? (pt ? 'Enviar link' : 'Send reset link') : mode === 'verify' ? (pt ? 'Reenviar email' : 'Resend email') : (pt ? 'Guardar nova senha' : 'Save new password')
 
   const friendlyAuthError = (authError: unknown) => {
     const message = authError instanceof Error ? authError.message.toLowerCase() : ''
@@ -69,6 +80,34 @@ export function AuthModal({
     if (message.includes('rate limit') || message.includes('too many requests')) return pt ? 'Foram feitas muitas tentativas. Aguarde alguns minutos e tente novamente.' : 'Too many attempts. Wait a few minutes and try again.'
     if (message.includes('expired') || message.includes('invalid') && message.includes('token')) return pt ? 'Este link de redefinição expirou ou já foi usado. Solicite um novo link.' : 'This reset link has expired or was already used. Request a new link.'
     return pt ? 'Não foi possível concluir agora. Verifique os dados e tente novamente.' : 'We could not complete this right now. Check your details and try again.'
+  }
+
+  const resendConfirmation = async () => {
+    if (!supabase || resending || resendCooldown > 0) return
+    const cleanEmail = email.trim()
+    if (!cleanEmail) {
+      setError(pt ? 'Digite seu email para reenviar a confirmação.' : 'Enter your email to resend the confirmation.')
+      return
+    }
+
+    setError('')
+    setSuccess('')
+    setResending(true)
+    try {
+      const { error: authError } = await supabase.auth.resend({
+        type: 'signup',
+        email: cleanEmail,
+        options: { emailRedirectTo: window.location.origin },
+      })
+      if (authError) throw authError
+      setSuccess(pt ? 'Novo email de confirmação enviado. Verifique sua caixa de entrada e o spam.' : 'A new confirmation email was sent. Check your inbox and spam folder.')
+      setResendCooldown(30)
+    } catch (authError) {
+      console.error('LifeDue confirmation resend failed:', authError)
+      setError(friendlyAuthError(authError))
+    } finally {
+      setResending(false)
+    }
   }
 
   const submit = async (event: FormEvent) => {
@@ -105,12 +144,26 @@ export function AuthModal({
 
     setLoading(true)
     try {
+      if (mode === 'verify') {
+        await resendConfirmation()
+        return
+      }
+
       if (mode === 'login') {
         const { error: authError } = await supabase.auth.signInWithPassword({
           email: cleanEmail,
           password,
         })
-        if (authError) throw authError
+        if (authError) {
+          if (authError.message.toLowerCase().includes('email not confirmed')) {
+            setMode('verify')
+            setPassword('')
+            setConfirmPassword('')
+            setSuccess(pt ? 'Seu email ainda não foi confirmado. Você pode reenviar o link abaixo.' : 'Your email is not confirmed yet. You can resend the link below.')
+            return
+          }
+          throw authError
+        }
         onAuthenticated()
         return
       }
@@ -140,8 +193,9 @@ export function AuthModal({
         if (data.session) {
           onAuthenticated()
         } else {
-          setSuccess(pt ? 'Conta criada. Verifique seu email para confirmar o acesso.' : 'Account created. Check your email to confirm access.')
-          setMode('login')
+          setSuccess(pt ? 'Conta criada. Enviamos um link de confirmação para seu email.' : 'Account created. We sent a confirmation link to your email.')
+          setMode('verify')
+          setResendCooldown(30)
         }
         return
       }
@@ -222,7 +276,7 @@ export function AuthModal({
         <div className="auth-brand"><span className="brand-mark">L</span><span>LifeDue</span></div>
 
         <div className="auth-head">
-          <div className="auth-icon">{mode === 'forgot' || mode === 'reset' ? <Mail size={20} /> : <CheckCircle2 size={20} />}</div>
+          <div className="auth-icon">{mode === 'forgot' || mode === 'reset' || mode === 'verify' ? <Mail size={20} /> : <CheckCircle2 size={20} />}</div>
           <div>
             <h2 id="auth-title">{title}</h2>
             <p>
@@ -230,6 +284,8 @@ export function AuthModal({
                 ? (pt ? 'Receba um link seguro para redefinir sua senha.' : 'Get a secure link to reset your password.')
                 : mode === 'reset'
                 ? (pt ? 'Escolha uma nova senha para sua conta.' : 'Choose a new password for your account.')
+                : mode === 'verify'
+                ? (pt ? 'Enviamos um link para ativar sua conta. Se ele falhar ou expirar, envie outro aqui.' : 'We sent a link to activate your account. If it fails or expires, resend it here.')
                 : (pt ? 'Seu espaço de trabalho, sincronizado com segurança.' : 'Your workspace, securely synced.')}
             </p>
           </div>
@@ -254,13 +310,22 @@ export function AuthModal({
             <div className="auth-divider"><span>{pt ? 'ou use email e senha' : 'or use email and password'}</span></div>
           </>
         )}
+        {mode === 'verify' && (
+          <div className="auth-verification-panel">
+            <div className="auth-verification-icon"><Mail size={18} /></div>
+            <div>
+              <strong>{pt ? 'Verifique sua caixa de entrada' : 'Check your inbox'}</strong>
+              <p>{pt ? `Enviamos o link para ${email.trim() || 'seu email'}. Abra o link para confirmar sua conta.` : `We sent the link to ${email.trim() || 'your email'}. Open it to confirm your account.`}</p>
+            </div>
+          </div>
+        )}
         {mode === 'forgot' && (
           <div className="auth-email-only-note">
             {pt ? 'Introduza o email associado à sua conta. Enviaremos o link de redefinição para esse endereço.' : 'Enter the email associated with your account. We will send the reset link to that address.'}
           </div>
         )}
 
-        <form onSubmit={submit} className="auth-form">
+        {mode !== 'verify' && <form onSubmit={submit} className="auth-form">
           {(mode !== 'reset') && (
             <label>
               Email
@@ -355,10 +420,27 @@ export function AuthModal({
             {loading ? <Loader2 size={17} className="spin" /> : null}
             {submitLabel}
           </button>
-        </form>
+        </form>}
+
+        {mode === 'verify' && (
+          <div className="auth-verification-actions">
+            <button type="button" className="primary-button auth-submit" onClick={() => void resendConfirmation()} disabled={resending || resendCooldown > 0} aria-busy={resending}>
+              {resending ? <Loader2 size={17} className="spin" /> : <Mail size={17} />}
+              {resendCooldown > 0 ? (pt ? `Reenviar em ${resendCooldown}s` : `Resend in ${resendCooldown}s`) : (pt ? 'Reenviar email de confirmação' : 'Resend confirmation email')}
+            </button>
+            <button type="button" className="secondary-button auth-change-email" onClick={() => { setMode('signup'); setPassword(''); setConfirmPassword(''); setError(''); setSuccess('') }}>
+              {pt ? 'Usar outro email' : 'Use another email'}
+            </button>
+          </div>
+        )}
 
         <div className="auth-links">
           {(mode === 'reset' || mode === 'forgot') && (
+            <button onClick={() => { setMode('login'); setPassword(''); setError(''); setSuccess('') }}>
+              <ArrowLeft size={14} /> {pt ? 'Voltar para entrar' : 'Back to sign in'}
+            </button>
+          )}
+          {mode === 'verify' && (
             <button onClick={() => { setMode('login'); setPassword(''); setError(''); setSuccess('') }}>
               <ArrowLeft size={14} /> {pt ? 'Voltar para entrar' : 'Back to sign in'}
             </button>
