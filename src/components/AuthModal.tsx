@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, MouseEvent } from 'react'
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { authI18n, authExtraI18n } from '../lib/i18n'
+import { authI18n, authExtraI18n, appInlineI18n } from '../lib/i18n'
 
 type Language = 'en' | 'pt'
 type Mode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify'
@@ -442,7 +442,7 @@ export function AuthModal({
                     <span>{passwordStrength.label || (t.useAStrongPassword)}</span>
                   </div>
                   <div className="password-requirements">
-                    <span className={passwordRequirements.length ? 'met' : ''}>{t.8Characters}</span>
+                    <span className={passwordRequirements.length ? 'met' : ''}>{t['8Characters']}</span>
                     <span className={passwordRequirements.upper && passwordRequirements.lower ? 'met' : ''}>{t.upperLowercase}</span>
                     <span className={passwordRequirements.number ? 'met' : ''}>{t.number}</span>
                     <span className={passwordRequirements.symbol ? 'met' : ''}>{t.symbol}</span>
