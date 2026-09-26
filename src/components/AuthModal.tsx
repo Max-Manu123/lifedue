@@ -388,7 +388,7 @@ export function AuthModal({
             <div className="auth-verification-icon"><Mail size={18} /></div>
             <div>
               <strong>{t.checkYourInbox}</strong>
-              <p>{authExtraI18n[language].confirmAccountLink.replace('{email}', email.trim() || (pt ? 'seu email' : 'your email'))}</p>
+              <p>{authExtraI18n[language].confirmAccountLink.replace('{email}', email.trim() || authExtraI18n[language].yourEmailFallback)}</p>
             </div>
           </div>
         )}
