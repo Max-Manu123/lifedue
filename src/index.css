@@ -2982,3 +2982,240 @@ html[data-theme="dark"] .white-card,html[data-theme="dark"] .light-card,html[dat
   html[data-theme="system"] [class*="panel"] strong,html[data-theme="system"] [class*="panel"] h1,html[data-theme="system"] [class*="panel"] h2,html[data-theme="system"] [class*="panel"] h3,html[data-theme="system"] [class*="panel"] h4,html[data-theme="system"] [class*="panel"] h5,html[data-theme="system"] [class*="panel"] h6,html[data-theme="system"] [class*="panel"] label { color:#f7f9fc !important; }
   html[data-theme="system"] [class*="card"] p,html[data-theme="system"] [class*="card"] span,html[data-theme="system"] [class*="card"] small,html[data-theme="system"] [class*="panel"] p,html[data-theme="system"] [class*="panel"] span,html[data-theme="system"] [class*="panel"] small { color:#c0cad8 !important; }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Dark dashboard metric/card contract                                        */
+/* -------------------------------------------------------------------------- */
+.theme-dark .today-metric,
+html[data-theme="dark"] .today-metric,
+.theme-dark .planner-stat,
+html[data-theme="dark"] .planner-stat,
+.theme-dark .planner-metric,
+html[data-theme="dark"] .planner-metric,
+.theme-dark .payment-summary-card,
+html[data-theme="dark"] .payment-summary-card,
+.theme-dark .pending-payment-card,
+html[data-theme="dark"] .pending-payment-card {
+  background: #121a2a !important;
+  border: 1px solid #30405a !important;
+  color: #f7f9fc !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.16);
+}
+
+.theme-dark .today-metric strong,
+html[data-theme="dark"] .today-metric strong,
+.theme-dark .planner-stat strong,
+html[data-theme="dark"] .planner-stat strong,
+.theme-dark .planner-metric strong,
+html[data-theme="dark"] .planner-metric strong,
+.theme-dark .payment-summary-card strong,
+html[data-theme="dark"] .payment-summary-card strong,
+.theme-dark .pending-payment-card strong,
+html[data-theme="dark"] .pending-payment-card strong {
+  color: #f7f9fc !important;
+}
+
+.theme-dark .today-metric span,
+html[data-theme="dark"] .today-metric span,
+.theme-dark .planner-stat span,
+html[data-theme="dark"] .planner-stat span,
+.theme-dark .planner-metric span,
+html[data-theme="dark"] .planner-metric span,
+.theme-dark .payment-summary-card span,
+html[data-theme="dark"] .payment-summary-card span,
+.theme-dark .pending-payment-card span,
+html[data-theme="dark"] .pending-payment-card span {
+  color: #c0cad8 !important;
+}
+
+.theme-dark .today-metric.money,
+html[data-theme="dark"] .today-metric.money {
+  background: linear-gradient(135deg, #102821 0%, #121a2a 100%) !important;
+  border-color: #285b52 !important;
+}
+.theme-dark .today-metric.attention,
+html[data-theme="dark"] .today-metric.attention {
+  background: #292217 !important;
+  border-color: #67502b !important;
+}
+.theme-dark .today-metric.danger,
+html[data-theme="dark"] .today-metric.danger {
+  background: #2a1820 !important;
+  border-color: #683541 !important;
+}
+
+/* Outstanding / payment summary must never remain a white legacy card. */
+.theme-dark .payment-currency-summary,
+html[data-theme="dark"] .payment-currency-summary,
+.theme-dark .pending-payment-gaps,
+html[data-theme="dark"] .pending-payment-gaps {
+  background: #121a2a !important;
+  color: #f7f9fc !important;
+  border-color: #30405a !important;
+}
+.theme-dark .payment-currency-summary strong,
+html[data-theme="dark"] .payment-currency-summary strong,
+.theme-dark .pending-payment-gaps strong,
+html[data-theme="dark"] .pending-payment-gaps strong {
+  color: #f7f9fc !important;
+}
+.theme-dark .payment-currency-summary span,
+html[data-theme="dark"] .payment-currency-summary span,
+.theme-dark .payment-currency-summary small,
+html[data-theme="dark"] .payment-currency-summary small,
+.theme-dark .pending-payment-gaps span,
+html[data-theme="dark"] .pending-payment-gaps span {
+  color: #c0cad8 !important;
+}
+
+/* AI Planner metric grid and generated plan items. */
+.theme-dark .planner-overview,
+html[data-theme="dark"] .planner-overview {
+  background: transparent !important;
+}
+.theme-dark .planner-overview > *,
+html[data-theme="dark"] .planner-overview > *,
+.theme-dark .planner-stats > *,
+html[data-theme="dark"] .planner-stats > * {
+  background: #121a2a !important;
+  border: 1px solid #30405a !important;
+  color: #f7f9fc !important;
+}
+.theme-dark .planner-overview strong,
+html[data-theme="dark"] .planner-overview strong {
+  color: #f7f9fc !important;
+}
+.theme-dark .planner-overview span,
+html[data-theme="dark"] .planner-overview span,
+.theme-dark .planner-overview small,
+html[data-theme="dark"] .planner-overview small {
+  color: #c0cad8 !important;
+}
+
+/* Generated task rows: no white-on-white priority chips or values. */
+.theme-dark .plan-item,
+html[data-theme="dark"] .plan-item,
+.theme-dark .ai-plan-item,
+html[data-theme="dark"] .ai-plan-item {
+  background: #121a2a !important;
+  border-color: #30405a !important;
+  color: #f7f9fc !important;
+}
+.theme-dark .plan-item strong,
+html[data-theme="dark"] .plan-item strong,
+.theme-dark .ai-plan-item strong,
+html[data-theme="dark"] .ai-plan-item strong {
+  color: #f7f9fc !important;
+}
+.theme-dark .plan-item span,
+html[data-theme="dark"] .plan-item span,
+.theme-dark .ai-plan-item span,
+html[data-theme="dark"] .ai-plan-item span {
+  color: #c0cad8 !important;
+}
+.theme-dark .priority.medium,
+html[data-theme="dark"] .priority.medium {
+  background: #3a2d16 !important;
+  border-color: #715629 !important;
+  color: #f5cf7a !important;
+}
+.theme-dark .priority.high,
+html[data-theme="dark"] .priority.high {
+  background: #351b24 !important;
+  border-color: #713544 !important;
+  color: #ffb0bc !important;
+}
+.theme-dark .priority.low,
+html[data-theme="dark"] .priority.low {
+  background: #202c40 !important;
+  border-color: #3a4b65 !important;
+  color: #c0cad8 !important;
+}
+
+/* Plan-review values such as "No deadline", client and priority remain readable. */
+.theme-dark .plan-review-detail-card,
+html[data-theme="dark"] .plan-review-detail-card {
+  background: #121a2a !important;
+  border-color: #30405a !important;
+  color: #f7f9fc !important;
+}
+.theme-dark .plan-review-detail-card .plan-review-count,
+html[data-theme="dark"] .plan-review-detail-card .plan-review-count {
+  background: #182235 !important;
+  border-color: #3a4b65 !important;
+  color: #f7f9fc !important;
+}
+.theme-dark .plan-review-detail-card .plan-review-count span,
+html[data-theme="dark"] .plan-review-detail-card .plan-review-count span {
+  color: #c0cad8 !important;
+}
+.theme-dark .plan-review-detail-card .plan-review-choice-button,
+html[data-theme="dark"] .plan-review-detail-card .plan-review-choice-button {
+  background: #182235 !important;
+  border-color: #3a4b65 !important;
+  color: #dfe6ef !important;
+}
+.theme-dark .plan-review-detail-card .plan-review-choice-button:hover,
+html[data-theme="dark"] .plan-review-detail-card .plan-review-choice-button:hover {
+  background: #202d43 !important;
+}
+.theme-dark .plan-review-detail-card .plan-review-ready-badge,
+html[data-theme="dark"] .plan-review-detail-card .plan-review-ready-badge {
+  background: rgba(111,112,235,.16) !important;
+  border-color: rgba(168,169,255,.28) !important;
+  color: #bfc0ff !important;
+}
+
+/* Mirror the exact metric/card contract for System when the OS is dark. */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .today-metric,
+  html[data-theme="system"] .planner-stat,
+  html[data-theme="system"] .planner-metric,
+  html[data-theme="system"] .payment-summary-card,
+  html[data-theme="system"] .pending-payment-card,
+  html[data-theme="system"] .payment-currency-summary,
+  html[data-theme="system"] .pending-payment-gaps,
+  html[data-theme="system"] .planner-overview > *,
+  html[data-theme="system"] .planner-stats > *,
+  html[data-theme="system"] .plan-item,
+  html[data-theme="system"] .ai-plan-item,
+  html[data-theme="system"] .plan-review-detail-card {
+    background: #121a2a !important;
+    border-color: #30405a !important;
+    color: #f7f9fc !important;
+  }
+  html[data-theme="system"] .today-metric strong,
+  html[data-theme="system"] .planner-stat strong,
+  html[data-theme="system"] .planner-metric strong,
+  html[data-theme="system"] .payment-summary-card strong,
+  html[data-theme="system"] .pending-payment-card strong,
+  html[data-theme="system"] .payment-currency-summary strong,
+  html[data-theme="system"] .pending-payment-gaps strong,
+  html[data-theme="system"] .planner-overview strong,
+  html[data-theme="system"] .plan-item strong,
+  html[data-theme="system"] .ai-plan-item strong {
+    color: #f7f9fc !important;
+  }
+  html[data-theme="system"] .today-metric span,
+  html[data-theme="system"] .planner-stat span,
+  html[data-theme="system"] .planner-metric span,
+  html[data-theme="system"] .payment-summary-card span,
+  html[data-theme="system"] .pending-payment-card span,
+  html[data-theme="system"] .payment-currency-summary span,
+  html[data-theme="system"] .payment-currency-summary small,
+  html[data-theme="system"] .planner-overview span,
+  html[data-theme="system"] .plan-item span,
+  html[data-theme="system"] .plan-item small {
+    color: #c0cad8 !important;
+  }
+  html[data-theme="system"] .priority.medium {
+    background:#3a2d16 !important;border-color:#715629 !important;color:#f5cf7a !important;
+  }
+  html[data-theme="system"] .priority.high {
+    background:#351b24 !important;border-color:#713544 !important;color:#ffb0bc !important;
+  }
+  html[data-theme="system"] .priority.low {
+    background:#202c40 !important;border-color:#3a4b65 !important;color:#c0cad8 !important;
+  }
+}
