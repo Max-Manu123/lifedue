@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, MouseEvent } from 'react'
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { authI18n } from '../lib/i18n'
 
 type Language = 'en' | 'pt'
 type Mode = 'login' | 'signup' | 'forgot' | 'reset' | 'verify'
@@ -33,6 +34,7 @@ export function AuthModal({
   const [resending, setResending] = useState(false)
   const [forgotCooldown, setForgotCooldown] = useState(0)
   const pt = language === 'pt'
+  const t = authI18n[language]
   const confirmationEmailKey = 'lifedue-confirmation-email'
   const passwordRequirements = {
     length: password.length >= 8,
@@ -51,10 +53,10 @@ export function AuthModal({
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
     if (/\d/.test(password)) score++
     if (/[^A-Za-z0-9]/.test(password)) score++
-    if (password.length < 8) return { score, label: pt ? 'Fraca — use pelo menos 8 caracteres.' : 'Weak — use at least 8 characters.', tone: 'weak' }
-    if (score <= 2) return { score, label: pt ? 'Fraca' : 'Weak', tone: 'weak' }
-    if (score <= 3) return { score, label: pt ? 'Média' : 'Fair', tone: 'fair' }
-    return { score, label: pt ? 'Forte' : 'Strong', tone: 'strong' }
+    if (password.length < 8) return { score, label: t.weakUseAtLeast8Characters, tone: 'weak' }
+    if (score <= 2) return { score, label: t.weak, tone: 'weak' }
+    if (score <= 3) return { score, label: t.fair, tone: 'fair' }
+    return { score, label: t.strong, tone: 'strong' }
   }, [mode, password, pt])
 
   const suggestPassword = () => {
@@ -96,33 +98,33 @@ export function AuthModal({
     return () => window.clearInterval(timer)
   }, [forgotCooldown])
 
-  const verificationTitle = pt ? 'Confirme seu email' : 'Confirm your email'
-  const title = mode === 'login' ? (pt ? 'Entrar no LifeDue' : 'Sign in to LifeDue')
-    : mode === 'signup' ? (pt ? 'Criar sua conta' : 'Create your account')
-    : mode === 'forgot' ? (pt ? 'Esqueci minha senha' : 'Forgot your password?')
+  const verificationTitle = t.confirmYourEmail
+  const title = mode === 'login' ? (t.signInToLifedue)
+    : mode === 'signup' ? (t.createYourAccount)
+    : mode === 'forgot' ? (t.forgotYourPassword)
     : mode === 'verify' ? verificationTitle
-    : (pt ? 'Redefinir senha' : 'Reset your password')
-  const submitLabel = mode === 'login' ? (pt ? 'Entrar' : 'Sign in')
-    : mode === 'signup' ? (pt ? 'Criar conta' : 'Create account')
-    : mode === 'forgot' ? (forgotCooldown > 0 ? (pt ? `Aguarde ${forgotCooldown}s` : `Wait ${forgotCooldown}s`) : (pt ? 'Enviar link' : 'Send reset link')) : mode === 'verify' ? (pt ? 'Reenviar email' : 'Resend email') : (pt ? 'Guardar nova senha' : 'Save new password')
+    : (t.resetYourPassword)
+  const submitLabel = mode === 'login' ? (t.signIn)
+    : mode === 'signup' ? (t.createAccount)
+    : mode === 'forgot' ? (forgotCooldown > 0 ? (pt ? `Aguarde ${forgotCooldown}s` : `Wait ${forgotCooldown}s`) : (t.sendResetLink)) : mode === 'verify' ? (t.resendEmail) : (t.saveNewPassword)
 
   const friendlyAuthError = (authError: unknown) => {
     const message = authError instanceof Error ? authError.message.toLowerCase() : ''
-    if (message.includes('invalid login credentials')) return pt ? 'Email ou senha incorretos. Verifique os dados e tente novamente.' : 'Incorrect email or password. Check your details and try again.'
-    if (message.includes('email not confirmed')) return pt ? 'Confirme seu email antes de entrar. Verifique também a pasta de spam.' : 'Confirm your email before signing in. Check your spam folder too.'
-    if (message.includes('user already registered')) return pt ? 'Este email já tem uma conta. Entre em vez de criar outra.' : 'This email already has an account. Sign in instead of creating another one.'
-    if (message.includes('password should be at least')) return pt ? 'A senha precisa ter pelo menos 8 caracteres.' : 'Your password must be at least 8 characters.'
-    if (message.includes('rate limit') || message.includes('too many requests') || message.includes('429')) return pt ? 'O serviço de email atingiu temporariamente o limite de tentativas. Aguarde alguns minutos antes de pedir outro link.' : 'The email service has temporarily reached its request limit. Wait a few minutes before requesting another link.'
-    if (message.includes('failed to fetch') || message.includes('network') || message.includes('cors')) return pt ? 'O serviço de autenticação está temporariamente indisponível. Aguarde alguns instantes e tente novamente.' : 'The authentication service is temporarily unavailable. Wait a moment and try again.'
-    if (message.includes('expired') || message.includes('invalid') && message.includes('token')) return pt ? 'Este link de redefinição expirou ou já foi usado. Solicite um novo link.' : 'This reset link has expired or was already used. Request a new link.'
-    return pt ? 'Não foi possível concluir agora. Verifique os dados e tente novamente.' : 'We could not complete this right now. Check your details and try again.'
+    if (message.includes('invalid login credentials')) return t.incorrectEmailOrPasswordCheckYourDetailsAndTryAgain
+    if (message.includes('email not confirmed')) return t.confirmYourEmailBeforeSigningInCheckYourSpamFolderToo
+    if (message.includes('user already registered')) return t.thisEmailAlreadyHasAnAccountSignInInsteadOfCreatingAnotherOne
+    if (message.includes('password should be at least')) return t.yourPasswordMustBeAtLeast8Characters
+    if (message.includes('rate limit') || message.includes('too many requests') || message.includes('429')) return t.theEmailServiceHasTemporarilyReachedItsRequestLimitWaitAFewMinutesBeforeRequestingAnotherLink
+    if (message.includes('failed to fetch') || message.includes('network') || message.includes('cors')) return t.theAuthenticationServiceIsTemporarilyUnavailableWaitAMomentAndTryAgain
+    if (message.includes('expired') || message.includes('invalid') && message.includes('token')) return t.thisResetLinkHasExpiredOrWasAlreadyUsedRequestANewLink
+    return t.weCouldNotCompleteThisRightNowCheckYourDetailsAndTryAgain
   }
 
   const resendConfirmation = async () => {
     if (!supabase || resending || resendCooldown > 0) return
     const cleanEmail = email.trim()
     if (!cleanEmail) {
-      setError(pt ? 'Digite seu email para reenviar a confirmação.' : 'Enter your email to resend the confirmation.')
+      setError(t.enterYourEmailToResendTheConfirmation)
       return
     }
 
@@ -137,7 +139,7 @@ export function AuthModal({
         options: { emailRedirectTo: window.location.origin },
       })
       if (authError) throw authError
-      setSuccess(pt ? 'Novo email de confirmação enviado. Verifique sua caixa de entrada e o spam.' : 'A new confirmation email was sent. Check your inbox and spam folder.')
+      setSuccess(t.aNewConfirmationEmailWasSentCheckYourInboxAndSpamFolder)
       setResendCooldown(30)
     } catch (authError) {
       console.error('LifeDue confirmation resend failed:', authError)
@@ -155,27 +157,27 @@ export function AuthModal({
 
     const cleanEmail = email.trim()
     if (mode !== 'reset' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      setError(pt ? 'Digite um email válido.' : 'Enter a valid email address.')
+      setError(t.enterAValidEmailAddress)
       return
     }
 
     if ((mode === 'signup' || mode === 'reset') && password !== confirmPassword) {
-      setError(pt ? 'As senhas não coincidem.' : 'Passwords do not match.')
+      setError(t.passwordsDoNotMatch)
       return
     }
 
     if ((mode === 'signup' || mode === 'reset') && !passwordIsStrong) {
-      setError(pt ? 'Escolha uma senha forte: use 8+ caracteres, maiúsculas, minúsculas, número e símbolo.' : 'Choose a strong password: use 8+ characters, upper/lowercase letters, a number, and a symbol.')
+      setError(t.chooseAStrongPasswordUse8CharactersUpperLowercaseLettersANumberAndASymbol)
       return
     }
 
     if (mode === 'signup' && (password.length < 8 || passwordStrength.tone === 'weak')) {
-      setError(pt ? 'Escolha uma senha mais forte: use 8+ caracteres, maiúsculas, minúsculas, número e símbolo.' : 'Choose a stronger password: use 8+ characters, upper/lowercase letters, a number, and a symbol.')
+      setError(t.chooseAStrongerPasswordUse8CharactersUpperLowercaseLettersANumberAndASymbol)
       return
     }
 
     if (!supabase) {
-      setError(pt ? 'O Supabase ainda não está configurado.' : 'Supabase is not configured yet.')
+      setError(t.supabaseIsNotConfiguredYet)
       return
     }
 
@@ -197,7 +199,7 @@ export function AuthModal({
             setMode('verify')
             setPassword('')
             setConfirmPassword('')
-            setSuccess(pt ? 'Seu email ainda não foi confirmado. Você pode reenviar o link abaixo.' : 'Your email is not confirmed yet. You can resend the link below.')
+            setSuccess(t.yourEmailIsNotConfirmedYetYouCanResendTheLinkBelow)
             return
           }
           throw authError
@@ -241,7 +243,7 @@ export function AuthModal({
           localStorage.removeItem(confirmationEmailKey)
           onAuthenticated()
         } else {
-          setSuccess(pt ? 'Conta criada. Enviamos um link de confirmação para seu email.' : 'Account created. We sent a confirmation link to your email.')
+          setSuccess(t.accountCreatedWeSentAConfirmationLinkToYourEmail)
           setMode('verify')
           setResendCooldown(30)
         }
@@ -258,7 +260,7 @@ export function AuthModal({
         })
         if (authError) throw authError
         setForgotCooldown(60)
-        setSuccess(pt ? 'Se este email tiver uma conta, enviámos um link seguro para redefinir a senha. Verifique também o spam.' : 'If this email has an account, we sent a secure password reset link. Check your spam folder too.')
+        setSuccess(t.ifThisEmailHasAnAccountWeSentASecurePasswordResetLinkCheckYourSpamFolderToo)
         return
       }
 
@@ -267,7 +269,7 @@ export function AuthModal({
       onPasswordReset?.()
       await supabase.auth.signOut()
       setMode('login')
-      setSuccess(pt ? 'Senha redefinida com sucesso. Confirme abaixo para entrar novamente.' : 'Password reset successfully. Confirm below to sign in again.')
+      setSuccess(t.passwordResetSuccessfullyConfirmBelowToSignInAgain)
       return
     } catch (authError) {
       console.error('LifeDue authentication failed:', authError)
@@ -284,7 +286,7 @@ export function AuthModal({
     setSuccess('')
 
     if (!supabase) {
-      setError(pt ? 'O Supabase ainda não está configurado.' : 'Supabase is not configured yet.')
+      setError(t.supabaseIsNotConfiguredYet)
       return
     }
 
@@ -337,7 +339,7 @@ export function AuthModal({
         <button
           className="auth-close"
           onClick={handleClose}
-          aria-label={pt ? 'Fechar' : 'Close'}
+          aria-label={t.close}
           disabled={isCloseLocked}
           aria-disabled={isCloseLocked}
         >
@@ -352,12 +354,12 @@ export function AuthModal({
             <h2 id="auth-title">{title}</h2>
             <p>
               {mode === 'forgot'
-                ? (pt ? 'Receba um link seguro para redefinir sua senha.' : 'Get a secure link to reset your password.')
+                ? (t.getASecureLinkToResetYourPassword)
                 : mode === 'reset'
-                ? (pt ? 'Escolha uma nova senha para sua conta.' : 'Choose a new password for your account.')
+                ? (t.chooseANewPasswordForYourAccount)
                 : mode === 'verify'
-                ? (pt ? 'Enviamos um link para ativar sua conta. Se ele falhar ou expirar, envie outro aqui.' : 'We sent a link to activate your account. If it fails or expires, resend it here.')
-                : (pt ? 'Seu espaço de trabalho, sincronizado com segurança.' : 'Your workspace, securely synced.')}
+                ? (t.weSentALinkToActivateYourAccountIfItFailsOrExpiresResendItHere)
+                : (t.yourWorkspaceSecurelySynced)}
             </p>
           </div>
         </div>
@@ -376,23 +378,23 @@ export function AuthModal({
             >
               <span className="google-mark" aria-hidden="true">G</span>
               {loading ? <Loader2 size={17} className="spin" /> : null}
-              {pt ? 'Continuar com Google' : 'Continue with Google'}
+              {t.continueWithGoogle}
             </button>
-            <div className="auth-divider"><span>{pt ? 'ou use email e senha' : 'or use email and password'}</span></div>
+            <div className="auth-divider"><span>{t.orUseEmailAndPassword}</span></div>
           </>
         )}
         {mode === 'verify' && (
           <div className="auth-verification-panel">
             <div className="auth-verification-icon"><Mail size={18} /></div>
             <div>
-              <strong>{pt ? 'Verifique sua caixa de entrada' : 'Check your inbox'}</strong>
+              <strong>{t.checkYourInbox}</strong>
               <p>{pt ? `Enviamos o link para ${email.trim() || 'seu email'}. Abra o link para confirmar sua conta.` : `We sent the link to ${email.trim() || 'your email'}. Open it to confirm your account.`}</p>
             </div>
           </div>
         )}
         {mode === 'forgot' && (
           <div className="auth-email-only-note">
-            {pt ? 'Introduza o email associado à sua conta. Enviaremos o link de redefinição para esse endereço.' : 'Enter the email associated with your account. We will send the reset link to that address.'}
+            {t.enterTheEmailAssociatedWithYourAccountWeWillSendTheResetLinkToThatAddress}
           </div>
         )}
 
@@ -427,8 +429,8 @@ export function AuthModal({
                 <button
                   type="button"
                   onClick={() => setShowPassword(value => !value)}
-                  aria-label={showPassword ? (pt ? 'Ocultar senha' : 'Hide password') : (pt ? 'Mostrar senha' : 'Show password')}
-                  title={showPassword ? (pt ? 'Ocultar senha' : 'Hide password') : (pt ? 'Mostrar senha' : 'Show password')}
+                  aria-label={showPassword ? (t.hidePassword) : (t.showPassword)}
+                  title={showPassword ? (t.hidePassword) : (t.showPassword)}
                 >
                   {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
@@ -439,16 +441,16 @@ export function AuthModal({
                     <div className="password-strength-track">
                       <span style={{ width: `${Math.min(100, passwordStrength.score * 20)}%` }} />
                     </div>
-                    <span>{passwordStrength.label || (pt ? 'Use uma senha forte' : 'Use a strong password')}</span>
+                    <span>{passwordStrength.label || (t.useAStrongPassword)}</span>
                   </div>
                   <div className="password-requirements">
-                    <span className={passwordRequirements.length ? 'met' : ''}>{pt ? '8+ caracteres' : '8+ characters'}</span>
-                    <span className={passwordRequirements.upper && passwordRequirements.lower ? 'met' : ''}>{pt ? 'Maiúscula + minúscula' : 'Upper + lowercase'}</span>
-                    <span className={passwordRequirements.number ? 'met' : ''}>{pt ? 'Número' : 'Number'}</span>
-                    <span className={passwordRequirements.symbol ? 'met' : ''}>{pt ? 'Símbolo' : 'Symbol'}</span>
+                    <span className={passwordRequirements.length ? 'met' : ''}>{t.8Characters}</span>
+                    <span className={passwordRequirements.upper && passwordRequirements.lower ? 'met' : ''}>{t.upperLowercase}</span>
+                    <span className={passwordRequirements.number ? 'met' : ''}>{t.number}</span>
+                    <span className={passwordRequirements.symbol ? 'met' : ''}>{t.symbol}</span>
                   </div>
                   {mode === 'signup' && <button type="button" className="password-suggestion" onClick={suggestPassword}>
-                    {pt ? 'Sugerir uma senha forte' : 'Suggest a strong password'}
+                    {t.suggestAStrongPassword}
                   </button>}
                 </>
               )}
@@ -457,7 +459,7 @@ export function AuthModal({
 
           {mode === 'reset' && (
             <label>
-              {pt ? 'Confirmar nova senha' : 'Confirm new password'}
+              {t.confirmNewPassword}
               <span className="auth-password">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -473,7 +475,7 @@ export function AuthModal({
 
           {mode === 'signup' && (
             <label>
-              {pt ? 'Confirmar senha' : 'Confirm password'}
+              {t.confirmPassword}
               <span className="auth-password">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -497,10 +499,10 @@ export function AuthModal({
           <div className="auth-verification-actions">
             <button type="button" className="primary-button auth-submit" onClick={() => void resendConfirmation()} disabled={resending || resendCooldown > 0} aria-busy={resending}>
               {resending ? <Loader2 size={17} className="spin" /> : <Mail size={17} />}
-              {resendCooldown > 0 ? (pt ? `Reenviar em ${resendCooldown}s` : `Resend in ${resendCooldown}s`) : (pt ? 'Reenviar email de confirmação' : 'Resend confirmation email')}
+              {resendCooldown > 0 ? (pt ? `Reenviar em ${resendCooldown}s` : `Resend in ${resendCooldown}s`) : (t.resendConfirmationEmail)}
             </button>
             <button type="button" className="secondary-button auth-change-email" onClick={() => { setMode('signup'); setPassword(''); setConfirmPassword(''); setError(''); setSuccess('') }}>
-              {pt ? 'Usar outro email' : 'Use another email'}
+              {t.useAnotherEmail}
             </button>
           </div>
         )}
@@ -508,7 +510,7 @@ export function AuthModal({
         <div className="auth-links">
           {mode === 'forgot' && (
             <button onClick={() => { setMode('login'); setPassword(''); setError(''); setSuccess('') }}>
-              <ArrowLeft size={14} /> {pt ? 'Voltar para entrar' : 'Back to sign in'}
+              <ArrowLeft size={14} /> {t.backToSignIn}
             </button>
           )}
           {mode === 'reset' && (
@@ -519,27 +521,27 @@ export function AuthModal({
               }}
               disabled={loading}
             >
-              <ArrowLeft size={14} /> {pt ? 'Cancelar redefinição' : 'Cancel password reset'}
+              <ArrowLeft size={14} /> {t.cancelPasswordReset}
             </button>
           )}
           {mode === 'verify' && (
             <button onClick={() => { setMode('login'); setPassword(''); setError(''); setSuccess('') }}>
-              <ArrowLeft size={14} /> {pt ? 'Voltar para entrar' : 'Back to sign in'}
+              <ArrowLeft size={14} /> {t.backToSignIn}
             </button>
           )}
           {mode === 'login' && (
             <>
               <button onClick={() => { setMode('forgot'); setPassword(''); setConfirmPassword(''); setError(''); setSuccess('') }}>
-                {pt ? 'Esqueci minha senha' : 'Forgot my password'}
+                {t.forgotMyPassword}
               </button>
               <button onClick={() => { setMode('signup'); setError(''); setSuccess('') }}>
-                {pt ? 'Criar uma conta' : 'Create an account'}
+                {t.createAnAccount}
               </button>
             </>
           )}
           {mode === 'signup' && (
             <button onClick={() => { setMode('login'); setError(''); setSuccess('') }}>
-              {pt ? 'Já tenho uma conta' : 'I already have an account'}
+              {t.iAlreadyHaveAnAccount}
             </button>
           )}
         </div>
