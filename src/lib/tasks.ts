@@ -196,7 +196,6 @@ export async function fetchTasks(user: User): Promise<Task[]> {
     .select('id, title, due_date, due_date_is_explicit, priority, status, source_key, client_id, clients(name)')
     .eq('user_id', user.id)
     .order('due_date', { ascending: true })
-    .order('created_at', { ascending: true })
   if (error) throw error
   // IDs are the source of truth. Two different tasks may legitimately have
   // the same title, client, date, and status, so content-based deduplication
@@ -333,6 +332,9 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
       .insert(rows)
       .select('id, title, due_date, due_date_is_explicit, priority, status, source_key, client_id')
     if (error) throw error
+    if (!data || data.length !== rows.length) {
+      throw new Error('LifeDue task persistence returned an incomplete result.')
+    }
 
     for (let index = 0; index < (data ?? []).length; index += 1) {
       const row = (data as Array<{
@@ -364,9 +366,12 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
   let pendingIndex = 0
   return tasks.map(task => {
     if (task.sourceKey) {
-      return existingBySourceKey.get(task.sourceKey)
+      const persisted = existingBySourceKey.get(task.sourceKey)
         ?? createdBySourceKey.get(task.sourceKey)
-        ?? { ...task, id: crypto.randomUUID() }
+      if (!persisted) {
+        throw new Error(`LifeDue could not confirm persistence for source key ${task.sourceKey}.`)
+      }
+      return persisted
     }
     const created = createdByPendingIndex.get(pendingIndex)
     pendingIndex += 1
