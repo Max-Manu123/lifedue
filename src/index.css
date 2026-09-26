@@ -3219,3 +3219,222 @@ html[data-theme="dark"] .plan-review-detail-card .plan-review-ready-badge {
     background:#202c40 !important;border-color:#3a4b65 !important;color:#c0cad8 !important;
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Final dashboard contrast contract                                          */
+/* -------------------------------------------------------------------------- */
+.theme-dark .payment-currency-summary,
+html[data-theme="dark"] .payment-currency-summary,
+.theme-dark .pending-payment-gaps,
+html[data-theme="dark"] .pending-payment-gaps,
+.theme-dark .payment-summary-card,
+html[data-theme="dark"] .payment-summary-card {
+  background: #121a2a !important;
+  color: #f7f9fc !important;
+  border: 1px solid #30405a !important;
+}
+
+.theme-dark .payment-currency-summary *,
+html[data-theme="dark"] .payment-currency-summary *,
+.theme-dark .pending-payment-gaps *,
+html[data-theme="dark"] .pending-payment-gaps *,
+.theme-dark .payment-summary-card *,
+html[data-theme="dark"] .payment-summary-card * {
+  color: inherit;
+}
+
+.theme-dark .payment-currency-summary strong,
+html[data-theme="dark"] .payment-currency-summary strong,
+.theme-dark .pending-payment-gaps strong,
+html[data-theme="dark"] .pending-payment-gaps strong,
+.theme-dark .payment-summary-card strong,
+html[data-theme="dark"] .payment-summary-card strong {
+  color: #ffffff !important;
+}
+
+.theme-dark .payment-currency-summary span,
+html[data-theme="dark"] .payment-currency-summary span,
+.theme-dark .payment-currency-summary small,
+html[data-theme="dark"] .payment-currency-summary small,
+.theme-dark .pending-payment-gaps span,
+html[data-theme="dark"] .pending-payment-gaps span,
+.theme-dark .payment-summary-card span,
+html[data-theme="dark"] .payment-summary-card span {
+  color: #c5cfdd !important;
+}
+
+.theme-dark .payment-currency-summary svg,
+html[data-theme="dark"] .payment-currency-summary svg,
+.theme-dark .pending-payment-gaps svg,
+html[data-theme="dark"] .pending-payment-gaps svg,
+.theme-dark .payment-summary-card svg,
+html[data-theme="dark"] .payment-summary-card svg {
+  color: #aeb0ff !important;
+  stroke: currentColor;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .payment-currency-summary,
+  html[data-theme="system"] .pending-payment-gaps,
+  html[data-theme="system"] .payment-summary-card {
+    background: #121a2a !important;
+    color: #f7f9fc !important;
+    border-color: #30405a !important;
+  }
+  html[data-theme="system"] .payment-currency-summary *,
+  html[data-theme="system"] .pending-payment-gaps *,
+  html[data-theme="system"] .payment-summary-card * {
+    color: inherit;
+  }
+  html[data-theme="system"] .payment-currency-summary strong,
+  html[data-theme="system"] .pending-payment-gaps strong,
+  html[data-theme="system"] .payment-summary-card strong {
+    color: #fff !important;
+  }
+  html[data-theme="system"] .payment-currency-summary span,
+  html[data-theme="system"] .payment-currency-summary small,
+  html[data-theme="system"] .pending-payment-gaps span,
+  html[data-theme="system"] .payment-summary-card span {
+    color: #c5cfdd !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile-first layout hardening                                              */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .app-shell { min-height: 100dvh; }
+  .main-content {
+    width: 100%;
+    min-width: 0;
+    padding: 18px 16px 96px;
+  }
+  .topbar,
+  .welcome-row,
+  .page-intro,
+  .section-heading {
+    gap: 12px;
+  }
+  .topbar { flex-wrap: wrap; }
+  .topbar > * { min-width: 0; }
+  .stats-grid,
+  .today-metrics,
+  .planner-overview,
+  .planner-stats,
+  .clients-overview,
+  .payments-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .card-list,
+  .quick-card,
+  .planner-card,
+  .settings-card,
+  .feedback-card,
+  .today-panel,
+  .today-hero {
+    width: 100%;
+    min-width: 0;
+  }
+  .payment-currency-summary,
+  .pending-payment-gaps {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: 14px 12px 88px;
+  }
+  .topbar {
+    align-items: flex-start;
+  }
+  .topbar h1,
+  .page-intro h2,
+  .welcome-row h2 {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+  .page-description {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .stats-grid,
+  .today-metrics,
+  .planner-overview,
+  .planner-stats,
+  .clients-overview,
+  .payments-overview {
+    grid-template-columns: 1fr;
+  }
+  .today-hero,
+  .quick-card,
+  .planner-card,
+  .card-list,
+  .settings-card,
+  .feedback-card,
+  .today-panel {
+    border-radius: 14px;
+  }
+  .stat-card,
+  .today-metric,
+  .planner-stat,
+  .planner-metric {
+    min-height: 84px;
+    padding: 14px;
+  }
+  .payment-currency-summary,
+  .pending-payment-gaps {
+    padding: 14px;
+  }
+  .payment-currency-summary strong,
+  .pending-payment-gaps strong {
+    font-size: 20px;
+    line-height: 1.15;
+  }
+  .task-row,
+  .payment-row,
+  .client-card {
+    padding: 12px;
+  }
+  .task-row,
+  .payment-row {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .task-info,
+  .payment-info {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .quick-main textarea {
+    min-height: 112px;
+  }
+  .modal,
+  .auth-modal,
+  .upgrade-modal,
+  .plan-review-modal {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    border-radius: 16px;
+  }
+  .mobile-nav {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 420px) {
+  .main-content { padding-left: 10px; padding-right: 10px; }
+  .topbar h1,
+  .page-intro h2,
+  .welcome-row h2 { font-size: 18px; }
+  .stat-card,
+  .today-metric,
+  .planner-stat,
+  .planner-metric,
+  .payment-currency-summary,
+  .pending-payment-gaps { padding: 12px; }
+}
