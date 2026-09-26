@@ -1619,18 +1619,9 @@ function App() {
                     return
                   }
 
-                  /* The server is authoritative for AI credits. Do not block
-                     the button using possibly stale client-side usage state. */
-                  if (false && aiUsage.remaining <= 0) {
-                    setPlannerError(currentLanguage === 'pt'
-                      ? 'Os seus créditos de IA acabaram neste mês. Tente novamente no próximo mês.'
-                      : 'Your AI credits are used up for this month. Try again next month.')
-                    setProLimitReached(true)
-                    setUpgradeOpen(true)
-                    return
-                  }
-
-                  if (!user || !supabase) {
+                  // The server is authoritative for AI credits. The Planner must not be
+                  // blocked by stale client-side usage state.
+                                    if (!user || !supabase) {
                     setPlan(candidates)
       setPlanSource('planner')
                     setPlanPayments([])
