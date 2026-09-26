@@ -230,9 +230,7 @@ export function AuthModal({
         // Treat it as a duplicate signup instead of telling the user that a
         // new account was created.
         if (!data.user || (Array.isArray(data.user.identities) && data.user.identities.length === 0)) {
-          setError(pt
-            ? 'Este email já tem uma conta. Entre em vez de criar outra.'
-            : 'This email already has an account. Sign in instead of creating another one.')
+          setError(authI18n[language].thisEmailAlreadyHasAnAccountSignInInsteadOfCreatingAnotherOne)
           setMode('login')
           setPassword('')
           setConfirmPassword('')
@@ -547,9 +545,7 @@ export function AuthModal({
         </div>
 
         <p className="auth-note">
-          {pt
-            ? 'Ao continuar, seus dados ficam associados à sua conta e protegidos pelas regras de acesso do LifeDue.'
-            : 'Your data is associated with your account and protected by LifeDue access controls.'}
+          {appInlineI18n[language].yourDataIsAssociatedWithYourAccountAndProtectedByLifedueAccessControls}
         </p>
       </div>
     </div>
