@@ -57,6 +57,12 @@ export function AuthModal({
   }
 
   useEffect(() => {
+    if (mode !== 'verify' || email) return
+    const savedEmail = localStorage.getItem(confirmationEmailKey)
+    if (savedEmail) setEmail(savedEmail)
+  }, [mode, email])
+
+  useEffect(() => {
     if (resendCooldown <= 0) return
     const timer = window.setInterval(() => setResendCooldown(value => Math.max(0, value - 1)), 1000)
     return () => window.clearInterval(timer)
