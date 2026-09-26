@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, MouseEvent } from 'react'
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Mail, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
@@ -277,14 +277,37 @@ export function AuthModal({
     // users cannot start a second OAuth request during the redirect.
   }
 
+  const isPasswordRecovery = mode === 'reset'
+
+  const handleClose = () => {
+    if (isPasswordRecovery) return
+    onClose()
+  }
+
+  const handleBackdropMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) handleClose()
+  }
+
   return (
     <div
       className="modal-backdrop"
       role="presentation"
-      onMouseDown={event => { if (event.target === event.currentTarget) onClose() }}
+      onMouseDown={handleBackdropMouseDown}
+      onKeyDown={event => {
+        if (isPasswordRecovery && event.key === 'Escape') {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+      }}
     >
       <div className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-        <button className="auth-close" onClick={onClose} aria-label={pt ? 'Fechar' : 'Close'}>
+        <button
+          className="auth-close"
+          onClick={handleClose}
+          aria-label={pt ? 'Fechar' : 'Close'}
+          disabled={isPasswordRecovery}
+          aria-disabled={isPasswordRecovery}
+        >
           <X size={18} />
         </button>
 
