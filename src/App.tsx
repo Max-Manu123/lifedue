@@ -189,6 +189,7 @@ function App() {
   const suppressNextStepRef = useRef(false)
   const taskUpdateInFlightRef = useRef(new Set<string>())
   const persistingPlanRef = useRef(false)
+  const dataRefreshVersionRef = useRef(0)
   const [showAddClient, setShowAddClient] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
@@ -310,21 +311,26 @@ function App() {
   }, [user])
 
   useEffect(() => {
+    dataRefreshVersionRef.current += 1
+  }, [user])
+
+  useEffect(() => {
     if (!user || !supabase) return
+    const version = dataRefreshVersionRef.current
     let cancelled = false
     setClientsLoading(true)
     setClientsError('')
 
     fetchClients(user)
       .then(remoteClients => {
-        if (!cancelled) setClients(remoteClients)
+        if (!cancelled && version === dataRefreshVersionRef.current) setClients(remoteClients)
       })
       .catch(error => {
         console.error('LifeDue client load failed:', error)
-        if (!cancelled) setClientsError(currentLanguage === 'pt' ? 'Não foi possível carregar seus clientes.' : 'Could not load your clients.')
+        if (!cancelled && version === dataRefreshVersionRef.current) setClientsError(currentLanguage === 'pt' ? 'Não foi possível carregar seus clientes.' : 'Could not load your clients.')
       })
       .finally(() => {
-        if (!cancelled) setClientsLoading(false)
+        if (!cancelled && version === dataRefreshVersionRef.current) setClientsLoading(false)
       })
 
     return () => { cancelled = true }
@@ -332,20 +338,21 @@ function App() {
 
   useEffect(() => {
     if (!user || !supabase) return
+    const version = dataRefreshVersionRef.current
     let cancelled = false
     setPaymentsLoading(true)
     setPaymentsError('')
 
     fetchPayments(user)
       .then(remotePayments => {
-        if (!cancelled) setPayments(remotePayments)
+        if (!cancelled && version === dataRefreshVersionRef.current) setPayments(remotePayments)
       })
       .catch(error => {
         console.error('LifeDue payment load failed:', error)
-        if (!cancelled) setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível carregar seus pagamentos.' : 'Could not load your payments.')
+        if (!cancelled && version === dataRefreshVersionRef.current) setPaymentsError(currentLanguage === 'pt' ? 'Não foi possível carregar seus pagamentos.' : 'Could not load your payments.')
       })
       .finally(() => {
-        if (!cancelled) setPaymentsLoading(false)
+        if (!cancelled && version === dataRefreshVersionRef.current) setPaymentsLoading(false)
       })
 
     return () => { cancelled = true }
@@ -353,6 +360,7 @@ function App() {
 
   useEffect(() => {
     if (!user || !supabase) return
+    const version = dataRefreshVersionRef.current
     let cancelled = false
     setTasksLoading(true)
     setTasksError('')
@@ -360,14 +368,14 @@ function App() {
     removeLegacyDemoTasks(user)
       .then(() => fetchTasks(user))
       .then(remoteTasks => {
-        if (!cancelled) setTasks(remoteTasks)
+        if (!cancelled && version === dataRefreshVersionRef.current) setTasks(remoteTasks)
       })
       .catch(error => {
         console.error('LifeDue task load failed:', error)
-        if (!cancelled) setTasksError(currentLanguage === 'pt' ? 'Não foi possível carregar suas tarefas.' : 'Could not load your tasks.')
+        if (!cancelled && version === dataRefreshVersionRef.current) setTasksError(currentLanguage === 'pt' ? 'Não foi possível carregar suas tarefas.' : 'Could not load your tasks.')
       })
       .finally(() => {
-        if (!cancelled) setTasksLoading(false)
+        if (!cancelled && version === dataRefreshVersionRef.current) setTasksLoading(false)
       })
 
     return () => { cancelled = true }
@@ -758,7 +766,7 @@ function App() {
           priority: task.priority,
           sourceKey: `ai-plan:${task.id}`,
         })
-        tasksSaved = true
+        // Keep the flag true only when this save actually completed.
       } catch (error) {
         console.error('LifeDue AI task save failed:', error)
         setTasksError(currentLanguage === 'pt'
@@ -777,7 +785,7 @@ function App() {
           dueDate: payment.dueDate,
           dueDateProvided: payment.dueDateProvided !== false,
         })
-        paymentsSaved = true
+        // Keep the flag true only when this save actually completed.
       } catch (error) {
         console.error('LifeDue AI payment save failed:', error)
         setPaymentsError(currentLanguage === 'pt'
@@ -796,6 +804,30 @@ function App() {
     }
 
     if (tasksSaved && paymentsSaved) {
+      // Invalidate any initial post-login data loads that may still be in flight.
+      // Otherwise an older tasks query can finish after the save and overwrite the
+      // freshly persisted task in React state.
+      const refreshVersion = ++dataRefreshVersionRef.current
+      try {
+        const [remoteTasks, remotePayments, remoteClients] = await Promise.all([
+          fetchTasks(user),
+          fetchPayments(user),
+          fetchClients(user),
+        ])
+        if (refreshVersion === dataRefreshVersionRef.current) {
+          setTasks(remoteTasks)
+          setPayments(remotePayments)
+          setClients(remoteClients)
+        }
+      } catch (error) {
+        console.error('LifeDue post-save refresh failed:', error)
+        if (refreshVersion === dataRefreshVersionRef.current) {
+          setTasksError(currentLanguage === 'pt'
+            ? 'A tarefa foi guardada, mas a lista está a atualizar. Recarregue se necessário.'
+            : 'The task was saved, but the list is still refreshing. Reload if needed.')
+        }
+      }
+
       // AI-generated plans are complete when this review is saved. Optional
       // payments are handled inside PlanReview, so do not open a separate
       // post-save payment prompt here.
@@ -1143,6 +1175,7 @@ function App() {
     } catch (error) {
       console.error('LifeDue task creation failed:', error)
       setTasksError(currentLanguage === 'pt' ? 'Não foi possível salvar a tarefa.' : 'Could not save the task.')
+      throw error instanceof Error ? error : new Error('Could not save the task.')
     }
   }
 
