@@ -193,7 +193,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'reset'>('login')
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'reset' | 'verify'>('login')
   const passwordRecoveryRef = useRef(false)
   const [tasksLoading, setTasksLoading] = useState(false)
   const [tasksError, setTasksError] = useState('')
@@ -211,6 +211,24 @@ function App() {
 
   useEffect(() => {
     if (!supabase) return
+
+    // Supabase redirects auth errors back to the app as URL fragments.
+    // Surface expired/invalid confirmation links inside the same professional
+    // verification UI instead of leaving the user on a blank/error state.
+    const authParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const authError = authParams.get('error')
+    const authErrorCode = authParams.get('error_code') || ''
+    const authErrorDescription = authParams.get('error_description') || ''
+    const confirmationFailure = authError && (
+      /expired|invalid|confirmation|otp/i.test(authErrorCode) ||
+      /expired|invalid|confirmation|otp/i.test(authErrorDescription)
+    )
+    if (confirmationFailure) {
+      setAuthMode('verify')
+      setAuthOpen(true)
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       const sessionUser = data.session?.user ?? null
       setUser(sessionUser)
