@@ -738,6 +738,7 @@ function App() {
           dueDate: task.dueDate,
           dueDateProvided: task.dueDateProvided !== false,
           priority: task.priority,
+          sourceKey: `ai-plan:${task.id}`,
         })
         tasksSaved = true
       } catch (error) {
