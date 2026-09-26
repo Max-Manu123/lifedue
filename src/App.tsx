@@ -689,40 +689,6 @@ function App() {
     localStorage.setItem(authDraftKey, JSON.stringify({ plan, planPayments, quickText, savedAt: Date.now() }))
   }
 
-  const restoreAuthDraft = () => {
-    try {
-      const raw = localStorage.getItem(authDraftKey)
-      if (!raw) return false
-      const draft = JSON.parse(raw) as { plan?: Task[]; planPayments?: QuickAddItem[]; quickText?: string }
-      if (!Array.isArray(draft.plan) || draft.plan.length === 0) return false
-
-      const restoredPlan = draft.plan
-      const restoredPayments = Array.isArray(draft.planPayments) ? draft.planPayments : []
-      const paymentTaskIds = new Set(
-        restoredPayments
-          .filter(payment => payment.amount !== null && payment.amount !== undefined)
-          .map(payment => {
-            const paymentClient = payment.client.trim().toLocaleLowerCase()
-            return restoredPlan.find(task =>
-              task.client.trim().toLocaleLowerCase() === paymentClient &&
-              /payment|pagamento|collect|cobrar|receber/i.test(task.title)
-            )?.id
-          })
-          .filter((id): id is string => Boolean(id))
-      )
-
-      // Migrate drafts created before payment items stopped being represented
-      // as fake tasks in the plan.
-      setPlan(restoredPlan.filter(task => !paymentTaskIds.has(task.id)))
-      setPlanPayments(restoredPayments)
-      setQuickText(typeof draft.quickText === 'string' ? draft.quickText : '')
-      return true
-    } catch {
-      localStorage.removeItem(authDraftKey)
-      return false
-    }
-  }
-
   const clearAuthDraft = () => localStorage.removeItem(authDraftKey)
 
   const persistPendingAuthDraft = async (authUser: User) => {
