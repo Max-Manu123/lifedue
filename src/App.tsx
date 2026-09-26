@@ -197,6 +197,11 @@ function App() {
   const [user, setUser] = useState<User | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot' | 'reset' | 'verify'>('login')
+  const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(() => {
+    const queryType = new URLSearchParams(window.location.search).get('type')
+    const hashType = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('type')
+    return queryType === 'recovery' || hashType === 'recovery'
+  })
   const passwordRecoveryRef = useRef(false)
   const [tasksLoading, setTasksLoading] = useState(false)
   const [tasksError, setTasksError] = useState('')
@@ -230,7 +235,10 @@ function App() {
 
     if (tokenHash) {
       const isRecoveryLink = tokenType === 'recovery'
-      if (isRecoveryLink) passwordRecoveryRef.current = true
+      if (isRecoveryLink) {
+        passwordRecoveryRef.current = true
+        setPasswordRecoveryActive(true)
+      }
 
       void supabase.auth.verifyOtp({
         token_hash: tokenHash,
@@ -269,6 +277,7 @@ function App() {
 
       if (isRecoveryFailure) {
         passwordRecoveryRef.current = true
+        setPasswordRecoveryActive(true)
         setAuthMode('reset')
       } else {
         setAuthMode('verify')
@@ -299,12 +308,14 @@ function App() {
       setUser(session?.user ?? null)
       if (event === 'PASSWORD_RECOVERY') {
         passwordRecoveryRef.current = true
+        setPasswordRecoveryActive(true)
         setAuthMode('reset')
         setAuthOpen(true)
         return
       }
       if (event === 'SIGNED_OUT') {
         passwordRecoveryRef.current = false
+        setPasswordRecoveryActive(false)
       }
       if (session?.user) {
         if (passwordRecoveryRef.current) return
@@ -1463,7 +1474,7 @@ function App() {
 
   return (
     <div className="app-shell" data-theme={resolvedTheme}>
-      {view === 'home' ? (
+      {passwordRecoveryActive ? null : view === 'home' ? (
         <Landing onStart={() => navigate('onboarding')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} language={language} setLanguage={setLanguage} user={user} />
       ) : view === 'onboarding' ? (
         <OnboardingView
@@ -1758,7 +1769,12 @@ function App() {
       {authOpen && <AuthModal
         language={language}
         initialMode={authMode}
-        onClose={() => setAuthOpen(false)}
+        onClose={() => {
+          if (passwordRecoveryRef.current) {
+            void supabase?.auth.signOut()
+          }
+          setAuthOpen(false)
+        }}
         onAuthenticated={() => {
           setAuthOpen(false)
           if (!localStorage.getItem(authDraftKey)) setView('quick-add')
