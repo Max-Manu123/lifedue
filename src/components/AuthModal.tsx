@@ -31,6 +31,7 @@ export function AuthModal({
   const [success, setSuccess] = useState('')
   const [resendCooldown, setResendCooldown] = useState(0)
   const [resending, setResending] = useState(false)
+  const [forgotCooldown, setForgotCooldown] = useState(0)
   const pt = language === 'pt'
   const confirmationEmailKey = 'lifedue-confirmation-email'
   const passwordRequirements = {
@@ -89,6 +90,12 @@ export function AuthModal({
     return () => window.clearInterval(timer)
   }, [resendCooldown])
 
+  useEffect(() => {
+    if (forgotCooldown <= 0) return
+    const timer = window.setInterval(() => setForgotCooldown(value => Math.max(0, value - 1)), 1000)
+    return () => window.clearInterval(timer)
+  }, [forgotCooldown])
+
   const verificationTitle = pt ? 'Confirme seu email' : 'Confirm your email'
   const title = mode === 'login' ? (pt ? 'Entrar no LifeDue' : 'Sign in to LifeDue')
     : mode === 'signup' ? (pt ? 'Criar sua conta' : 'Create your account')
@@ -97,7 +104,7 @@ export function AuthModal({
     : (pt ? 'Redefinir senha' : 'Reset your password')
   const submitLabel = mode === 'login' ? (pt ? 'Entrar' : 'Sign in')
     : mode === 'signup' ? (pt ? 'Criar conta' : 'Create account')
-    : mode === 'forgot' ? (pt ? 'Enviar link' : 'Send reset link') : mode === 'verify' ? (pt ? 'Reenviar email' : 'Resend email') : (pt ? 'Guardar nova senha' : 'Save new password')
+    : mode === 'forgot' ? (forgotCooldown > 0 ? (pt ? `Aguarde ${forgotCooldown}s` : `Wait ${forgotCooldown}s`) : (pt ? 'Enviar link' : 'Send reset link')) : mode === 'verify' ? (pt ? 'Reenviar email' : 'Resend email') : (pt ? 'Guardar nova senha' : 'Save new password')
 
   const friendlyAuthError = (authError: unknown) => {
     const message = authError instanceof Error ? authError.message.toLowerCase() : ''
@@ -105,7 +112,8 @@ export function AuthModal({
     if (message.includes('email not confirmed')) return pt ? 'Confirme seu email antes de entrar. Verifique também a pasta de spam.' : 'Confirm your email before signing in. Check your spam folder too.'
     if (message.includes('user already registered')) return pt ? 'Este email já tem uma conta. Entre em vez de criar outra.' : 'This email already has an account. Sign in instead of creating another one.'
     if (message.includes('password should be at least')) return pt ? 'A senha precisa ter pelo menos 8 caracteres.' : 'Your password must be at least 8 characters.'
-    if (message.includes('rate limit') || message.includes('too many requests')) return pt ? 'Foram feitas muitas tentativas. Aguarde alguns minutos e tente novamente.' : 'Too many attempts. Wait a few minutes and try again.'
+    if (message.includes('rate limit') || message.includes('too many requests') || message.includes('429')) return pt ? 'O serviço de email atingiu temporariamente o limite de tentativas. Aguarde alguns minutos antes de pedir outro link.' : 'The email service has temporarily reached its request limit. Wait a few minutes before requesting another link.'
+    if (message.includes('failed to fetch') || message.includes('network') || message.includes('cors')) return pt ? 'O serviço de autenticação está temporariamente indisponível. Aguarde alguns instantes e tente novamente.' : 'The authentication service is temporarily unavailable. Wait a moment and try again.'
     if (message.includes('expired') || message.includes('invalid') && message.includes('token')) return pt ? 'Este link de redefinição expirou ou já foi usado. Solicite um novo link.' : 'This reset link has expired or was already used. Request a new link.'
     return pt ? 'Não foi possível concluir agora. Verifique os dados e tente novamente.' : 'We could not complete this right now. Check your details and try again.'
   }
@@ -241,11 +249,16 @@ export function AuthModal({
       }
 
       if (mode === 'forgot') {
+        if (forgotCooldown > 0) {
+          setError(pt ? `Aguarde ${forgotCooldown}s antes de pedir outro link.` : `Wait ${forgotCooldown}s before requesting another link.`)
+          return
+        }
         const { error: authError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
           redirectTo: window.location.origin,
         })
         if (authError) throw authError
-        setSuccess(pt ? 'Enviamos um link seguro para redefinir sua senha. Verifique também a pasta de spam.' : 'We sent a secure password reset link. Check your spam folder too.')
+        setForgotCooldown(60)
+        setSuccess(pt ? 'Se este email tiver uma conta, enviámos um link seguro para redefinir a senha. Verifique também o spam.' : 'If this email has an account, we sent a secure password reset link. Check your spam folder too.')
         return
       }
 
@@ -474,7 +487,7 @@ export function AuthModal({
             </label>
           )}
 
-          <button className="primary-button auth-submit" disabled={loading} aria-busy={loading}>
+          <button className="primary-button auth-submit" disabled={loading || (mode === 'forgot' && forgotCooldown > 0)} aria-busy={loading}>
             {loading ? <Loader2 size={17} className="spin" /> : null}
             {submitLabel}
           </button>
