@@ -3778,3 +3778,157 @@ html[data-theme="dark"] .settings-plan-card .settings-plan-badge {
     max-height: calc(100dvh - 20px);
   }
 }
+
+/* ==========================================================================
+   FINAL DARK-SURFACE CONTRAST CONTRACT
+   Keep this block last: it is the single source of truth for dashboard cards.
+   It prevents legacy light-card rules from producing white surfaces with white
+   text in dark mode or when the system theme resolves to dark.
+   ========================================================================== */
+
+:where(.theme-dark, html[data-theme="dark"]) .stat-card,
+:where(.theme-dark, html[data-theme="dark"]) .quick-card,
+:where(.theme-dark, html[data-theme="dark"]) .ai-result-card,
+:where(.theme-dark, html[data-theme="dark"]) .card-list,
+:where(.theme-dark, html[data-theme="dark"]) .client-card,
+:where(.theme-dark, html[data-theme="dark"]) .payment-row,
+:where(.theme-dark, html[data-theme="dark"]) .planner-card,
+:where(.theme-dark, html[data-theme="dark"]) .settings-card,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card,
+:where(.theme-dark, html[data-theme="dark"]) .today-panel,
+:where(.theme-dark, html[data-theme="dark"]) .today-hero,
+:where(.theme-dark, html[data-theme="dark"]) .empty-card {
+  background: #090d14 !important;
+  color: #f8fafc !important;
+  border-color: #273244 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .stat-card *,
+:where(.theme-dark, html[data-theme="dark"]) .quick-card *,
+:where(.theme-dark, html[data-theme="dark"]) .ai-result-card *,
+:where(.theme-dark, html[data-theme="dark"]) .card-list *,
+:where(.theme-dark, html[data-theme="dark"]) .client-card *,
+:where(.theme-dark, html[data-theme="dark"]) .payment-row *,
+:where(.theme-dark, html[data-theme="dark"]) .planner-card *,
+:where(.theme-dark, html[data-theme="dark"]) .settings-card *,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card *,
+:where(.theme-dark, html[data-theme="dark"]) .today-panel *,
+:where(.theme-dark, html[data-theme="dark"]) .today-hero *,
+:where(.theme-dark, html[data-theme="dark"]) .empty-card * {
+  color: #f8fafc !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .stat-card span,
+:where(.theme-dark, html[data-theme="dark"]) .quick-actions span,
+:where(.theme-dark, html[data-theme="dark"]) .ai-plan-item span,
+:where(.theme-dark, html[data-theme="dark"]) .task-info span,
+:where(.theme-dark, html[data-theme="dark"]) .client-meta,
+:where(.theme-dark, html[data-theme="dark"]) .payment-info span,
+:where(.theme-dark, html[data-theme="dark"]) .money-total span,
+:where(.theme-dark, html[data-theme="dark"]) .planner-card p,
+:where(.theme-dark, html[data-theme="dark"]) .planner-card span,
+:where(.theme-dark, html[data-theme="dark"]) .planner-card small,
+:where(.theme-dark, html[data-theme="dark"]) .settings-card p,
+:where(.theme-dark, html[data-theme="dark"]) .settings-card span,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card p,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card span,
+:where(.theme-dark, html[data-theme="dark"]) .today-panel span,
+:where(.theme-dark, html[data-theme="dark"]) .today-panel small,
+:where(.theme-dark, html[data-theme="dark"]) .today-hero span,
+:where(.theme-dark, html[data-theme="dark"]) .today-hero small,
+:where(.theme-dark, html[data-theme="dark"]) .empty-card p {
+  color: #cbd5e1 !important;
+}
+
+/* Inputs remain usable inside dark cards instead of inheriting card text rules. */
+:where(.theme-dark, html[data-theme="dark"]) .quick-card textarea,
+:where(.theme-dark, html[data-theme="dark"]) .settings-card input,
+:where(.theme-dark, html[data-theme="dark"]) .settings-card select,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card input,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card textarea,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card select {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+:where(.theme-dark, html[data-theme="dark"]) .quick-card textarea::placeholder,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card input::placeholder,
+:where(.theme-dark, html[data-theme="dark"]) .feedback-card textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* System theme: apply the exact same contract only when the OS is dark. */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .stat-card,
+  html[data-theme="system"] .quick-card,
+  html[data-theme="system"] .ai-result-card,
+  html[data-theme="system"] .card-list,
+  html[data-theme="system"] .client-card,
+  html[data-theme="system"] .payment-row,
+  html[data-theme="system"] .planner-card,
+  html[data-theme="system"] .settings-card,
+  html[data-theme="system"] .feedback-card,
+  html[data-theme="system"] .today-panel,
+  html[data-theme="system"] .today-hero,
+  html[data-theme="system"] .empty-card {
+    background: #090d14 !important;
+    color: #f8fafc !important;
+    border-color: #273244 !important;
+  }
+
+  html[data-theme="system"] .stat-card *,
+  html[data-theme="system"] .quick-card *,
+  html[data-theme="system"] .ai-result-card *,
+  html[data-theme="system"] .card-list *,
+  html[data-theme="system"] .client-card *,
+  html[data-theme="system"] .payment-row *,
+  html[data-theme="system"] .planner-card *,
+  html[data-theme="system"] .settings-card *,
+  html[data-theme="system"] .feedback-card *,
+  html[data-theme="system"] .today-panel *,
+  html[data-theme="system"] .today-hero *,
+  html[data-theme="system"] .empty-card * {
+    color: #f8fafc !important;
+  }
+
+  html[data-theme="system"] .stat-card span,
+  html[data-theme="system"] .quick-actions span,
+  html[data-theme="system"] .ai-plan-item span,
+  html[data-theme="system"] .task-info span,
+  html[data-theme="system"] .client-meta,
+  html[data-theme="system"] .payment-info span,
+  html[data-theme="system"] .money-total span,
+  html[data-theme="system"] .planner-card p,
+  html[data-theme="system"] .planner-card span,
+  html[data-theme="system"] .planner-card small,
+  html[data-theme="system"] .settings-card p,
+  html[data-theme="system"] .settings-card span,
+  html[data-theme="system"] .feedback-card p,
+  html[data-theme="system"] .feedback-card span,
+  html[data-theme="system"] .today-panel span,
+  html[data-theme="system"] .today-panel small,
+  html[data-theme="system"] .today-hero span,
+  html[data-theme="system"] .today-hero small,
+  html[data-theme="system"] .empty-card p {
+    color: #cbd5e1 !important;
+  }
+
+  html[data-theme="system"] .quick-card textarea,
+  html[data-theme="system"] .settings-card input,
+  html[data-theme="system"] .settings-card select,
+  html[data-theme="system"] .feedback-card input,
+  html[data-theme="system"] .feedback-card textarea,
+  html[data-theme="system"] .feedback-card select {
+    background: #111827 !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+  }
+
+  html[data-theme="system"] .quick-card textarea::placeholder,
+  html[data-theme="system"] .feedback-card input::placeholder,
+  html[data-theme="system"] .feedback-card textarea::placeholder {
+    color: #94a3b8 !important;
+  }
+}
+\n
