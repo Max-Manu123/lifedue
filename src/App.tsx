@@ -196,7 +196,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'reset' | 'verify'>('login')
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot' | 'reset' | 'verify'>('login')
   const passwordRecoveryRef = useRef(false)
   const [tasksLoading, setTasksLoading] = useState(false)
   const [tasksError, setTasksError] = useState('')
@@ -229,15 +229,24 @@ function App() {
     }
 
     if (tokenHash) {
+      const isRecoveryLink = tokenType === 'recovery'
+      if (isRecoveryLink) passwordRecoveryRef.current = true
+
       void supabase.auth.verifyOtp({
         token_hash: tokenHash,
-        type: tokenType === 'recovery' ? 'recovery' : 'email',
+        type: isRecoveryLink ? 'recovery' : 'email',
       }).then(({ error: verifyError }) => {
         if (cancelled) return
         cleanAuthUrl()
         if (verifyError) {
-          console.error('LifeDue email link verification failed:', verifyError)
-          setAuthMode(tokenType === 'recovery' ? 'reset' : 'verify')
+          console.error('LifeDue auth link verification failed:', verifyError)
+          setAuthMode(isRecoveryLink ? 'reset' : 'verify')
+          setAuthOpen(true)
+          return
+        }
+
+        if (isRecoveryLink) {
+          setAuthMode('reset')
           setAuthOpen(true)
         }
       })
@@ -249,12 +258,22 @@ function App() {
     const authError = authParams.get('error')
     const authErrorCode = authParams.get('error_code') || ''
     const authErrorDescription = authParams.get('error_description') || ''
-    const confirmationFailure = authError && (
-      /expired|invalid|confirmation|otp/i.test(authErrorCode) ||
-      /expired|invalid|confirmation|otp/i.test(authErrorDescription)
+    const authLinkFailure = authError && (
+      /expired|invalid|confirmation|recovery|otp/i.test(authErrorCode) ||
+      /expired|invalid|confirmation|recovery|otp/i.test(authErrorDescription)
     )
-    if (confirmationFailure) {
-      setAuthMode('verify')
+    if (authLinkFailure) {
+      const isRecoveryFailure =
+        /recovery/i.test(authErrorCode) ||
+        /recovery/i.test(authErrorDescription)
+
+      if (isRecoveryFailure) {
+        passwordRecoveryRef.current = true
+        setAuthMode('reset')
+      } else {
+        setAuthMode('verify')
+      }
+
       setAuthOpen(true)
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
     }
@@ -264,6 +283,7 @@ function App() {
       const sessionUser = data.session?.user ?? null
       setUser(sessionUser)
       if (sessionUser) {
+        if (passwordRecoveryRef.current) return
         const hasPendingDraft = Boolean(localStorage.getItem(authDraftKey))
         if (hasPendingDraft) {
           setPendingSaveAfterAuth(true)
@@ -282,6 +302,9 @@ function App() {
         setAuthMode('reset')
         setAuthOpen(true)
         return
+      }
+      if (event === 'SIGNED_OUT') {
+        passwordRecoveryRef.current = false
       }
       if (session?.user) {
         if (passwordRecoveryRef.current) return
