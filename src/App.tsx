@@ -724,8 +724,8 @@ function App() {
       item.amount !== undefined
     )
 
-    let tasksSaved = taskPlan.length === 0
-    let paymentsSaved = paymentsToSave.length === 0
+    let tasksSaved = true
+    let paymentsSaved = true
 
     // Suppress the manual-flow "next step" cards while saving the whole AI plan.
     suppressNextStepRef.current = true
@@ -776,7 +776,7 @@ function App() {
       console.error('LifeDue AI client refresh failed:', error)
     }
 
-    if (tasksSaved || paymentsSaved) {
+    if (tasksSaved && paymentsSaved) {
       // AI-generated plans are complete when this review is saved. Optional
       // payments are handled inside PlanReview, so do not open a separate
       // post-save payment prompt here.
@@ -795,8 +795,8 @@ function App() {
       setView('tasks')
       } else {
         setTasksError(currentLanguage === 'pt'
-          ? 'Nada foi guardado. Tente novamente.'
-          : 'Nothing was saved. Please try again.')
+          ? 'Não foi possível guardar todo o plano. O que faltou continua guardado para tentar novamente.'
+          : 'The whole plan could not be saved. Anything missing is still preserved so you can try again.')
       }
     } finally {
     persistingPlanRef.current = false
@@ -810,10 +810,9 @@ function App() {
   }, [user])
 
   useEffect(() => {
-    if (!user || !pendingSaveAfterAuth || !plan.length) return
+    if (!user || !pendingSaveAfterAuth || !plan.length || persistingPlanRef.current) return
     setPendingSaveAfterAuth(false)
-    setPlanReviewConfirmed(false)
-    setPlanReviewOpen(true)
+    void persistPlan()
   }, [user, pendingSaveAfterAuth, plan.length])
 
   const planReviewItems = () => {
@@ -1266,7 +1265,20 @@ function App() {
       {view === 'home' ? (
         <Landing onStart={() => navigate('onboarding')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} language={language} setLanguage={setLanguage} user={user} />
       ) : view === 'onboarding' ? (
-        <OnboardingView quickText={quickText} onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }} onCreatePlan={() => void createPlan()} plan={plan} planSource={planSource} planPayments={planPayments} onAddPlan={addPlan} onAddPayment={addOnboardingPayment} onUpdatePlanTask={(id, patch) => setPlan(current => current.map(task => task.id === id ? { ...task, ...patch } : task))} onUpdatePlanPayment={(index, patch) => setPlanPayments(current => current.map((payment, itemIndex) => itemIndex === index ? { ...payment, ...patch } : payment))} onSkip={skipOnboarding} aiLoading={aiLoading} aiError={aiError} user={user} onBack={() => navigate('home')} language={language} />
+        <OnboardingView
+          quickText={quickText}
+          onQuickTextChange={value => { setQuickText(value); if (aiError) setAiError('') }}
+          onCreatePlan={() => void createPlan()}
+          plan={plan}
+          planPayments={planPayments}
+          onAddPlan={addPlan}
+          onSkip={skipOnboarding}
+          aiLoading={aiLoading}
+          aiError={aiError}
+          user={user}
+          onBack={() => navigate('home')}
+          language={language}
+        />
       ) : (
         <div className="workspace">
           <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
@@ -1539,7 +1551,15 @@ function App() {
       {nextStep && !((nextStep.type === 'payment' && hasPendingPaymentForClient(nextStep.client))) && <NextStepCard type={nextStep.type} client={nextStep.client} onAction={() => { suppressNextStepRef.current = true; if (nextStep.type === 'payment') { setPaymentDraftClient(nextStep.client); setShowAddPayment(true) } else { setTaskDraftClient(nextStep.client); setShowAdd(true) }; setNextStep(null) }} onDismiss={() => setNextStep(null)} />}
       {showAdd && <AddTaskModal initialClient={taskDraftClient} onClose={() => { setShowAdd(false); setTaskDraftClient('') }} onAdd={addTask} clients={clients} />}
       {showAddPayment && <AddPaymentModal initialClient={paymentDraftClient} onClose={() => { setShowAddPayment(false); setPaymentDraftClient('') }} onAdd={addPayment} clients={clients} existingPayments={payments} />}
-      {authOpen && <AuthModal language={language} initialMode={authMode} onClose={() => setAuthOpen(false)} onAuthenticated={() => { setAuthOpen(false); setView('quick-add') }} />}
+      {authOpen && <AuthModal
+        language={language}
+        initialMode={authMode}
+        onClose={() => setAuthOpen(false)}
+        onAuthenticated={() => {
+          setAuthOpen(false)
+          if (!pendingSaveAfterAuth) setView('quick-add')
+        }}
+      />}
     </div>
   )
 }
@@ -1828,17 +1848,26 @@ function Landing({ onStart, onAuth, onOpenApp, language, setLanguage, user }: { 
   )
 }
 
-function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, planSource, planPayments, onAddPlan, onAddPayment, onUpdatePlanTask, onUpdatePlanPayment, onSkip, aiLoading, aiError, user, onBack, language }: {
+function OnboardingView({
+  quickText,
+  onQuickTextChange,
+  onCreatePlan,
+  plan,
+  planPayments,
+  onAddPlan,
+  onSkip,
+  aiLoading,
+  aiError,
+  user,
+  onBack,
+  language,
+}: {
   quickText: string
   onQuickTextChange: (value: string) => void
   onCreatePlan: () => void
   plan: Task[]
-  planSource: 'quick-add' | 'planner' | null
   planPayments: QuickAddItem[]
   onAddPlan: () => void
-  onAddPayment: () => void
-  onUpdatePlanTask: (id: string, patch: Partial<Pick<Task, 'dueDate' | 'dueDateProvided' | 'priority'>>) => void
-  onUpdatePlanPayment: (index: number, patch: Partial<Pick<QuickAddItem, 'amount' | 'currency' | 'dueDate' | 'dueDateProvided'>>) => void
   onSkip: () => void
   aiLoading: boolean
   aiError: string
@@ -1848,11 +1877,6 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
 }) {
   const pt = language === 'pt'
   const resultRef = useRef<HTMLElement>(null)
-  const [showPaymentSuggestion, setShowPaymentSuggestion] = useState(true)
-  const [showDetails, setShowDetails] = useState(true)
-  const [editingTaskDate, setEditingTaskDate] = useState<string | null>(null)
-  const [editingPayment, setEditingPayment] = useState<number | null>(null)
-  const [paymentAmountDraft, setPaymentAmountDraft] = useState('')
 
   useEffect(() => {
     if (plan.length > 0 && !aiLoading) {
@@ -1863,102 +1887,111 @@ function OnboardingView({ quickText, onQuickTextChange, onCreatePlan, plan, plan
     }
   }, [plan.length, aiLoading])
 
+  const paymentCount = planPayments.length
+
   return (
     <div className="onboarding">
       <header className="onboarding-header">
-        <button className="brand onboarding-brand" onClick={onBack}><span className="brand-mark">L</span><span>LifeDue</span></button>
-        <div className="onboarding-progress"><span className="active" /><span className={plan.length ? 'active' : ''} /><span className={user ? 'active' : ''} /></div>
+        <button className="brand onboarding-brand" onClick={onBack}>
+          <span className="brand-mark">L</span><span>LifeDue</span>
+        </button>
+        <div className="onboarding-progress">
+          <span className="active" />
+          <span className={plan.length ? 'active' : ''} />
+          <span className={user ? 'active' : ''} />
+        </div>
         <div className="onboarding-header-actions">
           <button className="ghost-button" onClick={onSkip}>{pt ? 'Pular por agora' : 'Skip for now'}</button>
           <button className="ghost-button" onClick={onBack}>{pt ? 'Voltar' : 'Back'}</button>
         </div>
       </header>
+
       <main className="onboarding-main">
         <div className="onboarding-intro">
           <div className="onboarding-icon"><Sparkles size={22} /></div>
           <p className="section-kicker">{pt ? 'COMECE EM SEGUNDOS' : 'START IN SECONDS'}</p>
           <h1>{pt ? 'Vamos organizar seu trabalho.' : 'Let’s organize your work.'}</h1>
-          <p>{pt ? 'Diga ao LifeDue o que você precisa fazer. A IA transforma isso em um plano simples — sem configurar nada antes.' : 'Tell LifeDue what you need to get done. AI turns it into a simple plan — no setup required.'}</p>
+          <p>
+            {pt
+              ? 'Diga ao LifeDue o que você precisa fazer. A IA transforma isso em um plano simples — sem configurar nada antes.'
+              : 'Tell LifeDue what you need to get done. AI turns it into a simple plan — no setup required.'}
+          </p>
         </div>
+
         <section className="onboarding-card">
           <label htmlFor="onboarding-input">{pt ? 'O que você precisa fazer?' : 'What do you need to get done?'}</label>
-          <textarea id="onboarding-input" value={quickText} onChange={e => onQuickTextChange(e.target.value)} autoFocus placeholder={pt ? 'Ex.: Entregar o site da Maria sexta, cobrar 200 USD amanhã e enviar a proposta ao Carlos segunda.' : "e.g. Deliver Maria's website Friday, collect $200 tomorrow, and send Carlos the proposal Monday."} />
+          <textarea
+            id="onboarding-input"
+            value={quickText}
+            onChange={e => onQuickTextChange(e.target.value)}
+            autoFocus
+            placeholder={pt
+              ? 'Ex.: Entregar o site da Maria sexta, cobrar 200 USD amanhã e enviar a proposta ao Carlos segunda.'
+              : "e.g. Deliver Maria's website Friday, collect $200 tomorrow, and send Carlos the proposal Monday."}
+          />
           <div className="onboarding-examples">
             <span>{pt ? 'Exemplos:' : 'Examples:'}</span>
             <button type="button" onClick={() => onQuickTextChange(pt ? 'Entregar o site da Maria sexta' : "Deliver Maria's website Friday")}>{pt ? 'Entrega' : 'Delivery'}</button>
             <button type="button" onClick={() => onQuickTextChange(pt ? 'Cobrar 200 USD do João amanhã' : 'Collect $200 from John tomorrow')}>{pt ? 'Cobrança' : 'Payment'}</button>
           </div>
-          <button className="primary-button onboarding-submit" onClick={onCreatePlan} disabled={aiLoading || !quickText.trim()}>
-            {aiLoading ? (pt ? 'A organizar…' : 'Organizing…') : (pt ? 'Criar meu plano' : 'Create my plan')} <ArrowRight size={17} />
+          <button
+            className="primary-button onboarding-submit"
+            onClick={onCreatePlan}
+            disabled={aiLoading || !quickText.trim()}
+          >
+            {aiLoading ? (pt ? 'A organizar…' : 'Organizing…') : (pt ? 'Criar meu plano' : 'Create my plan')}
+            <ArrowRight size={17} />
           </button>
           {aiError && <div className="quick-error" role="alert">{aiError}</div>}
         </section>
+
         {plan.length > 0 && (
           <section ref={resultRef} className="onboarding-result">
             <div className="onboarding-result-head">
-              <div><p className="section-kicker">{pt ? 'SEU PRIMEIRO PLANO' : 'YOUR FIRST PLAN'}</p><h2>{pt ? 'Isto é o que encontramos.' : 'Here’s what we found.'}</h2></div>
+              <div>
+                <p className="section-kicker">{pt ? 'SEU PRIMEIRO PLANO' : 'YOUR FIRST PLAN'}</p>
+                <h2>{pt ? 'Seu plano está pronto.' : 'Your plan is ready.'}</h2>
+              </div>
               <CheckCircle2 size={22} />
             </div>
-            <div className="ai-plan-list">
-              {plan.map((task, index) => <div className="ai-plan-item" key={task.id + index}><div className="ai-plan-icon">{/payment|pagamento|cobrar|receber/i.test(task.title) ? '💰' : '✓'}</div><div><strong>{task.title}</strong><span>{task.client} · {formatDate(task.dueDate, task.dueDateProvided !== false)}</span></div></div>)}
-            </div>
-            <button className="primary-button onboarding-submit" onClick={onAddPlan}>
-              {user ? (pt ? 'Guardar no LifeDue' : 'Save to LifeDue') : (pt ? 'Guardar meu trabalho' : 'Save my work')} <ArrowRight size={17} />
-            </button>
-            {showDetails && (() => {
-              const undatedTasks = plan.filter(task => task.dueDateProvided === false)
-              const incompletePayments = planPayments.map((payment, index) => ({ payment, index })).filter(({ payment }) => payment.amount == null || payment.currency == null)
-              if (!undatedTasks.length && !incompletePayments.length) return null
-              return <div className="onboarding-details-card">
-                <div className="onboarding-details-head">
-                  <div>
-                    <strong>{pt ? 'Completar detalhes (opcional)' : 'Complete details (optional)'}</strong>
-                    <span>{pt ? 'O plano já está pronto. Você pode preencher o que faltou agora ou deixar para depois.' : 'Your plan is already ready. Complete anything missing now or leave it for later.'}</span>
-                  </div>
-                  <button type="button" className="text-button" onClick={() => setShowDetails(false)}>{pt ? 'Agora não' : 'Not now'}</button>
-                </div>
-                <div className="onboarding-details-list">
-                  {undatedTasks.map(task => <div className="onboarding-detail-row" key={task.id}>
-                    <div className="onboarding-detail-copy"><strong>{task.title}</strong><span>{pt ? 'Prazo ainda não definido' : 'No deadline set yet'}</span></div>
-                    {editingTaskDate === task.id ? <div className="onboarding-detail-control">
-                      <input type="date" min={currentTodayKey()} onChange={e => { if (!e.target.value) return; onUpdatePlanTask(task.id, { dueDate: e.target.value, dueDateProvided: true }); setEditingTaskDate(null) }} autoFocus />
-                      <button type="button" className="text-button" onClick={() => setEditingTaskDate(null)}>{pt ? 'Cancelar' : 'Cancel'}</button>
-                    </div> : <button type="button" className="secondary-button compact-button" onClick={() => setEditingTaskDate(task.id)}>{pt ? 'Definir prazo' : 'Set deadline'}</button>}
-                  </div>)}
-                  {incompletePayments.map(({ payment, index }) => <div className="onboarding-detail-row" key={index}>
-                    <div className="onboarding-detail-copy">
-                      <strong>{payment.client ? (pt ? 'Pagamento de ' : 'Payment from ') + payment.client : (pt ? 'Pagamento' : 'Payment')}</strong>
-                      <span>{payment.amount == null ? (pt ? 'Valor ainda não definido' : 'Amount not set yet') : (pt ? 'Moeda ainda não definida' : 'Currency not set yet')}</span>
-                    </div>
-                    {editingPayment === index ? <div className="onboarding-detail-payment-control">
-                      {payment.amount == null && <input type="text" inputMode="decimal" placeholder={pt ? 'Valor' : 'Amount'} value={paymentAmountDraft} onChange={e => setPaymentAmountDraft(e.target.value)} />}
-                      {((payment.amount != null) || paymentAmountDraft.trim()) && <select value={payment.currency ?? ''} onChange={e => { const value = e.target.value as QuickAddItem['currency']; onUpdatePlanPayment(index, { currency: value || undefined }); if (payment.amount != null) setEditingPayment(null) }}>
-                        <option value="">{pt ? 'Escolher moeda' : 'Choose currency'}</option><option value="AOA">AOA · Kz</option><option value="USD">USD · US$</option><option value="EUR">EUR · €</option><option value="BRL">BRL · R$</option><option value="GBP">GBP · £</option><option value="Other">{pt ? 'Outra' : 'Other'}</option>
-                      </select>}
-                      {payment.amount == null && <button type="button" className="text-button" onClick={() => { const value = Number(paymentAmountDraft.replace(',', '.')); if (!Number.isFinite(value) || value <= 0) return; onUpdatePlanPayment(index, { amount: value }); setPaymentAmountDraft(''); setEditingPayment(null) }}>{pt ? 'Guardar' : 'Save'}</button>}
-                      <button type="button" className="text-button" onClick={() => { setEditingPayment(null); setPaymentAmountDraft('') }}>{pt ? 'Cancelar' : 'Cancel'}</button>
-                    </div> : <button type="button" className="secondary-button compact-button" onClick={() => { setEditingPayment(index); setPaymentAmountDraft(payment.amount == null ? '' : String(payment.amount)) }}>{payment.amount == null ? (pt ? 'Adicionar valor' : 'Add amount') : (pt ? 'Definir moeda' : 'Set currency')}</button>}
-                  </div>)}
-                </div>
-              </div>
-            })()}
 
-            {!user && <p className="onboarding-save-note">{pt ? 'Você só cria uma conta quando quiser guardar seu trabalho. Google ou email — sem cartão.' : 'You only create an account when you want to save your work. Google or email — no card.'}</p>}
-            {planPayments.length === 0 && showPaymentSuggestion && (
-              <div className="onboarding-payment-option">
-                <div className="onboarding-payment-copy">
-                  <div className="onboarding-payment-icon"><CircleDollarSign size={18} /></div>
+            <div className="ai-plan-list">
+              {plan.map((task, index) => (
+                <div className="ai-plan-item" key={task.id + index}>
+                  <div className="ai-plan-icon">{/payment|pagamento|cobrar|receber/i.test(task.title) ? '💰' : '✓'}</div>
                   <div>
-                    <strong>{pt ? 'Quer acompanhar um pagamento também?' : 'Want to track a payment too?'}</strong>
-                    <span>{pt ? 'Opcional. Você pode adicionar valor, moeda e data depois.' : 'Optional. You can add the amount, currency, and due date later.'}</span>
+                    <strong>{task.title}</strong>
+                    <span>
+                      {task.client || (pt ? 'Cliente não definido' : 'Client not set')}
+                      {' · '}
+                      {formatDate(task.dueDate, task.dueDateProvided !== false)}
+                    </span>
                   </div>
                 </div>
-                <div className="onboarding-payment-actions">
-                  <button type="button" className="secondary-button" onClick={onAddPayment}>{pt ? 'Adicionar pagamento' : 'Add payment'}</button>
-                  <button type="button" className="text-button" onClick={() => setShowPaymentSuggestion(false)}>{pt ? 'Agora não' : 'Not now'}</button>
+              ))}
+              {paymentCount > 0 && (
+                <div className="ai-plan-item">
+                  <div className="ai-plan-icon">💰</div>
+                  <div>
+                    <strong>{pt ? `${paymentCount} pagamento${paymentCount === 1 ? '' : 's'} incluído` : `${paymentCount} payment${paymentCount === 1 ? '' : 's'} included`}</strong>
+                    <span>{pt ? 'Será revisto junto com as tarefas.' : 'They will be reviewed together with the tasks.'}</span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+
+            <button className="primary-button onboarding-submit" onClick={onAddPlan}>
+              {user ? (pt ? 'Guardar plano' : 'Save plan') : (pt ? 'Guardar plano' : 'Save plan')}
+              <ArrowRight size={17} />
+            </button>
+
+            <p className="onboarding-save-note">
+              {user
+                ? (pt ? 'O LifeDue vai abrir a mesma revisão usada para criar planos com IA dentro do app.' : 'LifeDue will open the same review used for AI plans inside the app.')
+                : (pt
+                  ? 'Ao guardar, o LifeDue abre a revisão do plano. Se confirmar, pediremos sua conta e manteremos o plano intacto até o login terminar.'
+                  : 'When you save, LifeDue opens the plan review. Once you confirm, we ask for your account and keep the plan intact until sign-in finishes.')}
+            </p>
           </section>
         )}
       </main>
