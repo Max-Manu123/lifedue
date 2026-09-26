@@ -9,6 +9,7 @@ type RemoteTask = {
   due_date_is_explicit: boolean
   priority: Task['priority']
   status: Task['status']
+  source_key: string | null
   client_id: string | null
   clients: { name: string } | { name: string }[] | null
 }
@@ -192,7 +193,7 @@ export async function fetchTasks(user: User): Promise<Task[]> {
   requireSupabaseUser(user)
   const { data, error } = await supabase!
     .from('tasks')
-    .select('id, title, due_date, due_date_is_explicit, priority, status, client_id, clients(name)')
+    .select('id, title, due_date, due_date_is_explicit, priority, status, source_key, client_id, clients(name)')
     .eq('user_id', user.id)
     .order('due_date', { ascending: true })
     .order('created_at', { ascending: true })
@@ -208,6 +209,7 @@ export async function fetchTasks(user: User): Promise<Task[]> {
     dueDate: task.due_date,
     dueDateProvided: task.due_date_is_explicit,
     priority: task.priority,
+    sourceKey: task.source_key ?? undefined,
     status: task.status,
   })).filter(task => {
     if (seen.has(task.id)) return false
@@ -274,6 +276,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
       due_date: task.dueDate,
       due_date_is_explicit: task.dueDateProvided !== false,
       priority: task.priority,
+      source_key: task.sourceKey ?? null,
       status: task.status,
     })
   }
@@ -281,8 +284,8 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
 
   const { data, error } = await supabase!
     .from('tasks')
-    .insert(rows)
-    .select('id, title, due_date, due_date_is_explicit, priority, status, client_id')
+    .upsert(rows, { onConflict: 'user_id,source_key', ignoreDuplicates: true })
+    .select('id, title, due_date, due_date_is_explicit, priority, status, source_key, client_id')
   if (error) throw error
 
   return (data as Array<{
@@ -292,6 +295,7 @@ export async function createTasks(user: User, tasks: Omit<Task, 'id'>[]): Promis
     due_date_is_explicit: boolean
     priority: Task['priority']
     status: Task['status']
+    source_key: string | null
     client_id: string | null
   }>).map((task, index) => ({
     id: task.id,
