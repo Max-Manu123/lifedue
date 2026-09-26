@@ -249,6 +249,13 @@ function App() {
       if (session?.user) {
         if (passwordRecoveryRef.current) return
         setAuthOpen(false)
+
+        const hasPendingDraft = Boolean(localStorage.getItem(authDraftKey))
+        if (hasPendingDraft) {
+          setPendingSaveAfterAuth(true)
+          return
+        }
+
         if (pendingOnboardingPaymentAfterAuthRef.current) {
           return
         }
@@ -718,6 +725,115 @@ function App() {
 
   const clearAuthDraft = () => localStorage.removeItem(authDraftKey)
 
+  const persistPendingAuthDraft = async (authUser: User) => {
+    if (!supabase || persistingPlanRef.current) return
+
+    const raw = localStorage.getItem(authDraftKey)
+    if (!raw) {
+      setPendingSaveAfterAuth(false)
+      return
+    }
+
+    let draft: { plan?: Task[]; planPayments?: QuickAddItem[]; quickText?: string }
+    try {
+      draft = JSON.parse(raw)
+    } catch {
+      console.error('LifeDue pending onboarding draft is invalid.')
+      setTasksError(currentLanguage === 'pt'
+        ? 'O plano pendente não pôde ser recuperado. Gere o plano novamente.'
+        : 'The pending plan could not be recovered. Please generate it again.')
+      return
+    }
+
+    if (!Array.isArray(draft.plan) || draft.plan.length === 0) {
+      clearAuthDraft()
+      setPendingSaveAfterAuth(false)
+      return
+    }
+
+    persistingPlanRef.current = true
+    setPendingSaveAfterAuth(true)
+    setTasksError('')
+    setPaymentsError('')
+
+    try {
+      const restoredPlan = draft.plan
+      const restoredPayments = Array.isArray(draft.planPayments) ? draft.planPayments : []
+      const paymentTaskIds = new Set(
+        restoredPayments
+          .filter(payment => payment.amount !== null && payment.amount !== undefined)
+          .map(payment => {
+            const paymentClient = payment.client.trim().toLocaleLowerCase()
+            return restoredPlan.find(task =>
+              task.client.trim().toLocaleLowerCase() === paymentClient &&
+              /payment|pagamento|collect|cobrar|receber/i.test(task.title)
+            )?.id
+          })
+          .filter((id): id is string => Boolean(id))
+      )
+      const taskPlan = restoredPlan.filter(task => !paymentTaskIds.has(task.id))
+      const paymentsToSave = restoredPayments.filter(item => item.amount !== null && item.amount !== undefined)
+
+      // Persist directly from the durable draft. Do not depend on React state
+      // having finished restoring before the authenticated save begins.
+      for (const task of taskPlan) {
+        await createTasks(authUser, [{
+          ...task,
+          status: 'open',
+          sourceKey: task.sourceKey ?? `ai-plan:${task.id}`,
+        }])
+      }
+
+      // Prevent duplicate pending payments if the browser retries the draft.
+      const existingPayments = await fetchPayments(authUser)
+      for (const payment of paymentsToSave) {
+        const duplicate = existingPayments.some(existing =>
+          existing.status === 'pending' &&
+          existing.client.trim().toLocaleLowerCase() === payment.client.trim().toLocaleLowerCase() &&
+          existing.amount === Number(payment.amount) &&
+          existing.dueDate === payment.dueDate &&
+          existing.currency === (payment.currency ?? null)
+        )
+        if (duplicate) continue
+        await createPayment(authUser, {
+          client: payment.client,
+          amount: Number(payment.amount),
+          currency: payment.currency ?? null,
+          dueDate: payment.dueDate,
+          dueDateProvided: payment.dueDateProvided !== false,
+        })
+      }
+
+      // One authoritative read after persistence makes the UI reflect the
+      // database, not a race between the auth callback and initial data loads.
+      const refreshVersion = ++dataRefreshVersionRef.current
+      const [remoteTasks, remotePayments, remoteClients] = await Promise.all([
+        fetchTasks(authUser),
+        fetchPayments(authUser),
+        fetchClients(authUser),
+      ])
+      if (refreshVersion === dataRefreshVersionRef.current) {
+        setTasks(remoteTasks)
+        setPayments(remotePayments)
+        setClients(remoteClients)
+        setPlan([])
+        setPlanPayments([])
+        setQuickText('')
+        clearAuthDraft()
+        setPendingSaveAfterAuth(false)
+        setView('tasks')
+      }
+    } catch (error) {
+      console.error('LifeDue pending onboarding persistence failed:', error)
+      setTasksError(currentLanguage === 'pt'
+        ? 'Não foi possível guardar o seu plano. Ele continua seguro e vamos tentar novamente.'
+        : 'We could not save your plan. It is still safe and we will try again.')
+      setPendingSaveAfterAuth(true)
+    } finally {
+      persistingPlanRef.current = false
+    }
+  }
+
   const persistPlan = async () => {
     if (!plan.length || persistingPlanRef.current) return
     if (!user) {
@@ -856,15 +972,12 @@ function App() {
 
   useEffect(() => {
     if (!user) return
-    const hasDraft = restoreAuthDraft()
-    if (hasDraft) setPendingSaveAfterAuth(true)
-  }, [user])
+    const hasDraft = Boolean(localStorage.getItem(authDraftKey))
+    if (!hasDraft) return
 
-  useEffect(() => {
-    if (!user || !pendingSaveAfterAuth || !plan.length || persistingPlanRef.current) return
-    setPendingSaveAfterAuth(false)
-    void persistPlan()
-  }, [user, pendingSaveAfterAuth, plan.length])
+    setPendingSaveAfterAuth(true)
+    void persistPendingAuthDraft(user)
+  }, [user])
 
   const planReviewItems = () => {
     const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase()
@@ -1609,7 +1722,8 @@ function App() {
         onClose={() => setAuthOpen(false)}
         onAuthenticated={() => {
           setAuthOpen(false)
-          if (!pendingSaveAfterAuth) setView('quick-add')
+          if (!localStorage.getItem(authDraftKey)) setView('quick-add')
+          else setPendingSaveAfterAuth(true)
         }}
       />}
     </div>
