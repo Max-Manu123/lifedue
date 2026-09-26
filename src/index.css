@@ -4152,3 +4152,42 @@ html[data-theme="dark"] .settings-plan-card .settings-plan-badge {
   html[data-theme="system"] .auth-modal input,
   html[data-theme="system"] .auth-modal select { background: transparent !important; color: #f8fafc !important; }
 }
+
+/* SETTINGS PLAN CARD — definitive dark-mode override */
+.theme-dark .settings-plan-card,
+html[data-theme="dark"] .settings-plan-card {
+  background: #05070b !important;
+  border: 1px solid #263244 !important;
+  color: #f8fafc !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.28) !important;
+}
+.theme-dark .settings-plan-card *,
+html[data-theme="dark"] .settings-plan-card * {
+  color: #f8fafc !important;
+}
+.theme-dark .settings-plan-card .settings-plan-badge,
+html[data-theme="dark"] .settings-plan-card .settings-plan-badge {
+  background: #181d38 !important;
+  color: #c7d2fe !important;
+  border-color: #343b68 !important;
+}
+.theme-dark .settings-plan-card .upgrade-button,
+html[data-theme="dark"] .settings-plan-card .upgrade-button {
+  background: #6366f1 !important;
+  color: #ffffff !important;
+  border-color: #818cf8 !important;
+}
+.theme-dark .settings-plan-card .upgrade-button:hover,
+html[data-theme="dark"] .settings-plan-card .upgrade-button:hover {
+  background: #818cf8 !important;
+  color: #ffffff !important;
+}
+.theme-dark .settings-plan-card svg,
+html[data-theme="dark"] .settings-plan-card svg {
+  color: #c7d2fe !important;
+  stroke: currentColor !important;
+}
+.theme-dark .settings-plan-card span,
+html[data-theme="dark"] .settings-plan-card span {
+  color: #cbd5e1 !important;
+}
