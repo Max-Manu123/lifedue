@@ -31,7 +31,7 @@ import { supabase } from './lib/supabase'
 import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createClient, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 import { PlanReview } from './components/PlanReview'
-import { trMap, type Language } from './lib/i18n'
+import { trMap, type Language, onboardingI18n, financeI18n } from './lib/i18n'
 
 type View = 'home' | 'onboarding' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner' | 'feedback' | 'settings'
 type AiUsage = { used: number; limit: number; remaining: number }
@@ -2163,16 +2163,16 @@ function OnboardingView({
           <span className={user ? 'active' : ''} />
         </div>
         <div className="onboarding-header-actions">
-          <button className="ghost-button" onClick={onSkip}>{pt ? 'Pular por agora' : 'Skip for now'}</button>
-          <button className="ghost-button" onClick={onBack}>{pt ? 'Voltar' : 'Back'}</button>
+          <button className="ghost-button" onClick={onSkip}>{onboardingI18n[language].skipForNow}</button>
+          <button className="ghost-button" onClick={onBack}>{onboardingI18n[language].back}</button>
         </div>
       </header>
 
       <main className="onboarding-main">
         <div className="onboarding-intro">
           <div className="onboarding-icon"><Sparkles size={22} /></div>
-          <p className="section-kicker">{pt ? 'COMECE EM SEGUNDOS' : 'START IN SECONDS'}</p>
-          <h1>{pt ? 'Vamos organizar seu trabalho.' : 'Let’s organize your work.'}</h1>
+          <p className="section-kicker">{onboardingI18n[language].startInSeconds}</p>
+          <h1>{onboardingI18n[language].organizeWork}</h1>
           <p>
             {pt
               ? 'Diga ao LifeDue o que você precisa fazer. A IA transforma isso em um plano simples — sem configurar nada antes.'
@@ -2181,7 +2181,7 @@ function OnboardingView({
         </div>
 
         <section className="onboarding-card">
-          <label htmlFor="onboarding-input">{pt ? 'O que você precisa fazer?' : 'What do you need to get done?'}</label>
+          <label htmlFor="onboarding-input">{onboardingI18n[language].whatNeedDone}</label>
           <textarea
             id="onboarding-input"
             value={quickText}
@@ -2192,16 +2192,16 @@ function OnboardingView({
               : "e.g. Deliver Maria's website Friday, collect $200 tomorrow, and send Carlos the proposal Monday."}
           />
           <div className="onboarding-examples">
-            <span>{pt ? 'Exemplos:' : 'Examples:'}</span>
-            <button type="button" onClick={() => onQuickTextChange(pt ? 'Entregar o site da Maria sexta' : "Deliver Maria's website Friday")}>{pt ? 'Entrega' : 'Delivery'}</button>
-            <button type="button" onClick={() => onQuickTextChange(pt ? 'Cobrar 200 USD do João amanhã' : 'Collect $200 from John tomorrow')}>{pt ? 'Cobrança' : 'Payment'}</button>
+            <span>{onboardingI18n[language].examples}</span>
+            <button type="button" onClick={() => onQuickTextChange(onboardingI18n[language].deliveryExample)}>{onboardingI18n[language].delivery}</button>
+            <button type="button" onClick={() => onQuickTextChange(onboardingI18n[language].paymentExample)}>{onboardingI18n[language].payment}</button>
           </div>
           <button
             className="primary-button onboarding-submit"
             onClick={onCreatePlan}
             disabled={aiLoading || !quickText.trim()}
           >
-            {aiLoading ? (pt ? 'A organizar…' : 'Organizing…') : (pt ? 'Criar meu plano' : 'Create my plan')}
+            {aiLoading ? (onboardingI18n[language].organizing) : (onboardingI18n[language].createMyPlan)}
             <ArrowRight size={17} />
           </button>
           {aiError && <div className="quick-error" role="alert">{aiError}</div>}
@@ -2211,8 +2211,8 @@ function OnboardingView({
           <section ref={resultRef} className="onboarding-result">
             <div className="onboarding-result-head">
               <div>
-                <p className="section-kicker">{pt ? 'SEU PRIMEIRO PLANO' : 'YOUR FIRST PLAN'}</p>
-                <h2>{pt ? 'Seu plano está pronto.' : 'Your plan is ready.'}</h2>
+                <p className="section-kicker">{onboardingI18n[language].yourFirstPlan}</p>
+                <h2>{onboardingI18n[language].planReady}</h2>
               </div>
               <CheckCircle2 size={22} />
             </div>
@@ -2224,7 +2224,7 @@ function OnboardingView({
                   <div>
                     <strong>{task.title}</strong>
                     <span>
-                      {task.client || (pt ? 'Cliente não definido' : 'Client not set')}
+                      {task.client || (onboardingI18n[language].clientNotSet)}
                       {' · '}
                       {formatDate(task.dueDate, task.dueDateProvided !== false)}
                     </span>
@@ -2235,21 +2235,21 @@ function OnboardingView({
                 <div className="ai-plan-item">
                   <div className="ai-plan-icon">💰</div>
                   <div>
-                    <strong>{pt ? `${paymentCount} pagamento${paymentCount === 1 ? '' : 's'} incluído` : `${paymentCount} payment${paymentCount === 1 ? '' : 's'} included`}</strong>
-                    <span>{pt ? 'Será revisto junto com as tarefas.' : 'They will be reviewed together with the tasks.'}</span>
+                    <strong>{pt ? `${paymentCount} ${paymentCount === 1 ? onboardingI18n[language].paymentIncludedSingular : onboardingI18n[language].paymentIncludedPlural}` : `${paymentCount} ${paymentCount === 1 ? onboardingI18n[language].paymentIncludedSingular : onboardingI18n[language].paymentIncludedPlural}`}</strong>
+                    <span>{onboardingI18n[language].reviewPayments}</span>
                   </div>
                 </div>
               )}
             </div>
 
             <button className="primary-button onboarding-submit" onClick={onAddPlan}>
-              {user ? (pt ? 'Guardar plano' : 'Save plan') : (pt ? 'Guardar plano' : 'Save plan')}
+              {user ? (onboardingI18n[language].savePlan) : (onboardingI18n[language].savePlan)}
               <ArrowRight size={17} />
             </button>
 
             <p className="onboarding-save-note">
               {user
-                ? (pt ? 'O LifeDue vai abrir a mesma revisão usada para criar planos com IA dentro do app.' : 'LifeDue will open the same review used for AI plans inside the app.')
+                ? (onboardingI18n[language].sameReview)
                 : (pt
                   ? 'Ao guardar, o LifeDue abre a revisão do plano. Se confirmar, pediremos sua conta e manteremos o plano intacto até o login terminar.'
                   : 'When you save, LifeDue opens the plan review. Once you confirm, we ask for your account and keep the plan intact until sign-in finishes.')}
@@ -2745,7 +2745,7 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
     {filtered.length ? <div className="payment-list">{filtered.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div> : <div className="empty-card payment-empty"><CheckCircle2 size={23} /><div><strong>{payments.length ? tr('paymentNoResults') : tr('clear')}</strong><p>{payments.length ? tr('paymentNoResultsDesc') : tr('noPending')}</p>{!payments.length && <button className="secondary-button" onClick={onAdd}><Plus size={15} /> {tr('addPayment')}</button>}</div></div>}
 
     {payments.length > 0 && <section className="payment-currency-summary">
-      <div><strong>{currentLanguage === 'pt' ? 'Resumo financeiro' : 'Financial summary'}</strong>{pendingByCurrency.map(item => <span key={item.currency}>{currentLanguage === 'pt' ? 'A receber' : 'To collect'}: {formatMoney(item.amount, item.currency)}</span>)}{paidByCurrency.map(item => <span key={'paid-'+item.currency}>{currentLanguage === 'pt' ? 'Já recebidos' : 'Already received'}: {formatMoney(item.amount, item.currency)}</span>)}</div>
+      <div><strong>{currentLanguage === 'pt' ? 'Resumo financeiro' : 'Financial summary'}</strong>{pendingByCurrency.map(item => <span key={item.currency}>{financeI18n[language].toCollect}: {formatMoney(item.amount, item.currency)}</span>)}{paidByCurrency.map(item => <span key={'paid-'+item.currency}>{financeI18n[language].alreadyReceived}: {formatMoney(item.amount, item.currency)}</span>)}</div>
     </section>}
   </div>
 }
