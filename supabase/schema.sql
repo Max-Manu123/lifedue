@@ -22,6 +22,7 @@ create table if not exists public.tasks (
   title text not null,
   due_date date not null,
   due_date_is_explicit boolean not null default true,
+  source_key text,
   priority text not null default 'medium' check (priority in ('low', 'medium', 'high')),
   status text not null default 'open' check (status in ('open', 'completed')),
   created_at timestamptz not null default now()
@@ -58,6 +59,9 @@ create table if not exists public.pro_waitlist (
 
 create index if not exists clients_user_id_idx on public.clients(user_id);
 create index if not exists tasks_user_id_idx on public.tasks(user_id);
+create unique index if not exists tasks_user_source_key_unique_idx
+  on public.tasks(user_id, source_key)
+  where source_key is not null;
 create index if not exists tasks_due_date_idx on public.tasks(user_id, due_date);
 create index if not exists payments_user_id_idx on public.payments(user_id);
 create index if not exists payments_due_date_idx on public.payments(user_id, due_date);
