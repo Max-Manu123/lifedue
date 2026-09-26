@@ -2948,3 +2948,37 @@ html[data-theme="system"].ld-system-dark {
     color-scheme: light;
   }
 }
+
+
+/* Final dark-mode legibility contract: legacy light card/text rules cannot leak into dark surfaces. */
+.theme-dark, html[data-theme="dark"] {
+  --text-primary:#f7f9fc !important; --text-secondary:#c0cad8 !important; --text-muted:#8d9aae !important;
+  --surface:#121a2a !important; --surface-soft:#182235 !important; --surface-raised:#1b263a !important;
+  --border-color:#30405a !important; --input-bg:#0d1524 !important; --primary:#a8a9ff !important;
+}
+.theme-dark [class*="card"], .theme-dark [class*="panel"], .theme-dark [class*="row"], .theme-dark [class*="box"],
+html[data-theme="dark"] [class*="card"], html[data-theme="dark"] [class*="panel"], html[data-theme="dark"] [class*="row"], html[data-theme="dark"] [class*="box"] {
+  color:#f7f9fc;
+}
+.theme-dark [class*="card"] strong,.theme-dark [class*="card"] h1,.theme-dark [class*="card"] h2,.theme-dark [class*="card"] h3,.theme-dark [class*="card"] h4,.theme-dark [class*="card"] h5,.theme-dark [class*="card"] h6,.theme-dark [class*="card"] label,
+.theme-dark [class*="panel"] strong,.theme-dark [class*="panel"] h1,.theme-dark [class*="panel"] h2,.theme-dark [class*="panel"] h3,.theme-dark [class*="panel"] h4,.theme-dark [class*="panel"] h5,.theme-dark [class*="panel"] h6,.theme-dark [class*="panel"] label,
+html[data-theme="dark"] [class*="card"] strong,html[data-theme="dark"] [class*="card"] h1,html[data-theme="dark"] [class*="card"] h2,html[data-theme="dark"] [class*="card"] h3,html[data-theme="dark"] [class*="card"] h4,html[data-theme="dark"] [class*="card"] h5,html[data-theme="dark"] [class*="card"] h6,html[data-theme="dark"] [class*="card"] label,
+html[data-theme="dark"] [class*="panel"] strong,html[data-theme="dark"] [class*="panel"] h1,html[data-theme="dark"] [class*="panel"] h2,html[data-theme="dark"] [class*="panel"] h3,html[data-theme="dark"] [class*="panel"] h4,html[data-theme="dark"] [class*="panel"] h5,html[data-theme="dark"] [class*="panel"] h6,html[data-theme="dark"] [class*="panel"] label { color:#f7f9fc !important; }
+.theme-dark [class*="card"] p,.theme-dark [class*="card"] span,.theme-dark [class*="card"] small,.theme-dark [class*="card"] li,
+.theme-dark [class*="panel"] p,.theme-dark [class*="panel"] span,.theme-dark [class*="panel"] small,.theme-dark [class*="panel"] li,
+html[data-theme="dark"] [class*="card"] p,html[data-theme="dark"] [class*="card"] span,html[data-theme="dark"] [class*="card"] small,html[data-theme="dark"] [class*="card"] li,
+html[data-theme="dark"] [class*="panel"] p,html[data-theme="dark"] [class*="panel"] span,html[data-theme="dark"] [class*="panel"] small,html[data-theme="dark"] [class*="panel"] li { color:#c0cad8 !important; }
+.theme-dark [class*="card"] input,.theme-dark [class*="card"] textarea,.theme-dark [class*="card"] select,.theme-dark [class*="panel"] input,.theme-dark [class*="panel"] textarea,.theme-dark [class*="panel"] select,
+html[data-theme="dark"] [class*="card"] input,html[data-theme="dark"] [class*="card"] textarea,html[data-theme="dark"] [class*="card"] select,html[data-theme="dark"] [class*="panel"] input,html[data-theme="dark"] [class*="panel"] textarea,html[data-theme="dark"] [class*="panel"] select { background:#0d1524 !important; color:#f7f9fc !important; border-color:#3a4b65 !important; }
+.theme-dark [class*="card"] input::placeholder,.theme-dark [class*="card"] textarea::placeholder,.theme-dark [class*="panel"] input::placeholder,.theme-dark [class*="panel"] textarea::placeholder,
+html[data-theme="dark"] [class*="card"] input::placeholder,html[data-theme="dark"] [class*="card"] textarea::placeholder,html[data-theme="dark"] [class*="panel"] input::placeholder,html[data-theme="dark"] [class*="panel"] textarea::placeholder { color:#8491a5 !important; }
+.theme-dark .white-card,.theme-dark .light-card,.theme-dark .surface-white,.theme-dark .bg-white,
+html[data-theme="dark"] .white-card,html[data-theme="dark"] .light-card,html[data-theme="dark"] .surface-white,html[data-theme="dark"] .bg-white { background:#121a2a !important; color:#f7f9fc !important; border-color:#30405a !important; }
+
+@media (prefers-color-scheme:dark) {
+  html[data-theme="system"] { --text-primary:#f7f9fc !important; --text-secondary:#c0cad8 !important; --text-muted:#8d9aae !important; --surface:#121a2a !important; --surface-soft:#182235 !important; --surface-raised:#1b263a !important; --border-color:#30405a !important; --input-bg:#0d1524 !important; --primary:#a8a9ff !important; }
+  html[data-theme="system"] [class*="card"],html[data-theme="system"] [class*="panel"],html[data-theme="system"] [class*="row"],html[data-theme="system"] [class*="box"] { color:#f7f9fc; }
+  html[data-theme="system"] [class*="card"] strong,html[data-theme="system"] [class*="card"] h1,html[data-theme="system"] [class*="card"] h2,html[data-theme="system"] [class*="card"] h3,html[data-theme="system"] [class*="card"] h4,html[data-theme="system"] [class*="card"] h5,html[data-theme="system"] [class*="card"] h6,html[data-theme="system"] [class*="card"] label,
+  html[data-theme="system"] [class*="panel"] strong,html[data-theme="system"] [class*="panel"] h1,html[data-theme="system"] [class*="panel"] h2,html[data-theme="system"] [class*="panel"] h3,html[data-theme="system"] [class*="panel"] h4,html[data-theme="system"] [class*="panel"] h5,html[data-theme="system"] [class*="panel"] h6,html[data-theme="system"] [class*="panel"] label { color:#f7f9fc !important; }
+  html[data-theme="system"] [class*="card"] p,html[data-theme="system"] [class*="card"] span,html[data-theme="system"] [class*="card"] small,html[data-theme="system"] [class*="panel"] p,html[data-theme="system"] [class*="panel"] span,html[data-theme="system"] [class*="panel"] small { color:#c0cad8 !important; }
+}
