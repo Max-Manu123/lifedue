@@ -2717,7 +2717,7 @@ function PaymentsView({ payments, tasks, onMarkPaid, onAdd, onAddForClient }: { 
     {filtered.length ? <div className="payment-list">{filtered.map(payment => <PaymentRow key={payment.id} payment={payment} onMarkPaid={onMarkPaid} />)}</div> : <div className="empty-card payment-empty"><CheckCircle2 size={23} /><div><strong>{payments.length ? tr('paymentNoResults') : tr('clear')}</strong><p>{payments.length ? tr('paymentNoResultsDesc') : tr('noPending')}</p>{!payments.length && <button className="secondary-button" onClick={onAdd}><Plus size={15} /> {tr('addPayment')}</button>}</div></div>}
 
     {payments.length > 0 && <section className="payment-currency-summary">
-      <div><strong>{appInlineI18n[currentLanguage].financialSummary}</strong>{pendingByCurrency.map(item => <span key={item.currency}>{financeI18n[language].toCollect}: {formatMoney(item.amount, item.currency)}</span>)}{paidByCurrency.map(item => <span key={'paid-'+item.currency}>{financeI18n[language].alreadyReceived}: {formatMoney(item.amount, item.currency)}</span>)}</div>
+      <div><strong>{appInlineI18n[currentLanguage].financialSummary}</strong>{pendingByCurrency.map(item => <span key={item.currency}>{financeI18n[currentLanguage].toCollect}: {formatMoney(item.amount, item.currency)}</span>)}{paidByCurrency.map(item => <span key={'paid-'+item.currency}>{financeI18n[currentLanguage].alreadyReceived}: {formatMoney(item.amount, item.currency)}</span>)}</div>
     </section>}
   </div>
 }
