@@ -2235,7 +2235,7 @@ function OnboardingView({
                 <div className="ai-plan-item">
                   <div className="ai-plan-icon">💰</div>
                   <div>
-                    <strong>{pt ? `${paymentCount} ${paymentCount === 1 ? onboardingI18n[language].paymentIncludedSingular : onboardingI18n[language].paymentIncludedPlural}` : `${paymentCount} ${paymentCount === 1 ? onboardingI18n[language].paymentIncludedSingular : onboardingI18n[language].paymentIncludedPlural}`}</strong>
+                    <strong>{`${paymentCount} ${paymentCount === 1 ? onboardingI18n[language].paymentIncludedSingular : onboardingI18n[language].paymentIncludedPlural}`}</strong>
                     <span>{onboardingI18n[language].reviewPayments}</span>
                   </div>
                 </div>
