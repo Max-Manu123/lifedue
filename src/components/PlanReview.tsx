@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarDays, Check, ChevronRight, CircleDollarSign, Flag, UserRound, X } from 'lucide-react'
 import type { PaymentCurrency, Priority } from '../types'
-import { planReviewI18n } from '../lib/i18n'
+import { planReviewI18n, planExtraI18n } from '../lib/i18n'
 
 type Language = 'en' | 'pt'
 
@@ -239,7 +239,7 @@ export function PlanReview({
           <div className="plan-review-summary-head">
             <div>
               <strong>{t.planCreated}</strong>
-              <span>{pt ? `${details.length > 0 ? 'Alguns detalhes precisam de confirmação.' : 'Tudo está pronto para guardar.'}` : details.length > 0 ? 'Some details need confirmation.' : 'Everything is ready to save.'}</span>
+              <span>{details.length > 0 ? planExtraI18n[language].someDetails : planExtraI18n[language].everythingReady}</span>
             </div>
             <span className="plan-review-count">{details.length > 0 ? (t.review) : (t.ready)}</span>
           </div>
@@ -321,7 +321,7 @@ export function PlanReview({
                             min={today}
                             value={decision.dueDate ?? ''}
                             onChange={event => updateDetail(detail.key, { dueDate: event.target.value || undefined, dueDateProvided: Boolean(event.target.value) })}
-                            aria-label={pt ? `Prazo para ${detail.title}` : `Deadline for ${detail.title}`}
+                            aria-label={planExtraI18n[language].deadlineFor.replace('{title}', detail.title)}
                           />
                         )}
                         <small className="field-help">{decision.dueDateProvided === false
@@ -338,7 +338,7 @@ export function PlanReview({
                         <div className="plan-review-priority">
                           {(['low', 'medium', 'high'] as Priority[]).map(priority => (
                             <button key={priority} type="button" className={decision.priority === priority ? 'plan-review-choice-button active' : 'plan-review-choice-button'} onClick={() => updateDetail(detail.key, { priority })}>
-                              {pt ? ({ low: 'Baixa', medium: 'Média', high: 'Alta' }[priority]) : ({ low: 'Low', medium: 'Medium', high: 'High' }[priority])}
+                              {planExtraI18n[language][priority]}
                             </button>
                           ))}
                         </div>
