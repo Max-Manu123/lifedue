@@ -4535,3 +4535,16 @@ html[data-theme="dark"] .upgrade-form label {
     border-color: #818cf8 !important;
   }
 }
+
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .priority.high { background:#351a22 !important; color:#fda4af !important; }
+  html[data-theme="system"] .priority.medium { background:#332a12 !important; color:#fcd34d !important; }
+  html[data-theme="system"] .priority.low { background:#1e293b !important; color:#cbd5e1 !important; }
+  html[data-theme="system"] .paid-label { color:#6ee7b7 !important; }
+  html[data-theme="system"] .payment-icon { background:#102a20 !important; color:#6ee7b7 !important; }
+  html[data-theme="system"] .payment-icon.overdue { background:#351a22 !important; color:#fda4af !important; }
+  html[data-theme="system"] .danger-button { background:#351a22 !important; border-color:#71333f !important; color:#fda4af !important; }
+  html[data-theme="system"] .danger-button:hover { background:#43202a !important; color:#fecdd3 !important; }
+  html[data-theme="system"] .form-error { background:#351a22 !important; border-color:#71333f !important; color:#fda4af !important; }
+}
