@@ -4690,3 +4690,202 @@ html[data-theme="dark"] .payment-row .avatar {
     border: 1px solid #45408a !important;
   }
 }
+
+
+/* ==========================================================================
+   INSTALL PROMPT + LEGAL PAGES
+   ========================================================================== */
+.install-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .58);
+  backdrop-filter: blur(8px);
+}
+.install-modal {
+  position: relative;
+  width: min(100%, 430px);
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .24);
+}
+.install-modal-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+.install-modal h2 { margin: 4px 0 8px; font-size: 24px; letter-spacing: -.02em; }
+.install-modal p:not(.section-kicker) { margin: 0; color: #64748b; line-height: 1.6; }
+.install-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #64748b;
+  font-size: 24px;
+  cursor: pointer;
+}
+.install-modal-close:hover { background: #f1f5f9; color: #0f172a; }
+.install-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+.install-modal .primary-button,
+.install-modal .secondary-button { min-height: 42px; }
+
+.legal-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #0f172a;
+}
+.legal-header {
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.legal-header .brand { border: 0; background: transparent; cursor: pointer; }
+.legal-nav { display: flex; gap: 6px; }
+.legal-nav button {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  padding: 9px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.legal-nav button:hover, .legal-nav button.active { background: #eef2ff; color: #4338ca; }
+.legal-content {
+  width: min(820px, calc(100% - 40px));
+  margin: 36px auto 0;
+  padding: 48px 0 64px;
+}
+.legal-kicker { color: #6366f1; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.legal-content h1 { margin: 10px 0 6px; font-size: clamp(32px, 5vw, 48px); letter-spacing: -.035em; }
+.legal-updated { margin: 0 0 42px; color: #64748b; font-size: 14px; }
+.legal-content section { padding: 24px 0; border-top: 1px solid #e2e8f0; }
+.legal-content section h2 { margin: 0 0 10px; font-size: 18px; }
+.legal-content section p { margin: 0; color: #475569; line-height: 1.75; }
+.legal-footer { width: min(820px, calc(100% - 40px)); margin: 0 auto; }
+.legal-footer > button {
+  border: 0;
+  background: transparent;
+  color: #4f46e5;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.landing-footer {
+  width: min(1120px, calc(100% - 40px));
+  margin: 48px auto 0;
+  padding: 24px 0 34px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 13px;
+}
+.landing-footer div { display: flex; gap: 16px; }
+.landing-footer button {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font: inherit;
+}
+.landing-footer button:hover { color: #4338ca; }
+
+.theme-dark .install-modal,
+html[data-theme="dark"] .install-modal {
+  background: #111827;
+  color: #f8fafc;
+  border-color: #2a3850;
+}
+.theme-dark .install-modal p:not(.section-kicker),
+html[data-theme="dark"] .install-modal p:not(.section-kicker) { color: #cbd5e1; }
+.theme-dark .install-modal-icon,
+html[data-theme="dark"] .install-modal-icon { background: #25204d; color: #c7d2fe; }
+.theme-dark .install-modal-close,
+html[data-theme="dark"] .install-modal-close { color: #94a3b8; }
+.theme-dark .install-modal-close:hover,
+html[data-theme="dark"] .install-modal-close:hover { background: #182235; color: #f8fafc; }
+
+.theme-dark .legal-page,
+html[data-theme="dark"] .legal-page {
+  background: #0b1120;
+  color: #f8fafc;
+}
+.theme-dark .legal-nav button,
+html[data-theme="dark"] .legal-nav button { color: #94a3b8; }
+.theme-dark .legal-nav button:hover,
+.theme-dark .legal-nav button.active,
+html[data-theme="dark"] .legal-nav button:hover,
+html[data-theme="dark"] .legal-nav button.active { background: #1c2445; color: #c7d2fe; }
+.theme-dark .legal-updated,
+html[data-theme="dark"] .legal-updated,
+.theme-dark .legal-content section p,
+html[data-theme="dark"] .legal-content section p { color: #cbd5e1; }
+.theme-dark .legal-content section,
+html[data-theme="dark"] .legal-content section { border-color: #2a3850; }
+.theme-dark .landing-footer,
+html[data-theme="dark"] .landing-footer { border-color: #2a3850; color: #94a3b8; }
+.theme-dark .landing-footer button,
+html[data-theme="dark"] .landing-footer button { color: #94a3b8; }
+.theme-dark .landing-footer button:hover,
+html[data-theme="dark"] .landing-footer button:hover { color: #c7d2fe; }
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .install-modal {
+    background: #111827;
+    color: #f8fafc;
+    border-color: #2a3850;
+  }
+  html[data-theme="system"] .install-modal p:not(.section-kicker) { color: #cbd5e1; }
+  html[data-theme="system"] .install-modal-icon { background: #25204d; color: #c7d2fe; }
+  html[data-theme="system"] .install-modal-close { color: #94a3b8; }
+  html[data-theme="system"] .install-modal-close:hover { background: #182235; color: #f8fafc; }
+  html[data-theme="system"] .legal-page { background: #0b1120; color: #f8fafc; }
+  html[data-theme="system"] .legal-nav button { color: #94a3b8; }
+  html[data-theme="system"] .legal-nav button:hover,
+  html[data-theme="system"] .legal-nav button.active { background: #1c2445; color: #c7d2fe; }
+  html[data-theme="system"] .legal-updated,
+  html[data-theme="system"] .legal-content section p { color: #cbd5e1; }
+  html[data-theme="system"] .legal-content section { border-color: #2a3850; }
+  html[data-theme="system"] .landing-footer { border-color: #2a3850; color: #94a3b8; }
+  html[data-theme="system"] .landing-footer button { color: #94a3b8; }
+  html[data-theme="system"] .landing-footer button:hover { color: #c7d2fe; }
+}
+
+@media (max-width: 640px) {
+  .legal-header, .legal-content, .landing-footer { width: min(100% - 28px, 820px); }
+  .legal-header { min-height: 68px; }
+  .legal-content { padding-top: 30px; }
+  .legal-content h1 { font-size: 32px; }
+  .install-modal { padding: 24px; }
+  .install-modal-actions { flex-direction: column-reverse; }
+  .install-modal-actions button { width: 100%; }
+  .landing-footer { align-items: flex-start; flex-direction: column; }
+}
