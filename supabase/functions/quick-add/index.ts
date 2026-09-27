@@ -215,10 +215,13 @@ Deno.serve(async (req) => {
   let quotaPeriodStart = ''
   let quotaAdmin: any = null
   let quotaUsage: { used: number; remaining: number; limit: number } | null = null
+  let onboardingReservation = false
+  let onboardingUserId: string | null = null
 
   try {
     const body = await req.json()
     const mode = body.mode === 'plan' ? 'plan' : 'quick-add'
+    const isOnboardingRequest = mode === 'quick-add' && body.onboarding === true
     const authorization = req.headers.get('authorization')
     if (!authorization) {
       return Response.json(
@@ -234,6 +237,35 @@ Deno.serve(async (req) => {
 
     quotaUserId = auth.data?.userClaims?.id ?? null
     quotaAdmin = auth.data?.supabaseAdmin as typeof quotaAdmin
+    const isAnonymousUser = auth.data?.userClaims?.is_anonymous === true
+
+    if (isOnboardingRequest) {
+      if (!isAnonymousUser || !quotaUserId || !quotaAdmin) {
+        return Response.json(
+          { code: 'ONBOARDING_SESSION_REQUIRED', message: 'A secure anonymous onboarding session is required.' },
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+
+      const { data: reservation, error: reservationError } = await quotaAdmin.rpc('reserve_onboarding_ai_generation', {
+        p_user_id: quotaUserId,
+      })
+      if (reservationError) throw reservationError
+
+      const allowed = reservation === true
+      if (!allowed) {
+        return Response.json(
+          {
+            code: 'ONBOARDING_AI_ALREADY_USED',
+            message: 'The free onboarding AI generation has already been used. Save your first plan to continue.',
+          },
+          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+
+      onboardingReservation = true
+      onboardingUserId = quotaUserId
+    }
     if (!quotaUserId || !quotaAdmin) {
       return Response.json(
         { code: 'AUTH_REQUIRED', message: 'A valid authenticated user is required to use LifeDue AI.' },
@@ -270,6 +302,11 @@ Deno.serve(async (req) => {
       const allowed = Boolean(quota?.allowed)
       quotaUsage = { used, remaining, limit: FREE_AI_MONTHLY_LIMIT }
       if (!allowed) {
+        if (onboardingReservation && onboardingUserId && quotaAdmin) {
+          await quotaAdmin.rpc('release_onboarding_ai_generation', { p_user_id: onboardingUserId })
+          onboardingReservation = false
+          onboardingUserId = null
+        }
         return Response.json({
           code: 'AI_LIMIT_REACHED',
           message: 'AI monthly limit reached.',
@@ -383,6 +420,11 @@ Deno.serve(async (req) => {
           }
         }
       }
+      if (onboardingReservation && onboardingUserId && quotaAdmin) {
+        await quotaAdmin.rpc('release_onboarding_ai_generation', { p_user_id: onboardingUserId })
+        onboardingReservation = false
+        onboardingUserId = null
+      }
       return Response.json({
         items: [],
         status: 'needs_input',
@@ -392,9 +434,21 @@ Deno.serve(async (req) => {
           : 'I could not find a clear task or payment. Describe one concrete action, for example: "Deliver Maria\'s website Friday".',
       }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
+    if (onboardingReservation && onboardingUserId && quotaAdmin) {
+      await quotaAdmin.rpc('complete_onboarding_ai_generation', { p_user_id: onboardingUserId })
+      onboardingReservation = false
+      onboardingUserId = null
+    }
     quotaReserved = false
     return Response.json({ ...normalizedResult, status: 'ok', aiUsage: quotaUsage }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
+    if (onboardingReservation && onboardingUserId && quotaAdmin) {
+      try {
+        await quotaAdmin.rpc('release_onboarding_ai_generation', { p_user_id: onboardingUserId })
+      } catch (releaseError) {
+        console.error('LifeDue onboarding AI reservation release failed:', releaseError)
+      }
+    }
     if (quotaReserved && quotaUserId && quotaAdmin && quotaPeriodStart) {
       try {
         await quotaAdmin.rpc('refund_ai_credit', {
