@@ -1666,7 +1666,7 @@ function App() {
                 setShowAdd(true)
               }}
               busyTaskId={updatingTaskId}
-            />
+            />}
             {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} />}
             {view === 'payments' && <PaymentsView
               payments={payments}
