@@ -2110,6 +2110,10 @@ function Landing({ onStart, onAuth, onOpenApp, onPrivacy, onTerms, language, set
         <Feature icon={<Clock3 />} title={language==='pt' ? 'Veja o que é urgente' : 'See what is urgent'} text={language==='pt' ? 'Atrasados, hoje e próximos prazos em um só lugar. Sem listas confusas.' : 'Overdue, today, and upcoming deadlines in one place. No messy lists.'} />
         <Feature icon={<CircleDollarSign />} title={language==='pt' ? 'Nunca esqueça um pagamento' : 'Never forget a payment'} text={language==='pt' ? 'Pagamentos pendentes ligados aos clientes e prazos. Saiba quanto deve receber.' : 'Pending payments connected to clients and deadlines. Know what you are owed.'} />
       </section>
+      <footer className="landing-footer">
+        <span>© 2026 LifeDue</span>
+        <div><button type="button" onClick={onPrivacy}>{language==='pt' ? 'Privacidade' : 'Privacy'}</button><button type="button" onClick={onTerms}>{language==='pt' ? 'Termos' : 'Terms'}</button></div>
+      </footer>
     </div>
   )
 }
