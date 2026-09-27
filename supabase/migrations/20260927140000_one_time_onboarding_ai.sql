@@ -7,7 +7,8 @@ create table if not exists public.onboarding_ai_usage (
   status text not null default 'reserved'
     check (status in ('reserved', 'completed')),
   reserved_at timestamptz not null default now(),
-  completed_at timestamptz
+  completed_at timestamptz,
+  result jsonb
 );
 
 alter table public.onboarding_ai_usage enable row level security;
@@ -19,7 +20,7 @@ revoke all on table public.onboarding_ai_usage from public, anon, authenticated;
 create or replace function public.reserve_onboarding_ai_generation(
   p_user_id uuid
 )
-returns boolean
+returns table(allowed boolean, existing_result jsonb)
 language plpgsql
 security definer
 set search_path = ''
@@ -27,47 +28,50 @@ as $$
 declare
   current_status text;
   current_reserved_at timestamptz;
+  current_result jsonb;
 begin
   if p_user_id is null then
-    return false;
+    return query select false, null::jsonb;
   end if;
 
   perform pg_advisory_xact_lock(hashtextextended(p_user_id::text || ':onboarding-ai', 0));
 
-  select status, reserved_at
-    into current_status, current_reserved_at
+  select status, reserved_at, result
+    into current_status, current_reserved_at, current_result
   from public.onboarding_ai_usage
   where user_id = p_user_id
   for update;
 
   if current_status = 'completed' then
-    return false;
+    return query select false, current_result;
   end if;
 
   -- A crashed/abandoned generation may release its reservation after a short
   -- safety window. The Edge Function itself times out far earlier than this.
   if current_status = 'reserved'
      and current_reserved_at > now() - interval '2 minutes' then
-    return false;
+    return query select false, null::jsonb;
   end if;
 
   if current_status is null then
-    insert into public.onboarding_ai_usage (user_id, status, reserved_at)
-    values (p_user_id, 'reserved', now());
+    insert into public.onboarding_ai_usage (user_id, status, reserved_at, result)
+    values (p_user_id, 'reserved', now(), null);
   else
     update public.onboarding_ai_usage
     set status = 'reserved',
         reserved_at = now(),
-        completed_at = null
+        completed_at = null,
+        result = null
     where user_id = p_user_id;
   end if;
 
-  return true;
+  return query select true, null::jsonb;
 end;
 $$;
 
 create or replace function public.complete_onboarding_ai_generation(
-  p_user_id uuid
+  p_user_id uuid,
+  p_result jsonb
 )
 returns void
 language plpgsql
@@ -77,7 +81,8 @@ as $$
 begin
   update public.onboarding_ai_usage
   set status = 'completed',
-      completed_at = now()
+      completed_at = now(),
+      result = p_result
   where user_id = p_user_id
     and status = 'reserved';
 end;
