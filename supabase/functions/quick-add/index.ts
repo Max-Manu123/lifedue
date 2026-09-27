@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
 
     quotaUserId = auth.data?.userClaims?.id ?? null
     quotaAdmin = auth.data?.supabaseAdmin as typeof quotaAdmin
-    const isAnonymousUser = auth.data?.userClaims?.is_anonymous === true
+    let isAnonymousUser = auth.data?.userClaims?.is_anonymous === true
 
     if (!quotaUserId || !quotaAdmin) {
       return Response.json(
@@ -258,6 +258,15 @@ Deno.serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
+    // Verify the anonymous flag from the authenticated user record as a fallback.
+    // Some JWTs/proxy contexts may not expose is_anonymous in userClaims even though
+    // the Supabase user is genuinely anonymous. This prevents a false 403 during onboarding.
+    if (!isAnonymousUser && isOnboardingRequest) {
+      const { data: adminUser, error: adminUserError } = await quotaAdmin.auth.admin.getUserById(quotaUserId)
+      if (adminUserError) throw adminUserError
+      isAnonymousUser = adminUser.user?.is_anonymous === true
+    }
+
     const text = typeof body.text === 'string' ? body.text.trim() : ''
     const today = typeof body.today === 'string' ? body.today : ''
     const timezone = typeof body.timezone === 'string' ? body.timezone : 'UTC'
