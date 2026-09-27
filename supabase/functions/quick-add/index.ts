@@ -220,14 +220,25 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const mode = body.mode === 'plan' ? 'plan' : 'quick-add'
     const authorization = req.headers.get('authorization')
-    let auth: Awaited<ReturnType<typeof createSupabaseContext>> | null = null
-    if (mode === 'plan' || authorization) {
-      auth = await createSupabaseContext(req, { auth: 'user' })
-      if (auth.error) {
-        return Response.json({ message: auth.error.message }, { status: auth.error.status, headers: corsHeaders })
-      }
-      quotaUserId = auth.data?.userClaims?.id ?? null
-      quotaAdmin = auth.data?.supabaseAdmin as typeof quotaAdmin
+    if (!authorization) {
+      return Response.json(
+        { code: 'AUTH_REQUIRED', message: 'Authentication is required to use LifeDue AI.' },
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    const auth = await createSupabaseContext(req, { auth: 'user' })
+    if (auth.error) {
+      return Response.json({ message: auth.error.message }, { status: auth.error.status, headers: corsHeaders })
+    }
+
+    quotaUserId = auth.data?.userClaims?.id ?? null
+    quotaAdmin = auth.data?.supabaseAdmin as typeof quotaAdmin
+    if (!quotaUserId || !quotaAdmin) {
+      return Response.json(
+        { code: 'AUTH_REQUIRED', message: 'A valid authenticated user is required to use LifeDue AI.' },
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
     }
     const text = typeof body.text === 'string' ? body.text.trim() : ''
     const today = typeof body.today === 'string' ? body.today : ''
