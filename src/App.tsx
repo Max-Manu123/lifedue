@@ -590,7 +590,7 @@ function App() {
 
   const createPlan = async () => {
     const isOnboardingView = view === 'onboarding'
-    if (isOnboarding && (onboardingAiGeneratedRef.current || plan.length > 0)) {
+    if (isOnboardingView && (onboardingAiGeneratedRef.current || plan.length > 0)) {
       setAiError(currentLanguage === 'pt'
         ? 'Seu primeiro plano já foi gerado. Guarde-o para continuar.'
         : 'Your first plan has already been generated. Save it to continue.')
