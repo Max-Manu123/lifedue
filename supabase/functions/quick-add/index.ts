@@ -10,6 +10,7 @@ const MAX_INPUT_LENGTH = 4000
 const MAX_ITEMS = 12
 const MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite'] as const
 const FREE_AI_MONTHLY_LIMIT = 20
+const CROSS_ACCOUNT_AI_DAILY_LIMIT = 25
 
 const currencies = ['USD', 'EUR', 'BRL', 'AOA', 'GBP', 'Other'] as const
 type Currency = typeof currencies[number]
@@ -48,6 +49,15 @@ const systemInstruction = [
   '- Regression example: "Entregar o site do João amanhã, prioridade alta, por 200.000 Kz." must produce a task "Entregar o site" for client "João" with tomorrow/high priority AND a separate payment for client "João" with amount 200000 and currency AOA. The task must not be omitted just because money is present.',
   '- For empty or non-actionable input, return exactly {"items":[]} rather than inventing content.',
 ]
+
+async function createAiAbuseKey(req: Request) {
+  const forwardedFor = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? ''
+  const ip = req.headers.get('cf-connecting-ip')?.trim() || forwardedFor
+  const userAgent = req.headers.get('user-agent')?.slice(0, 512) ?? ''
+  const source = `lifedue-ai-abuse-v1\\n${ip || 'unknown-ip'}\\n${userAgent || 'unknown-ua'}`
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source))
+  return Array.from(new Uint8Array(digest)).map(value => value.toString(16).padStart(2, '0')).join('')
+}
 
 function validDate(value: unknown): value is string {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value + 'T00:00:00Z'))
@@ -215,6 +225,9 @@ Deno.serve(async (req) => {
   let quotaPeriodStart = ''
   let quotaAdmin: any = null
   let quotaUsage: { used: number; remaining: number; limit: number } | null = null
+  let abuseKey = ''
+  let abusePeriodStart = ''
+  let abuseReserved = false
   let onboardingReservation = false
   let onboardingUserId: string | null = null
 
@@ -303,6 +316,9 @@ Deno.serve(async (req) => {
     }
 
     if (quotaUserId && quotaAdmin) {
+      abuseKey = await createAiAbuseKey(req)
+      abusePeriodStart = new Date().toISOString().slice(0, 10)
+
       quotaPeriodStart = new Date().toISOString().slice(0, 7) + '-01'
       const { data: quotaRows, error: quotaError } = await quotaAdmin.rpc('consume_ai_credit', {
         p_user_id: quotaUserId,
@@ -329,11 +345,45 @@ Deno.serve(async (req) => {
         }, { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
       quotaReserved = true
+
+      // The per-account quota stops one account from exceeding 20/month.
+      // This second server-side counter stops the same network/device from
+      // multiplying that quota by creating many accounts.
+      const { data: abuseRows, error: abuseError } = await quotaAdmin.rpc('consume_ai_abuse_credit', {
+        p_abuse_key: abuseKey,
+        p_period_start: abusePeriodStart,
+        p_limit: CROSS_ACCOUNT_AI_DAILY_LIMIT,
+      })
+      if (abuseError) throw abuseError
+
+      const abuse = Array.isArray(abuseRows) ? abuseRows[0] : abuseRows
+      if (abuse?.allowed !== true) {
+        await quotaAdmin.rpc('refund_ai_credit', {
+          p_user_id: quotaUserId,
+          p_period_start: quotaPeriodStart,
+        })
+        quotaReserved = false
+        if (onboardingReservation && onboardingUserId) {
+          await quotaAdmin.rpc('release_onboarding_ai_generation', { p_user_id: onboardingUserId })
+          onboardingReservation = false
+          onboardingUserId = null
+        }
+        return Response.json({
+          code: 'AI_ABUSE_LIMIT_REACHED',
+          message: 'AI usage is temporarily limited on this network. Please try again later.',
+          aiUsage: quotaUsage,
+        }, { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      abuseReserved = true
     }
 
     if (mode === 'plan') {
       const rawTasks = Array.isArray(body.tasks) ? body.tasks : []
       if (!rawTasks.length || rawTasks.length > 12) {
+        if (abuseReserved && abuseKey && quotaAdmin && abusePeriodStart) {
+          await quotaAdmin.rpc('refund_ai_abuse_credit', { p_abuse_key: abuseKey, p_period_start: abusePeriodStart })
+          abuseReserved = false
+        }
         if (quotaReserved && quotaUserId && quotaAdmin && quotaPeriodStart) {
           await quotaAdmin.rpc('refund_ai_credit', {
             p_user_id: quotaUserId,
@@ -379,6 +429,7 @@ Deno.serve(async (req) => {
         }
       }
       if (!orderedIds) throw lastError ?? new Error('No planner result.')
+      abuseReserved = false
       quotaReserved = false
       return Response.json({ orderedIds, aiUsage: quotaUsage }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
@@ -458,6 +509,7 @@ Deno.serve(async (req) => {
       onboardingReservation = false
       onboardingUserId = null
     }
+    abuseReserved = false
     quotaReserved = false
     return Response.json({ ...normalizedResult, status: 'ok', aiUsage: quotaUsage }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (error) {
@@ -466,6 +518,13 @@ Deno.serve(async (req) => {
         await quotaAdmin.rpc('release_onboarding_ai_generation', { p_user_id: onboardingUserId })
       } catch (releaseError) {
         console.error('LifeDue onboarding AI reservation release failed:', releaseError)
+      }
+    }
+    if (abuseReserved && abuseKey && quotaAdmin && abusePeriodStart) {
+      try {
+        await quotaAdmin.rpc('refund_ai_abuse_credit', { p_abuse_key: abuseKey, p_period_start: abusePeriodStart })
+      } catch (abuseRefundError) {
+        console.error('LifeDue AI abuse quota refund failed:', abuseRefundError)
       }
     }
     if (quotaReserved && quotaUserId && quotaAdmin && quotaPeriodStart) {
