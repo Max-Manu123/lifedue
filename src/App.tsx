@@ -183,6 +183,7 @@ function App() {
   const [aiError, setAiError] = useState('')
   const quickAddRequestId = useRef(0)
   const plannerRequestId = useRef(0)
+  const onboardingAiGeneratedRef = useRef(false)
   const [showAdd, setShowAdd] = useState(false)
   const [showAddPayment, setShowAddPayment] = useState(false)
   const [taskDraftClient, setTaskDraftClient] = useState('')
@@ -588,6 +589,14 @@ function App() {
   }
 
   const createPlan = async () => {
+    const isOnboarding = view === 'onboarding'
+    if (isOnboarding && (onboardingAiGeneratedRef.current || plan.length > 0)) {
+      setAiError(currentLanguage === 'pt'
+        ? 'Seu primeiro plano já foi gerado. Guarde-o para continuar.'
+        : 'Your first plan has already been generated. Save it to continue.')
+      return
+    }
+
     const input = quickText.trim()
     if (!input) {
       setPlan([])
@@ -636,6 +645,7 @@ function App() {
           today: currentTodayKey(),
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           language,
+          ...(isOnboarding ? { onboarding: true } : {}),
         },
       })
 
@@ -655,6 +665,18 @@ function App() {
             if (body?.aiUsage && typeof body.aiUsage === 'object') applyAiUsage(body.aiUsage)
           }
         } catch {}
+        if (code === 'ONBOARDING_AI_ALREADY_USED') {
+          setAiError(currentLanguage === 'pt'
+            ? 'Seu primeiro plano já foi gerado. Guarde-o para continuar.'
+            : 'Your first plan has already been generated. Save it to continue.')
+          return
+        }
+        if (code === 'ONBOARDING_SESSION_REQUIRED') {
+          setAiError(currentLanguage === 'pt'
+            ? 'A sessão segura do onboarding expirou. Recarregue a página para continuar.'
+            : 'The secure onboarding session expired. Reload the page to continue.')
+          return
+        }
         if (code === 'AI_LIMIT_REACHED') {
           setAiError(appInlineI18n[currentLanguage].yourAiCreditsAreUsedUpTheyWillResetNextMonth)
           setProLimitReached(true)
@@ -749,7 +771,7 @@ function App() {
       const taskItems = normalizedItems.filter(item => item.kind === 'task')
       const paymentItems = normalizedItems.filter(item => item.kind === 'payment')
 
-      setPlan(taskItems.map(item => ({
+      const generatedTasks: Task[] = taskItems.map(item => ({
         id: crypto.randomUUID(),
         title: item.title,
         client: item.client,
@@ -758,8 +780,22 @@ function App() {
         priority: item.priority,
         priorityProvided: item.priorityProvided === true,
         status: 'open',
-      })))
+      }))
+      setPlan(generatedTasks)
       setPlanPayments(paymentItems)
+
+      if (isOnboarding) {
+        onboardingAiGeneratedRef.current = true
+        // Keep a durable local recovery copy so signup/login can save the exact
+        // generated plan even if the page refreshes before the user clicks Save.
+        localStorage.setItem(authDraftKey, JSON.stringify({
+          plan: generatedTasks,
+          planPayments: paymentItems,
+          quickText: input,
+          savedAt: Date.now(),
+        }))
+      }
+
       setView(view === 'onboarding' ? 'onboarding' : 'quick-add')
     } catch (error) {
       if (requestId !== quickAddRequestId.current) return
@@ -2342,6 +2378,7 @@ function OnboardingView({
             id="onboarding-input"
             value={quickText}
             onChange={e => onQuickTextChange(e.target.value)}
+            readOnly={Boolean(plan.length)}
             autoFocus
             placeholder={pt
               ? 'Ex.: Entregar o site da Maria sexta, cobrar 200 USD amanhã e enviar a proposta ao Carlos segunda.'
@@ -2355,7 +2392,7 @@ function OnboardingView({
           <button
             className="primary-button onboarding-submit"
             onClick={onCreatePlan}
-            disabled={aiLoading || !quickText.trim()}
+            disabled={aiLoading || !quickText.trim() || Boolean(plan.length)}
           >
             {aiLoading ? (onboardingI18n[language].organizing) : (onboardingI18n[language].createMyPlan)}
             <ArrowRight size={17} />
