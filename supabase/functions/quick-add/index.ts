@@ -239,6 +239,27 @@ Deno.serve(async (req) => {
     quotaAdmin = auth.data?.supabaseAdmin as typeof quotaAdmin
     const isAnonymousUser = auth.data?.userClaims?.is_anonymous === true
 
+    if (!quotaUserId || !quotaAdmin) {
+      return Response.json(
+        { code: 'AUTH_REQUIRED', message: 'A valid authenticated user is required to use LifeDue AI.' },
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+    const text = typeof body.text === 'string' ? body.text.trim() : ''
+    const today = typeof body.today === 'string' ? body.today : ''
+    const timezone = typeof body.timezone === 'string' ? body.timezone : 'UTC'
+    const language = body.language === 'pt' ? 'pt' : 'en'
+
+    if (mode === 'quick-add' && (!text || text.length > MAX_INPUT_LENGTH)) {
+      return Response.json({ message: 'Invalid text.' }, { status: 400, headers: corsHeaders })
+    }
+    if (!validDate(today)) {
+      return Response.json({ message: 'Invalid current date.' }, { status: 400, headers: corsHeaders })
+    }
+    if (timezone.length > 100 || !/^[A-Za-z0-9_+./-]+$/.test(timezone)) {
+      return Response.json({ message: 'Invalid timezone.' }, { status: 400, headers: corsHeaders })
+    }
+
     if (isOnboardingRequest) {
       if (!isAnonymousUser || !quotaUserId || !quotaAdmin) {
         return Response.json(
@@ -265,26 +286,6 @@ Deno.serve(async (req) => {
 
       onboardingReservation = true
       onboardingUserId = quotaUserId
-    }
-    if (!quotaUserId || !quotaAdmin) {
-      return Response.json(
-        { code: 'AUTH_REQUIRED', message: 'A valid authenticated user is required to use LifeDue AI.' },
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
-    const text = typeof body.text === 'string' ? body.text.trim() : ''
-    const today = typeof body.today === 'string' ? body.today : ''
-    const timezone = typeof body.timezone === 'string' ? body.timezone : 'UTC'
-    const language = body.language === 'pt' ? 'pt' : 'en'
-
-    if (mode === 'quick-add' && (!text || text.length > MAX_INPUT_LENGTH)) {
-      return Response.json({ message: 'Invalid text.' }, { status: 400, headers: corsHeaders })
-    }
-    if (!validDate(today)) {
-      return Response.json({ message: 'Invalid current date.' }, { status: 400, headers: corsHeaders })
-    }
-    if (timezone.length > 100 || !/^[A-Za-z0-9_+./-]+$/.test(timezone)) {
-      return Response.json({ message: 'Invalid timezone.' }, { status: 400, headers: corsHeaders })
     }
 
     if (quotaUserId && quotaAdmin) {
