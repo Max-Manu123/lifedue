@@ -450,10 +450,11 @@ Deno.serve(async (req) => {
       }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
     if (onboardingReservation && onboardingUserId && quotaAdmin) {
-      await quotaAdmin.rpc('complete_onboarding_ai_generation', {
+      const { error: completeError } = await quotaAdmin.rpc('complete_onboarding_ai_generation', {
         p_user_id: onboardingUserId,
         p_result: normalizedResult,
       })
+      if (completeError) throw completeError
       onboardingReservation = false
       onboardingUserId = null
     }
