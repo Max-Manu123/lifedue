@@ -166,9 +166,9 @@ function App() {
     }
   }, [theme])
   const [view, setView] = useState<View>('home')
-  const [tasks, setTasks] = useState<Task[]>(() => uniqueTasks(load('lifedue-tasks', [])))
-  const [clients, setClients] = useState<Client[]>(() => load('lifedue-clients', []))
-  const [payments, setPayments] = useState<Payment[]>(() => uniquePayments(load('lifedue-payments', [])))
+  const [tasks, setTasks] = useState<Task[]>(() => !supabase ? uniqueTasks(load('lifedue-tasks', [])) : [])
+  const [clients, setClients] = useState<Client[]>(() => !supabase ? load('lifedue-clients', []) : [])
+  const [payments, setPayments] = useState<Payment[]>(() => !supabase ? uniquePayments(load('lifedue-payments', [])) : [])
   const [quickText, setQuickText] = useState('')
   const [plan, setPlan] = useState<Task[]>([])
   const [planSource, setPlanSource] = useState<'quick-add' | 'planner' | null>(null)
@@ -448,8 +448,7 @@ function App() {
     setTasksLoading(true)
     setTasksError('')
 
-    removeLegacyDemoTasks(user)
-      .then(() => fetchTasks(user))
+    fetchTasks(user)
       .then(remoteTasks => {
         if (!cancelled && version === dataRefreshVersionRef.current) setTasks(remoteTasks)
       })
@@ -465,10 +464,14 @@ function App() {
   }, [user])
 
   useEffect(() => {
-    if (!user) localStorage.setItem('lifedue-tasks', JSON.stringify(tasks))
+    if (!supabase && !user) localStorage.setItem('lifedue-tasks', JSON.stringify(tasks))
   }, [tasks, user])
-  useEffect(() => localStorage.setItem('lifedue-clients', JSON.stringify(clients)), [clients])
-  useEffect(() => localStorage.setItem('lifedue-payments', JSON.stringify(payments)), [payments])
+  useEffect(() => {
+    if (!supabase && !user) localStorage.setItem('lifedue-clients', JSON.stringify(clients))
+  }, [clients, user])
+  useEffect(() => {
+    if (!supabase && !user) localStorage.setItem('lifedue-payments', JSON.stringify(payments))
+  }, [payments, user])
 
   const openTasks = tasks.filter(t => t.status === 'open')
   const overdue = openTasks.filter(t => t.dueDateProvided !== false && t.dueDate < currentTodayKey())
