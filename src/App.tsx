@@ -589,7 +589,7 @@ function App() {
   }
 
   const createPlan = async () => {
-    const isOnboarding = view === 'onboarding'
+    const isOnboardingView = view === 'onboarding'
     if (isOnboarding && (onboardingAiGeneratedRef.current || plan.length > 0)) {
       setAiError(currentLanguage === 'pt'
         ? 'Seu primeiro plano já foi gerado. Guarde-o para continuar.'
@@ -638,6 +638,10 @@ function App() {
       if (!aiSessionUser) {
         throw new Error('Could not establish a secure AI session.')
       }
+
+      // Only an actual anonymous Supabase session may use the one-time onboarding path.
+      // A signed-in user can still be on the /onboarding view, but must use the normal quota path.
+      const isOnboarding = isOnboardingView && aiSessionUser.is_anonymous === true
 
       const { data, error } = await supabase.functions.invoke('quick-add', {
         body: {
