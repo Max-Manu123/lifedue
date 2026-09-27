@@ -28,7 +28,7 @@ import {
 import type { Client, Payment, Priority, QuickAddItem, Task } from './types'
 import type { User, FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
-import { fetchClients, fetchPayments, fetchTasks, removeLegacyDemoTasks, createTasks, createClient, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
+import { fetchClients, fetchPayments, fetchTasks, createTasks, createClient, createPayment, updateTaskStatus, updatePaymentStatus } from './lib/tasks'
 import { AuthModal } from './components/AuthModal'
 import { PlanReview } from './components/PlanReview'
 import { trMap, type Language, onboardingI18n, financeI18n, appInlineI18n } from './lib/i18n'
