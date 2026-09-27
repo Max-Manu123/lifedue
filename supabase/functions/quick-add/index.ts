@@ -268,17 +268,31 @@ Deno.serve(async (req) => {
         )
       }
 
-      const { data: reservation, error: reservationError } = await quotaAdmin.rpc('reserve_onboarding_ai_generation', {
+      const { data: reservationRows, error: reservationError } = await quotaAdmin.rpc('reserve_onboarding_ai_generation', {
         p_user_id: quotaUserId,
       })
       if (reservationError) throw reservationError
 
-      const allowed = reservation === true
+      const reservation = Array.isArray(reservationRows) ? reservationRows[0] : reservationRows
+      const allowed = reservation?.allowed === true
+      const existingResult = reservation?.existing_result
+
       if (!allowed) {
+        if (existingResult && typeof existingResult === 'object') {
+          return Response.json(
+            {
+              ...(existingResult as Record<string, unknown>),
+              status: 'ok',
+              onboardingReplay: true,
+            },
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+          )
+        }
+
         return Response.json(
           {
             code: 'ONBOARDING_AI_ALREADY_USED',
-            message: 'The free onboarding AI generation has already been used. Save your first plan to continue.',
+            message: 'The free onboarding AI generation is already in progress or has been used.',
           },
           { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
@@ -436,7 +450,10 @@ Deno.serve(async (req) => {
       }, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
     if (onboardingReservation && onboardingUserId && quotaAdmin) {
-      await quotaAdmin.rpc('complete_onboarding_ai_generation', { p_user_id: onboardingUserId })
+      await quotaAdmin.rpc('complete_onboarding_ai_generation', {
+        p_user_id: onboardingUserId,
+        p_result: normalizedResult,
+      })
       onboardingReservation = false
       onboardingUserId = null
     }
