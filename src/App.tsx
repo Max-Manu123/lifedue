@@ -33,7 +33,7 @@ import { AuthModal } from './components/AuthModal'
 import { PlanReview } from './components/PlanReview'
 import { trMap, type Language, onboardingI18n, financeI18n, appInlineI18n } from './lib/i18n'
 
-type View = 'home' | 'onboarding' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner' | 'feedback' | 'settings'
+type View = 'home' | 'onboarding' | 'quick-add' | 'tasks' | 'clients' | 'payments' | 'planner' | 'feedback' | 'settings' | 'privacy' | 'terms'
 type AiUsage = { used: number; limit: number; remaining: number }
 
 let currentLanguage:Language='en'
@@ -1455,10 +1455,16 @@ function App() {
 
   const resolvedTheme = theme === 'system' ? 'system' : theme
 
+  const openLegal = (next: 'privacy' | 'terms') => {
+    setView(next)
+    setMenuOpen(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <div className="app-shell" data-theme={resolvedTheme}>
       {passwordRecoveryActive || passwordRecoveryLoginRequired ? null : view === 'home' ? (
-        <Landing onStart={() => navigate('onboarding')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} language={language} setLanguage={setLanguage} user={user} />
+        <Landing onStart={() => navigate('onboarding')} onAuth={() => { setAuthMode('login'); setAuthOpen(true) }} onOpenApp={() => navigate('quick-add')} onPrivacy={() => openLegal('privacy')} onTerms={() => openLegal('terms')} language={language} setLanguage={setLanguage} user={user} />
       ) : view === 'onboarding' ? (
         <OnboardingView
           quickText={quickText}
@@ -1474,6 +1480,8 @@ function App() {
           onBack={() => navigate('home')}
           language={language}
         />
+      ) : view === 'privacy' || view === 'terms' ? (
+        <LegalPage type={view} language={language} onBack={() => navigate('home')} onPrivacy={() => openLegal('privacy')} onTerms={() => openLegal('terms')} />
       ) : (
         <div className="workspace">
           <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
@@ -1934,6 +1942,7 @@ interface BeforeInstallPromptEvent extends Event {
 function InstallPwaButton({ language, variant = 'default' }: { language: Language; variant?: 'default' | 'hero' }) {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
   const [installed, setInstalled] = useState(false)
+  const [open, setOpen] = useState(false)
   const [help, setHelp] = useState('')
 
   useEffect(() => {
@@ -1941,25 +1950,21 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
     setInstalled(isStandalone)
 
     const handleBeforeInstall = (event: Event) => {
-      // Keep the browser's install prompt under our control so every
-      // "Baixar LifeDue" button can trigger the same native dialog.
       event.preventDefault()
       setInstallEvent(event as BeforeInstallPromptEvent)
       setHelp('')
     }
-
     const handleInstalled = () => {
-      // Broadcast the installed state so every mounted install button
-      // disappears immediately, not only the button that was clicked.
       setInstalled(true)
       setInstallEvent(null)
+      setOpen(false)
       setHelp('')
       window.dispatchEvent(new Event('lifedue-pwa-installed'))
     }
-
     const handleSharedInstalled = () => {
       setInstalled(true)
       setInstallEvent(null)
+      setOpen(false)
       setHelp('')
     }
 
@@ -1978,28 +1983,26 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
     return <span className="install-pwa-installed"><CheckCircle size={15} /> {language === 'pt' ? 'LifeDue já está instalado' : 'LifeDue is already installed'}</span>
   }
 
-  const install = async () => {
+  const openInstall = () => {
+    setHelp('')
+    setOpen(true)
+  }
+
+  const confirmInstall = async () => {
     const event = installEvent
     if (event) {
-      setHelp('')
-
       try {
         await event.prompt()
         const choice = await event.userChoice
-
         if (choice.outcome === 'accepted') {
-          // Do not wait for appinstalled: some browsers report the user's
-          // accepted choice before dispatching appinstalled.
           setInstalled(true)
           setInstallEvent(null)
+          setOpen(false)
           window.dispatchEvent(new Event('lifedue-pwa-installed'))
         } else {
-          // Cancelled: keep the deferred event. The button must remain
-          // usable and must be able to open the install prompt again.
-          setHelp('')
+          setOpen(false)
         }
       } catch (error) {
-        // A failed native prompt should never remove the install button.
         console.error('LifeDue PWA install prompt failed:', error)
         setHelp(language === 'pt'
           ? 'Não foi possível abrir a instalação agora. Tente novamente.'
@@ -2008,24 +2011,47 @@ function InstallPwaButton({ language, variant = 'default' }: { language: Languag
       return
     }
 
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
-    setHelp(isIOS
-      ? (language === 'pt' ? 'No iPhone/iPad: use Partilhar → Adicionar ao ecrã principal.' : 'On iPhone/iPad: use Share → Add to Home Screen.')
-      : (language === 'pt' ? 'No menu do navegador, escolha “Instalar LifeDue” ou “Adicionar ao ecrã principal”.' : 'Open your browser menu and choose “Install LifeDue” or “Add to Home Screen”.'))
+    setHelp(language === 'pt'
+      ? (/iphone|ipad|ipod/i.test(navigator.userAgent)
+        ? 'No iPhone/iPad, toque em Partilhar → Adicionar ao ecrã principal.'
+        : 'Abra o menu do navegador e escolha “Instalar LifeDue” ou “Adicionar ao ecrã principal”.')
+      : (/iphone|ipad|ipod/i.test(navigator.userAgent)
+        ? 'On iPhone/iPad, use Share → Add to Home Screen.'
+        : 'Open your browser menu and choose “Install LifeDue” or “Add to Home Screen”.'))
   }
 
   return (
-    <div className={variant === 'hero' ? 'install-pwa-wrap install-pwa-wrap-hero' : 'install-pwa-wrap'}>
-      <button className={variant === 'hero' ? 'install-pwa-button install-pwa-hero' : 'install-pwa-button'} onClick={install}>
-        <Download size={15} />
-        {language === 'pt' ? 'Baixar LifeDue' : 'Install LifeDue'}
-      </button>
-      {help && <span className="install-pwa-help" role="status">{help}</span>}
-    </div>
+    <>
+      <div className={variant === 'hero' ? 'install-pwa-wrap install-pwa-wrap-hero' : 'install-pwa-wrap'}>
+        <button className={variant === 'hero' ? 'install-pwa-button install-pwa-hero' : 'install-pwa-button'} onClick={openInstall} type="button">
+          <Download size={15} />
+          {language === 'pt' ? 'Baixar LifeDue' : 'Install LifeDue'}
+        </button>
+        {help && <span className="install-pwa-help" role="status">{help}</span>}
+      </div>
+      {open && (
+        <div className="install-modal-backdrop" role="presentation" onMouseDown={event => { if (event.currentTarget === event.target) setOpen(false) }}>
+          <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="install-lifedue-title">
+            <button className="install-modal-close" type="button" onClick={() => setOpen(false)} aria-label={language === 'pt' ? 'Fechar' : 'Close'}>×</button>
+            <div className="install-modal-icon"><Download size={21} /></div>
+            <p className="section-kicker">{language === 'pt' ? 'LifeDue' : 'LifeDue'}</p>
+            <h2 id="install-lifedue-title">{language === 'pt' ? 'Instalar o LifeDue?' : 'Install LifeDue?'}</h2>
+            <p>{language === 'pt'
+              ? 'Instale o LifeDue para abrir o seu espaço de trabalho rapidamente a partir do dispositivo.'
+              : 'Install LifeDue to open your workspace quickly from your device.'}</p>
+            <div className="install-modal-actions">
+              <button className="secondary-button" type="button" onClick={() => setOpen(false)}>{language === 'pt' ? 'Agora não' : 'Not now'}</button>
+              <button className="primary-button" type="button" onClick={() => void confirmInstall()}>{language === 'pt' ? 'Instalar' : 'Install'}</button>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
   )
 }
 
-function Landing({ onStart, onAuth, onOpenApp, language, setLanguage, user }: { onStart: () => void; onAuth: () => void; onOpenApp: () => void; language: Language; setLanguage: (language: Language) => void; user: User | null }) {
+
+function Landing({ onStart, onAuth, onOpenApp, onPrivacy, onTerms, language, setLanguage, user }: { onStart: () => void; onAuth: () => void; onOpenApp: () => void; onPrivacy: () => void; onTerms: () => void; language: Language; setLanguage: (language: Language) => void; user: User | null }) {
   return (
     <div className="landing">
       <header className="landing-nav">
@@ -2087,6 +2113,51 @@ function Landing({ onStart, onAuth, onOpenApp, language, setLanguage, user }: { 
     </div>
   )
 }
+
+function LegalPage({ type, language, onBack, onPrivacy, onTerms }: { type: 'privacy' | 'terms'; language: Language; onBack: () => void; onPrivacy: () => void; onTerms: () => void }) {
+  const pt = language === 'pt'
+  const privacy = type === 'privacy'
+  return (
+    <div className="legal-page">
+      <header className="legal-header">
+        <button className="brand" type="button" onClick={onBack}><span className="brand-mark">L</span><span>LifeDue</span></button>
+        <nav className="legal-nav" aria-label={pt ? 'Documentos legais' : 'Legal documents'}>
+          <button type="button" className={privacy ? 'active' : ''} onClick={onPrivacy}>{pt ? 'Privacidade' : 'Privacy'}</button>
+          <button type="button" className={!privacy ? 'active' : ''} onClick={onTerms}>{pt ? 'Termos' : 'Terms'}</button>
+        </nav>
+      </header>
+      <main className="legal-content">
+        <div className="legal-kicker">{pt ? 'LifeDue · Informações legais' : 'LifeDue · Legal information'}</div>
+        <h1>{privacy ? (pt ? 'Política de Privacidade' : 'Privacy Policy') : (pt ? 'Termos de Uso' : 'Terms of Use')}</h1>
+        <p className="legal-updated">{pt ? 'Última atualização: 27 de setembro de 2026' : 'Last updated: September 27, 2026'}</p>
+
+        {privacy ? (
+          <>
+            <section><h2>1. {pt ? 'O que recolhemos' : 'What we collect'}</h2><p>{pt ? 'O LifeDue pode armazenar o seu email e os dados que você cria no serviço, como tarefas, clientes e pagamentos. Também podemos receber informações técnicas necessárias para autenticação, funcionamento do serviço e instalação da aplicação.' : 'LifeDue may store your email and the data you create in the service, such as tasks, clients, and payments. We may also receive technical information necessary for authentication, service operation, and app installation.'}</p></section>
+            <section><h2>2. {pt ? 'Como usamos os dados' : 'How we use data'}</h2><p>{pt ? 'Usamos esses dados para fornecer, proteger e melhorar o LifeDue, manter a sua conta e responder ao seu feedback. Os dados das suas tarefas, clientes e pagamentos são usados para mostrar as funcionalidades que você solicitou.' : 'We use this data to provide, secure, and improve LifeDue, maintain your account, and respond to feedback. Your task, client, and payment data is used to provide the features you request.'}</p></section>
+            <section><h2>3. {pt ? 'IA' : 'AI'}</h2><p>{pt ? 'Quando você usa funcionalidades de IA, o conteúdo necessário para processar a solicitação pode ser enviado ao serviço de IA usado pelo LifeDue. Não use o LifeDue para inserir dados altamente sensíveis que não sejam necessários para a tarefa.' : 'When you use AI features, the content needed to process your request may be sent to the AI service used by LifeDue. Do not use LifeDue to enter highly sensitive data that is not necessary for the task.'}</p></section>
+            <section><h2>4. {pt ? 'Armazenamento e fornecedores' : 'Storage and providers'}</h2><p>{pt ? 'O LifeDue usa fornecedores de infraestrutura, incluindo o Supabase, para autenticação e armazenamento de dados. Esses fornecedores processam dados conforme os seus próprios termos e políticas aplicáveis.' : 'LifeDue uses infrastructure providers, including Supabase, for authentication and data storage. These providers process data according to their applicable terms and policies.'}</p></section>
+            <section><h2>5. {pt ? 'Cookies e armazenamento local' : 'Cookies and local storage'}</h2><p>{pt ? 'O LifeDue pode usar armazenamento local do navegador para preferências, estado da aplicação e funcionamento da experiência. Isso pode incluir tema, idioma e dados temporários.' : 'LifeDue may use browser local storage for preferences, app state, and the user experience. This can include theme, language, and temporary data.'}</p></section>
+            <section><h2>6. {pt ? 'Segurança e retenção' : 'Security and retention'}</h2><p>{pt ? 'Aplicamos controles técnicos para proteger os dados, mas nenhum serviço online pode garantir segurança absoluta. Mantemos os dados enquanto forem necessários para fornecer o serviço ou enquanto a conta permanecer ativa, sujeito a obrigações legais aplicáveis.' : 'We use technical controls to protect data, but no online service can guarantee absolute security. We retain data while needed to provide the service or while your account remains active, subject to applicable legal requirements.'}</p></section>
+            <section><h2>7. {pt ? 'Seus direitos e contato' : 'Your rights and contact'}</h2><p>{pt ? 'Você pode solicitar informações, correções ou eliminação dos seus dados. Para pedidos relacionados à privacidade, use o canal de contacto disponibilizado pelo LifeDue.' : 'You may request information, correction, or deletion of your data. For privacy requests, use the contact channel provided by LifeDue.'}</p></section>
+          </>
+        ) : (
+          <>
+            <section><h2>1. {pt ? 'Aceitação' : 'Acceptance'}</h2><p>{pt ? 'Ao criar uma conta ou usar o LifeDue, você concorda com estes Termos de Uso. Se não concordar, não use o serviço.' : 'By creating an account or using LifeDue, you agree to these Terms of Use. If you do not agree, do not use the service.'}</p></section>
+            <section><h2>2. {pt ? 'O serviço' : 'The service'}</h2><p>{pt ? 'O LifeDue é uma ferramenta de organização para trabalho com clientes, incluindo tarefas, clientes, pagamentos e funcionalidades de IA. O serviço pode ser alterado, atualizado ou descontinuado.' : 'LifeDue is an organization tool for client work, including tasks, clients, payments, and AI features. The service may be changed, updated, or discontinued.'}</p></section>
+            <section><h2>3. {pt ? 'Responsabilidade pelos dados' : 'Responsibility for data'}</h2><p>{pt ? 'Você é responsável pelos dados que adiciona ao LifeDue e por verificar se as informações, prazos e valores estão corretos antes de agir com base neles. O LifeDue não substitui a sua própria conferência profissional ou financeira.' : 'You are responsible for the data you add to LifeDue and for checking that information, dates, and amounts are correct before acting on them. LifeDue does not replace your own professional or financial review.'}</p></section>
+            <section><h2>4. {pt ? 'Uso aceitável' : 'Acceptable use'}</h2><p>{pt ? 'Não use o LifeDue para atividades ilegais, abusivas, fraudulentas, para tentar comprometer o serviço ou para armazenar conteúdo que você não tenha direito de utilizar.' : 'Do not use LifeDue for illegal, abusive, or fraudulent activity, to attempt to compromise the service, or to store content you do not have the right to use.'}</p></section>
+            <section><h2>5. {pt ? 'IA e precisão' : 'AI and accuracy'}</h2><p>{pt ? 'Resultados gerados por IA podem conter erros. Revise tarefas, datas, clientes, valores e outras informações antes de salvar ou executar qualquer ação.' : 'AI-generated results can contain errors. Review tasks, dates, clients, amounts, and other information before saving or taking action.'}</p></section>
+            <section><h2>6. {pt ? 'Disponibilidade e responsabilidade' : 'Availability and liability'}</h2><p>{pt ? 'O LifeDue é fornecido em uma base de desenvolvimento/MVP e pode apresentar interrupções ou erros. Na medida permitida pela lei aplicável, o serviço é fornecido sem garantias de disponibilidade contínua e você permanece responsável pelas decisões tomadas com base nos dados do serviço.' : 'LifeDue is provided as an MVP/development service and may experience interruptions or errors. To the extent permitted by applicable law, the service is provided without guarantees of continuous availability, and you remain responsible for decisions made based on service data.'}</p></section>
+            <section><h2>7. {pt ? 'Alterações' : 'Changes'}</h2><p>{pt ? 'Podemos atualizar estes termos quando o serviço mudar. A versão publicada nesta página será a versão vigente.' : 'We may update these terms as the service changes. The version published on this page is the current version.'}</p></section>
+          </>
+        )}
+      </main>
+      <footer className="landing-footer legal-footer"><span>© 2026 LifeDue</span><button type="button" onClick={onBack}>{pt ? 'Voltar ao LifeDue' : 'Back to LifeDue'}</button></footer>
+    </div>
+  )
+}
+
 
 function OnboardingView({
   quickText,
