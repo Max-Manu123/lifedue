@@ -4548,3 +4548,119 @@ html[data-theme="dark"] .upgrade-form label {
   html[data-theme="system"] .danger-button:hover { background:#43202a !important; color:#fecdd3 !important; }
   html[data-theme="system"] .form-error { background:#351a22 !important; border-color:#71333f !important; color:#fda4af !important; }
 }
+
+
+/* ==========================================================================
+   ACCOUNT + CLIENT IDENTITY SURFACES — final dark-mode contrast
+   ========================================================================== */
+.theme-dark .account-summary,
+html[data-theme="dark"] .account-summary {
+  background: #0f172a !important;
+  border-color: #2a3850 !important;
+  color: #f8fafc !important;
+}
+
+.theme-dark .account-avatar,
+html[data-theme="dark"] .account-avatar {
+  background: #25204d !important;
+  color: #c7d2fe !important;
+  border: 1px solid #45408a !important;
+  box-shadow: inset 0 0 0 1px rgba(129,140,248,.08);
+}
+
+.theme-dark .account-details strong,
+html[data-theme="dark"] .account-details strong {
+  color: #f8fafc !important;
+}
+
+.theme-dark .account-details span,
+html[data-theme="dark"] .account-details span {
+  color: #cbd5e1 !important;
+}
+
+.theme-dark .account-summary .settings-plan-badge,
+html[data-theme="dark"] .account-summary .settings-plan-badge {
+  background: #1c2445 !important;
+  color: #c7d2fe !important;
+  border: 1px solid #3d4778 !important;
+}
+
+.theme-dark .account-summary .upgrade-button,
+html[data-theme="dark"] .account-summary .upgrade-button {
+  background: #6366f1 !important;
+  color: #ffffff !important;
+  border-color: #818cf8 !important;
+}
+
+.theme-dark .account-summary .upgrade-button:hover,
+html[data-theme="dark"] .account-summary .upgrade-button:hover {
+  background: #818cf8 !important;
+  color: #ffffff !important;
+}
+
+/* Client initials/avatar: never use pure-white text on a pale avatar. */
+.theme-dark .client-card .avatar,
+html[data-theme="dark"] .client-card .avatar {
+  background: #25204d !important;
+  color: #c7d2fe !important;
+  border: 1px solid #45408a !important;
+  box-shadow: inset 0 0 0 1px rgba(129,140,248,.08);
+}
+
+.theme-dark .client-heading strong,
+html[data-theme="dark"] .client-heading strong {
+  color: #f8fafc !important;
+}
+
+.theme-dark .client-heading span,
+html[data-theme="dark"] .client-heading span {
+  color: #cbd5e1 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] .account-summary {
+    background: #0f172a !important;
+    border-color: #2a3850 !important;
+    color: #f8fafc !important;
+  }
+
+  html[data-theme="system"] .account-avatar {
+    background: #25204d !important;
+    color: #c7d2fe !important;
+    border: 1px solid #45408a !important;
+  }
+
+  html[data-theme="system"] .account-details strong {
+    color: #f8fafc !important;
+  }
+
+  html[data-theme="system"] .account-details span {
+    color: #cbd5e1 !important;
+  }
+
+  html[data-theme="system"] .account-summary .settings-plan-badge {
+    background: #1c2445 !important;
+    color: #c7d2fe !important;
+    border-color: #3d4778 !important;
+  }
+
+  html[data-theme="system"] .account-summary .upgrade-button {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+    border-color: #818cf8 !important;
+  }
+
+  html[data-theme="system"] .client-card .avatar {
+    background: #25204d !important;
+    color: #c7d2fe !important;
+    border: 1px solid #45408a !important;
+  }
+
+  html[data-theme="system"] .client-heading strong {
+    color: #f8fafc !important;
+  }
+
+  html[data-theme="system"] .client-heading span {
+    color: #cbd5e1 !important;
+  }
+}
