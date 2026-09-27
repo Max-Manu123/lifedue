@@ -291,6 +291,13 @@ function App() {
     supabase.auth.getSession().then(({ data }) => {
       if (cancelled) return
       const sessionUser = data.session?.user ?? null
+      // Anonymous Supabase sessions are used only as a secure identity for the
+      // public onboarding AI. They must never become a normal LifeDue account
+      // in the UI or trigger cloud-data loading.
+      if (sessionUser?.is_anonymous) {
+        setUser(null)
+        return
+      }
       setUser(sessionUser)
       if (sessionUser) {
         if (passwordRecoveryRef.current) return
@@ -306,6 +313,15 @@ function App() {
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (cancelled) return
+
+      // Keep anonymous auth invisible to the account/workspace state. It exists
+      // only so the Edge Function can enforce per-user AI quotas during the
+      // no-account onboarding experience.
+      if (session?.user?.is_anonymous) {
+        setUser(null)
+        return
+      }
+
       setUser(session?.user ?? null)
       if (event === 'PASSWORD_RECOVERY') {
         passwordRecoveryRef.current = true
@@ -505,10 +521,17 @@ function App() {
       return
     }
 
-    const { error } = await supabase.auth.signOut()
+    // A local sign-out is enough for this browser and avoids revoking the
+    // user's other sessions. It also prevents stale refresh tokens in another
+    // tab/device from causing the 400/403 auth errors seen during testing.
+    const { error } = await supabase.auth.signOut({ scope: 'local' })
     if (error) {
       console.error('LifeDue sign-out failed:', error)
-      return
+      // Even if the server cannot revoke a stale token, clear the local
+      // session so the app cannot remain stuck with an invalid refresh token.
+      try {
+        await supabase.auth.signOut({ scope: 'local' })
+      } catch {}
     }
 
     setUser(null)
@@ -579,6 +602,33 @@ function App() {
 
     try {
       if (!supabase) throw new Error('Supabase is not configured.')
+
+      // The onboarding intentionally lets a visitor create the first plan
+      // before creating an account. The Edge Function now requires an
+      // authenticated JWT, so create a Supabase anonymous user on demand.
+      // This keeps the onboarding frictionless while still giving the server
+      // a stable user ID for the 20-credit quota.
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) {
+        console.warn('LifeDue AI session lookup failed; attempting a fresh anonymous session:', sessionError)
+      }
+
+      let aiSessionUser = sessionData.session?.user ?? null
+      if (!aiSessionUser) {
+        const { data: anonymousData, error: anonymousError } = await supabase.auth.signInAnonymously()
+        if (anonymousError) {
+          throw new Error(
+            anonymousError.message.includes('anonymous')
+              ? 'Anonymous onboarding is not enabled in Supabase Auth. Enable Allow anonymous sign-ins and try again.'
+              : anonymousError.message,
+          )
+        }
+        aiSessionUser = anonymousData.user ?? null
+      }
+
+      if (!aiSessionUser) {
+        throw new Error('Could not establish a secure AI session.')
+      }
 
       const { data, error } = await supabase.functions.invoke('quick-add', {
         body: {
@@ -743,10 +793,17 @@ function App() {
     }
   }
 
-  const skipOnboarding = () => {
+  const skipOnboarding = async () => {
     if (user) {
       setView('home')
       return
+    }
+
+    // Do not let the temporary anonymous AI identity become the user's
+    // account. The visitor is still asked to create/sign into a permanent
+    // account when they choose to enter the app.
+    if (supabase) {
+      try { await supabase.auth.signOut({ scope: 'local' }) } catch {}
     }
     pendingOnboardingSkipRef.current = true
     setPendingOnboardingSkip(true)
@@ -754,12 +811,19 @@ function App() {
     setAuthOpen(true)
   }
 
-  const addOnboardingPayment = () => {
+  const addOnboardingPayment = async () => {
     if (user) {
       setPaymentDraftClient(plan[0]?.client ?? '')
       setShowAddPayment(true)
       return
     }
+
+    // The anonymous session is only for AI generation. Clear it before the
+    // real account flow so signup/signin starts from a clean auth state.
+    if (supabase) {
+      try { await supabase.auth.signOut({ scope: 'local' }) } catch {}
+    }
+
     saveAuthDraft()
     pendingOnboardingPaymentAfterAuthRef.current = true
     setPendingOnboardingPaymentAfterAuth(true)
