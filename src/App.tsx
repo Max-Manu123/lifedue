@@ -395,6 +395,17 @@ function App() {
 
   useEffect(() => {
     dataRefreshVersionRef.current += 1
+
+    // Cloud data must never remain visible while switching accounts or after sign-out.
+    // The authenticated user's Supabase records are the only source of truth in cloud mode.
+    if (supabase) {
+      setTasks([])
+      setClients([])
+      setPayments([])
+      setTasksError('')
+      setClientsError('')
+      setPaymentsError('')
+    }
   }, [user])
 
   useEffect(() => {
