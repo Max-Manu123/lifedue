@@ -470,8 +470,15 @@ Deno.serve(async (req) => {
     if (!result) throw lastError ?? new Error('No AI result.')
     const normalizedResult = result as { items?: unknown[] }
     if (!Array.isArray(normalizedResult.items) || normalizedResult.items.length === 0) {
-      // A non-actionable note is not a successful AI action. Refund the
-      // reserved credit so users are only charged for a usable generation.
+      // A non-actionable note is not a successful AI action. Refund both
+      // server-side counters so users are only charged for a usable generation.
+      if (abuseReserved && abuseKey && quotaAdmin && abusePeriodStart) {
+        await quotaAdmin.rpc('refund_ai_abuse_credit', {
+          p_abuse_key: abuseKey,
+          p_period_start: abusePeriodStart,
+        })
+        abuseReserved = false
+      }
       if (quotaReserved && quotaUserId && quotaAdmin && quotaPeriodStart) {
         await quotaAdmin.rpc('refund_ai_credit', {
           p_user_id: quotaUserId,
