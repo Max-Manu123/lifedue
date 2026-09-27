@@ -104,9 +104,9 @@ end;
 $$;
 
 revoke all on function public.reserve_onboarding_ai_generation(uuid) from public, anon, authenticated;
-revoke all on function public.complete_onboarding_ai_generation(uuid) from public, anon, authenticated;
+revoke all on function public.complete_onboarding_ai_generation(uuid, jsonb) from public, anon, authenticated;
 revoke all on function public.release_onboarding_ai_generation(uuid) from public, anon, authenticated;
 
 grant execute on function public.reserve_onboarding_ai_generation(uuid) to service_role;
-grant execute on function public.complete_onboarding_ai_generation(uuid) to service_role;
+grant execute on function public.complete_onboarding_ai_generation(uuid, jsonb) to service_role;
 grant execute on function public.release_onboarding_ai_generation(uuid) to service_role;
