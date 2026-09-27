@@ -683,6 +683,12 @@ function App() {
           setUpgradeOpen(true)
           return
         }
+        if (code === 'AI_ABUSE_LIMIT_REACHED') {
+          setAiError(currentLanguage === 'pt'
+            ? 'O uso de IA nesta rede atingiu o limite temporário. Tente novamente mais tarde.'
+            : 'AI usage on this network has reached a temporary limit. Please try again later.')
+          return
+        }
         console.error('LifeDue AI Quick Add failed:', error, detail)
         throw new Error(detail || error.message)
       }
