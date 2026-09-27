@@ -1468,21 +1468,31 @@ function App() {
     setFeedbackSent(false)
 
     try {
-      const { error } = await supabase.from('feedback').insert({
-        user_id: user.id,
-        email: user.email ?? null,
-        type: feedbackType,
-        rating: feedbackRating || null,
-        message,
+      const { error } = await supabase.rpc('submit_feedback', {
+        p_type: feedbackType,
+        p_rating: feedbackRating || null,
+        p_message: message,
       })
 
-      if (error) throw error
+      if (error) {
+        if (error.message.includes('FEEDBACK_RATE_LIMITED')) {
+          throw new Error('FEEDBACK_RATE_LIMITED')
+        }
+        throw error
+      }
 
       setFeedbackSent(true)
       setFeedbackMessage('')
     } catch (error) {
       console.error('LifeDue feedback submission failed:', error)
-      setFeedbackError(tr('feedbackError'))
+      const detail = error instanceof Error ? error.message : ''
+      setFeedbackError(
+        detail === 'FEEDBACK_RATE_LIMITED'
+          ? (currentLanguage === 'pt'
+            ? 'Você enviou feedbacks recentemente. Aguarde alguns minutos antes de enviar outro.'
+            : 'You have sent feedback recently. Please wait a few minutes before sending another.')
+          : tr('feedbackError')
+      )
     } finally {
       setFeedbackSaving(false)
     }
@@ -1639,7 +1649,24 @@ function App() {
                 onUpgrade={() => { setProLimitReached(false); setUpgradeOpen(true) }}
               />
             )}
-            {view === 'tasks' && <TasksView tasks={tasks} onToggle={toggleTask} onAdd={() => setShowAdd(true)} busyTaskId={updatingTaskId} />}
+            {view === 'tasks' && <TasksView
+              tasks={tasks}
+              clients={clients}
+              payments={payments}
+              onToggle={toggleTask}
+              onAdd={() => { setTaskDraftClient(''); setShowAdd(true) }}
+              onAddForClient={client => {
+                const hasOpenTask = tasks.some(task =>
+                  task.status === 'open' &&
+                  task.client.trim().toLocaleLowerCase() === client.trim().toLocaleLowerCase()
+                )
+                if (hasOpenTask) return
+                suppressNextStepRef.current = true
+                setTaskDraftClient(client)
+                setShowAdd(true)
+              }}
+              busyTaskId={updatingTaskId}
+            />
             {view === 'clients' && <ClientsView clients={clients} tasks={tasks} payments={payments} />}
             {view === 'payments' && <PaymentsView
               payments={payments}
@@ -2580,7 +2607,23 @@ function TaskRow({ task, onToggle, disabled }: { task: Task; onToggle: (id: stri
   )
 }
 
-function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onToggle: (id: string) => void; onAdd: () => void; busyTaskId: string | null }) {
+function TasksView({
+  tasks,
+  clients,
+  payments,
+  onToggle,
+  onAdd,
+  onAddForClient,
+  busyTaskId,
+}: {
+  tasks: Task[]
+  clients: Client[]
+  payments: Payment[]
+  onToggle: (id: string) => void
+  onAdd: () => void
+  onAddForClient: (client: string) => void
+  busyTaskId: string | null
+}) {
   const [filter, setFilter] = useState<'all' | 'open' | 'completed'>('open')
   const [priority, setPriority] = useState<'all' | Priority>('all')
   const [search, setSearch] = useState('')
@@ -2591,6 +2634,28 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
   const todayCount = openTasks.filter(t => t.dueDateProvided !== false && t.dueDate === todayKey).length
   const completionRate = tasks.length ? Math.round((completedTasks.length / tasks.length) * 100) : 0
   const progressLabel = tasks.length ? `${completedTasks.length} ${appInlineI18n[currentLanguage].of} ${tasks.length} ${appInlineI18n[currentLanguage].tasksCompleted}` : (appInlineI18n[currentLanguage].noTasksCreatedYet)
+
+  // Keep the follow-up symmetric with Payments: a client with no open task
+  // remains discoverable even after dismissing the one-off next-step card.
+  const clientNames = new Map<string, string>()
+  clients.forEach(client => {
+    const name = client.name.trim()
+    if (name) clientNames.set(name.toLocaleLowerCase(), name)
+  })
+  payments.forEach(payment => {
+    const name = payment.client.trim()
+    if (name) clientNames.set(name.toLocaleLowerCase(), name)
+  })
+  tasks.forEach(task => {
+    const name = task.client.trim()
+    if (name) clientNames.set(name.toLocaleLowerCase(), name)
+  })
+  const clientsWithoutOpenTask = Array.from(clientNames.values())
+    .filter(client => !tasks.some(task =>
+      task.status === 'open' &&
+      task.client.trim().toLocaleLowerCase() === client.toLocaleLowerCase()
+    ))
+    .sort((a, b) => a.localeCompare(b))
 
   const filtered = tasks
     .filter(t => filter === 'all' || t.status === filter)
@@ -2639,6 +2704,35 @@ function TasksView({ tasks, onToggle, onAdd, busyTaskId }: { tasks: Task[]; onTo
     </div>
 
     <div className="filter-tabs">{(['open', 'completed', 'all'] as const).map(item => <button key={item} className={filter === item ? 'filter-tab active' : 'filter-tab'} onClick={() => setFilter(item)}>{item === 'open' ? tr('open') : item === 'completed' ? tr('completed') : tr('all')} <span>{tasks.filter(t => item === 'all' || t.status === item).length}</span></button>)}</div>
+
+    {clientsWithoutOpenTask.length > 0 && (
+      <section className="pending-payment-gaps" aria-labelledby="task-follow-up-gaps-title">
+        <div className="pending-payment-gaps-head">
+          <div>
+            <p className="section-kicker">{currentLanguage === 'pt' ? 'Acompanhar clientes' : 'Client follow-ups'}</p>
+            <h3 id="task-follow-up-gaps-title">{currentLanguage === 'pt' ? 'Clientes sem tarefa em aberto' : 'Clients without an open task'}</h3>
+            <p>{currentLanguage === 'pt'
+              ? 'Se você dispensar a sugestão acima, seus clientes continuam disponíveis aqui para adicionar uma tarefa quando quiser.'
+              : 'If you dismiss the suggestion above, your clients stay here so you can add a task whenever you want.'}</p>
+          </div>
+          <span className="pending-payment-gaps-count">{clientsWithoutOpenTask.length}</span>
+        </div>
+        <div className="pending-payment-gaps-list">
+          {clientsWithoutOpenTask.map(client => (
+            <div className="pending-payment-gap-row" key={client}>
+              <div className="pending-payment-gap-icon"><Users size={16} /></div>
+              <div className="pending-payment-gap-info">
+                <strong>{client}</strong>
+                <span>{currentLanguage === 'pt' ? 'Nenhuma tarefa em aberto' : 'No open task'}</span>
+              </div>
+              <button type="button" className="secondary-button" onClick={() => onAddForClient(client)}>
+                <Plus size={14} /> {currentLanguage === 'pt' ? 'Adicionar tarefa' : 'Add task'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
 
     {groups.length ? <div className="tasks-groups">
       {groups.map(group => <section className="tasks-group" key={group.key}>
