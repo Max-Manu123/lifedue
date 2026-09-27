@@ -4191,3 +4191,347 @@ html[data-theme="dark"] .settings-plan-card svg {
 html[data-theme="dark"] .settings-plan-card span {
   color: #cbd5e1 !important;
 }
+
+
+/* ==========================================================================
+   FINAL DARK THEME SYSTEM — cohesive palette, accessible hierarchy, no
+   white-on-white / white-on-light text collisions.
+   ========================================================================== */
+.theme-dark,
+html[data-theme="dark"] {
+  --bg-main: #0b1120;
+  --bg-card: #111827;
+  --bg-elevated: #182235;
+  --border-color: #2a3850;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --primary: #818cf8;
+  --primary-hover: #a5b4fc;
+  --accent-success: #34d399;
+  --accent-danger: #fb7185;
+  --accent-warning: #fbbf24;
+  --brand-soft: #1c2445;
+  --surface: #111827;
+  --surface-soft: #0f172a;
+  --shadow-sm: 0 4px 18px rgba(0,0,0,.18);
+  --shadow-md: 0 14px 38px rgba(0,0,0,.28);
+}
+
+.theme-dark body,
+html[data-theme="dark"] body {
+  background: #0b1120 !important;
+  color: #f8fafc !important;
+}
+
+.theme-dark .main-content,
+html[data-theme="dark"] .main-content {
+  color: #f8fafc;
+}
+
+.theme-dark .sidebar,
+html[data-theme="dark"] .sidebar {
+  background: #0f172a !important;
+  border-color: #253247 !important;
+}
+
+.theme-dark .nav-item,
+html[data-theme="dark"] .nav-item {
+  color: #aebbd0 !important;
+}
+
+.theme-dark .nav-item:hover,
+html[data-theme="dark"] .nav-item:hover {
+  background: #172033 !important;
+  color: #f8fafc !important;
+}
+
+.theme-dark .nav-item.active,
+html[data-theme="dark"] .nav-item.active {
+  background: #1c2445 !important;
+  color: #c7d2fe !important;
+}
+
+.theme-dark .eyebrow,
+.theme-dark .section-kicker,
+html[data-theme="dark"] .eyebrow,
+html[data-theme="dark"] .section-kicker {
+  color: #94a3b8 !important;
+}
+
+.theme-dark .page-description,
+.theme-dark .task-info span,
+.theme-dark .client-meta,
+.theme-dark .payment-info span,
+.theme-dark .planner-hero p,
+.theme-dark .plan-item span,
+.theme-dark .plan-item small,
+.theme-dark .summary-line,
+html[data-theme="dark"] .page-description,
+html[data-theme="dark"] .task-info span,
+html[data-theme="dark"] .client-meta,
+html[data-theme="dark"] .payment-info span,
+html[data-theme="dark"] .planner-hero p,
+html[data-theme="dark"] .plan-item span,
+html[data-theme="dark"] .plan-item small,
+html[data-theme="dark"] .summary-line {
+  color: #cbd5e1 !important;
+}
+
+/* Core surfaces */
+.theme-dark .stat-card,
+.theme-dark .quick-card,
+.theme-dark .ai-result-card,
+.theme-dark .card-list,
+.theme-dark .client-card,
+.theme-dark .payment-row,
+.theme-dark .planner-card,
+.theme-dark .settings-card,
+.theme-dark .feedback-card,
+.theme-dark .today-panel,
+.theme-dark .today-hero,
+.theme-dark .empty-card,
+.theme-dark .tasks-overview-main,
+.theme-dark .task-stat,
+.theme-dark .clients-overview > div,
+.theme-dark .payments-overview > div,
+.theme-dark .planner-overview > div,
+.theme-dark .today-planner-cta,
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .quick-card,
+html[data-theme="dark"] .ai-result-card,
+html[data-theme="dark"] .card-list,
+html[data-theme="dark"] .client-card,
+html[data-theme="dark"] .payment-row,
+html[data-theme="dark"] .planner-card,
+html[data-theme="dark"] .settings-card,
+html[data-theme="dark"] .feedback-card,
+html[data-theme="dark"] .today-panel,
+html[data-theme="dark"] .today-hero,
+html[data-theme="dark"] .empty-card,
+html[data-theme="dark"] .tasks-overview-main,
+html[data-theme="dark"] .task-stat,
+html[data-theme="dark"] .clients-overview > div,
+html[data-theme="dark"] .payments-overview > div,
+html[data-theme="dark"] .planner-overview > div,
+html[data-theme="dark"] .today-planner-cta {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #2a3850 !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,.14);
+}
+
+/* Common controls and inputs */
+.theme-dark input,
+.theme-dark select,
+.theme-dark textarea,
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder,
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.theme-dark .secondary-button,
+.theme-dark .icon-button,
+html[data-theme="dark"] .secondary-button,
+html[data-theme="dark"] .icon-button {
+  background: #182235 !important;
+  color: #e2e8f0 !important;
+  border-color: #3a4962 !important;
+}
+
+.theme-dark .secondary-button:hover,
+.theme-dark .icon-button:hover,
+html[data-theme="dark"] .secondary-button:hover,
+html[data-theme="dark"] .icon-button:hover {
+  background: #22304a !important;
+  color: #ffffff !important;
+  border-color: #52637f !important;
+}
+
+.theme-dark .filter-tab,
+html[data-theme="dark"] .filter-tab {
+  color: #aebbd0 !important;
+}
+
+.theme-dark .filter-tab.active,
+html[data-theme="dark"] .filter-tab.active {
+  color: #c7d2fe !important;
+  background: #1c2445 !important;
+  border-color: #818cf8 !important;
+}
+
+.theme-dark .task-row,
+html[data-theme="dark"] .task-row {
+  border-color: #26344b !important;
+}
+
+.theme-dark .check-box,
+html[data-theme="dark"] .check-box {
+  background: #0f172a !important;
+  border-color: #64748b !important;
+}
+
+.theme-dark .check-box.checked,
+html[data-theme="dark"] .check-box.checked {
+  background: #059669 !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+/* Semantic colors must remain semantic after the global dark-card rules. */
+.theme-dark .priority.high,
+html[data-theme="dark"] .priority.high {
+  background: #351a22 !important;
+  color: #fda4af !important;
+}
+.theme-dark .priority.medium,
+html[data-theme="dark"] .priority.medium {
+  background: #332a12 !important;
+  color: #fcd34d !important;
+}
+.theme-dark .priority.low,
+html[data-theme="dark"] .priority.low {
+  background: #1e293b !important;
+  color: #cbd5e1 !important;
+}
+.theme-dark .paid-label,
+html[data-theme="dark"] .paid-label {
+  color: #6ee7b7 !important;
+}
+.theme-dark .payment-icon,
+html[data-theme="dark"] .payment-icon {
+  background: #102a20 !important;
+  color: #6ee7b7 !important;
+}
+.theme-dark .payment-icon.overdue,
+html[data-theme="dark"] .payment-icon.overdue {
+  background: #351a22 !important;
+  color: #fda4af !important;
+}
+.theme-dark .danger-button,
+html[data-theme="dark"] .danger-button {
+  background: #351a22 !important;
+  border-color: #71333f !important;
+  color: #fda4af !important;
+}
+.theme-dark .danger-button:hover,
+html[data-theme="dark"] .danger-button:hover {
+  background: #43202a !important;
+  color: #fecdd3 !important;
+}
+.theme-dark .form-error,
+html[data-theme="dark"] .form-error {
+  background: #351a22 !important;
+  border-color: #71333f !important;
+  color: #fda4af !important;
+}
+
+/* Modals / authentication */
+.theme-dark .modal,
+.theme-dark .auth-modal,
+.theme-dark .upgrade-modal,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .auth-modal,
+html[data-theme="dark"] .upgrade-modal {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #2a3850 !important;
+}
+.theme-dark .modal label,
+.theme-dark .auth-form label,
+.theme-dark .upgrade-form label,
+html[data-theme="dark"] .modal label,
+html[data-theme="dark"] .auth-form label,
+html[data-theme="dark"] .upgrade-form label {
+  color: #cbd5e1 !important;
+}
+
+/* Dark mode for the system theme uses the same palette. */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    --bg-main: #0b1120;
+    --bg-card: #111827;
+    --bg-elevated: #182235;
+    --border-color: #2a3850;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --primary: #818cf8;
+    --primary-hover: #a5b4fc;
+    --accent-success: #34d399;
+    --accent-danger: #fb7185;
+    --accent-warning: #fbbf24;
+    --brand-soft: #1c2445;
+    --surface: #111827;
+    --surface-soft: #0f172a;
+  }
+
+  html[data-theme="system"] body {
+    background: #0b1120 !important;
+    color: #f8fafc !important;
+  }
+
+  html[data-theme="system"] .sidebar {
+    background: #0f172a !important;
+    border-color: #253247 !important;
+  }
+
+  html[data-theme="system"] .stat-card,
+  html[data-theme="system"] .quick-card,
+  html[data-theme="system"] .ai-result-card,
+  html[data-theme="system"] .card-list,
+  html[data-theme="system"] .client-card,
+  html[data-theme="system"] .payment-row,
+  html[data-theme="system"] .planner-card,
+  html[data-theme="system"] .settings-card,
+  html[data-theme="system"] .feedback-card,
+  html[data-theme="system"] .today-panel,
+  html[data-theme="system"] .today-hero,
+  html[data-theme="system"] .empty-card,
+  html[data-theme="system"] .tasks-overview-main,
+  html[data-theme="system"] .task-stat,
+  html[data-theme="system"] .clients-overview > div,
+  html[data-theme="system"] .payments-overview > div,
+  html[data-theme="system"] .planner-overview > div,
+  html[data-theme="system"] .today-planner-cta {
+    background: #111827 !important;
+    color: #f8fafc !important;
+    border-color: #2a3850 !important;
+  }
+
+  html[data-theme="system"] input,
+  html[data-theme="system"] select,
+  html[data-theme="system"] textarea {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+  }
+
+  html[data-theme="system"] input::placeholder,
+  html[data-theme="system"] textarea::placeholder {
+    color: #94a3b8 !important;
+  }
+
+  html[data-theme="system"] .secondary-button,
+  html[data-theme="system"] .icon-button {
+    background: #182235 !important;
+    color: #e2e8f0 !important;
+    border-color: #3a4962 !important;
+  }
+
+  html[data-theme="system"] .filter-tab.active {
+    color: #c7d2fe !important;
+    background: #1c2445 !important;
+    border-color: #818cf8 !important;
+  }
+}
